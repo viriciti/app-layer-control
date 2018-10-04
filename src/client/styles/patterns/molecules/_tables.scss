@@ -1,0 +1,41 @@
+.th {
+	min-width: 7.5rem;
+}
+
+.th--sortable {
+	cursor: pointer;
+
+	&::after {
+		@extend .pl-1;
+
+		opacity: 0.4;
+	}
+
+	&,
+	&.ascending {
+		&::after {
+			@extend .fa;
+			content: "\f160";
+		}
+	}
+
+	&.descending {
+		&::after {
+			@extend .fa;
+			content: "\f161";
+		}
+	}
+
+	&.ascending,
+	&.descending {
+		&::after {
+			opacity: 1;
+		}
+	}
+}
+
+.tr--no-hover {
+	&:hover {
+		background-color: transparent !important;
+	}
+}

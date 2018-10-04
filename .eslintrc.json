@@ -1,0 +1,40 @@
+{
+	"parser": "babel-eslint",
+	"env": {
+		"browser": true,
+		"mocha": true
+	},
+	"rules": {
+		"comma-dangle": ["error", "always-multiline"],
+		"jsx-quotes": ["warn", "prefer-double"],
+		"key-spacing": [
+			"warn",
+			{
+				"mode": "minimum",
+				"align": "value"
+			}
+		],
+		"no-multi-spaces": 0,
+		"no-tabs": 0,
+		"arrow-body-style": ["error", "always"],
+		"react/jsx-indent": [2, "tab"],
+		"react/jsx-indent-props": [2, "tab"],
+		"semi": ["warn", "never"],
+		"indent": [
+			"error",
+			"tab",
+			{
+				"SwitchCase": 1
+			}
+		],
+		"max-len": [
+			"off",
+			{
+				"code": 120
+			}
+		],
+
+		"react/jsx-equals-spacing": 0
+	},
+	"extends": ["standard", "standard-jsx"]
+}

@@ -1,0 +1,61 @@
+.card {
+	background-color: #fff;
+	border-radius: 3px;
+	padding: 0;
+
+	&.active {
+		.card-header {
+			background-color: $color-brand;
+		}
+	}
+}
+
+.card-header {
+	@extend .font-weight-normal;
+
+	background-color: #fff;
+	border-bottom: 1px solid $color-gray-1;
+	color: #444;
+	font-size: 1rem;
+	margin: 0;
+
+	&:not(.card-header--no-uppercase):first-letter {
+		text-transform: uppercase;
+	}
+}
+
+.card-header,
+.card-body,
+.card-footer {
+	padding: 0.5rem 0.7rem;
+}
+
+.card,
+.card-header,
+.card-body {
+	position: relative;
+	overflow-y: visible;
+}
+
+.card-footer {
+	padding: 0;
+}
+
+.card-title,
+.card-subtitle {
+	margin-bottom: 0.625rem;
+}
+
+.card-message {
+	@extend .my-3;
+	@extend .text-secondary;
+
+	display: block;
+	font-size: $font-size-base;
+
+	&:not(.card-message--vertical-only) {
+		@extend .mx-3;
+
+		text-align: center;
+	}
+}

@@ -1,0 +1,10 @@
+.form-control {
+	font-size: $font-size-sm;
+}
+
+.custom-checkbox--no-label {
+	&::selection,
+	&::-moz-selection {
+		background: rgba(0, 0, 0, 0);
+	}
+}
