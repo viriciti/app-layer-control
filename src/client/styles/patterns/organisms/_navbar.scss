@@ -1,0 +1,12 @@
+.navbar {
+	background: $navbar-bg;
+}
+
+.navbar-brand img {
+	max-height: 30px;
+}
+
+.navbar-brand--no-logo {
+	font-family: Ubuntu, "Open Sans", sans-serif;
+	letter-spacing: -0.5px;
+}

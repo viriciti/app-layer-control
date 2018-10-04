@@ -1,0 +1,8 @@
+.sources-preview--item {
+	background-color: $table-head-bg;
+	color: $table-head-color;
+	border-bottom: (2 * $table-border-width) solid $table-border-color;
+	border-color: $table-border-color;
+	padding: $table-cell-padding;
+	vertical-align: bottom;
+}

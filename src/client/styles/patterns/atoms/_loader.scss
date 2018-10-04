@@ -1,0 +1,9 @@
+.loader {
+	@extend .mx-auto;
+
+	background-size: cover;
+	background-image: url("/assets/loaders/loader.gif");
+	background-repeat: no-repeat;
+	height: 2rem;
+	width: 2rem;
+}

@@ -1,0 +1,19 @@
+.status-icon {
+	font-size: 1.5rem;
+}
+
+.device-offline {
+	background-color: $red !important;
+}
+
+.device-online {
+	background-color: $green !important;
+}
+
+.card-header {
+	&.device-online,
+	&.device-offline {
+		color: #fff;
+		font-size: $font-size-base;
+	}
+}

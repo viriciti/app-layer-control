@@ -1,0 +1,138 @@
+.btn {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	transform: perspective(1px) translateZ(0);
+	transition: $transition-fastest ease-in-out;
+
+	&::before {
+		background-color: darken($color-gray-2, 15%);
+		bottom: 0;
+		content: "";
+		height: 4px;
+		left: 50%;
+		position: absolute;
+		right: 50%;
+		transition: left $transition-fastest ease-in-out, right $transition-fastest ease-in-out;
+		z-index: -1;
+	}
+
+	&.btn--no-underline::before {
+		height: 0;
+	}
+
+	&:hover:before,
+	&:focus:before,
+	&:active:before {
+		left: 0;
+		right: 0;
+	}
+
+	&:not(.btn--reset-icon) {
+		.fas,
+		.far {
+			@extend .fa-fw;
+
+			padding-right: 1.25rem;
+			position: relative;
+
+			&::before {
+				position: absolute;
+				top: -0.625rem;
+			}
+		}
+	}
+
+	&.btn--icon:not(.btn--reset-icon) {
+		cursor: pointer;
+
+		.fas,
+		.far {
+			padding-right: 0.75rem;
+		}
+	}
+}
+
+.btn-link {
+	@include custom-btn-variant(transparent, #333);
+}
+
+.btn-primary {
+	@include custom-btn-variant($color-brand, #fff);
+}
+
+.btn-secondary {
+	@include custom-btn-variant($secondary, #fff);
+}
+
+.btn-info {
+	@include custom-btn-variant($info, #fff);
+}
+
+.btn-warning {
+	@include custom-btn-variant($warning, #fff);
+}
+
+.btn-danger {
+	@include custom-btn-variant($danger, #fff);
+}
+
+.btn-light {
+	@include custom-btn-variant($light, $color-gray-3);
+}
+
+.btn-dark {
+	@include custom-btn-variant($dark, #fff);
+}
+
+.btn--text {
+	background-color: transparent;
+	border: 0;
+	color: $text-muted;
+	padding-bottom: 0;
+	padding-top: 0;
+
+	&::before {
+		background: unset;
+		height: unset;
+	}
+
+	&:hover {
+		color: $body-color;
+	}
+}
+
+.btn--select {
+	background-color: $color-gray-1;
+	border-color: $color-gray-1;
+	color: $color-gray-2;
+
+	&:hover {
+		background-color: darken($color-gray-1, 5%);
+		border-color: darken($color-gray-1, 5%);
+		color: $color-gray-2;
+	}
+
+	&.active {
+		background-color: $color-brand;
+		color: #fff;
+	}
+
+	&::before {
+		background-color: darken($color-gray-1, 10%);
+	}
+
+	&.active {
+		&::before {
+			background-color: darken($color-brand, 10%);
+		}
+	}
+}
+
+.btn-group--toggle {
+	.btn {
+		&:focus,
+		&:active {
+			box-shadow: none;
+		}
+	}
+}
