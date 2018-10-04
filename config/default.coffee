@@ -8,8 +8,15 @@ module.exports =
 	server:
 		port: 3000
 
+	portalApi:
+		api:
+			host:       "localhost"
+			port:       8080
+			apiVersion: "v2"
+		serviceName: "app-layer-control"
+
 	devicemqtt:
-		host: "localhost"
+		host: 'localhost'
 		port: 1883
 		connectionOptions:
 			keepalive: 300
@@ -25,8 +32,15 @@ module.exports =
 	responseTimeout: 5000
 
 	versioning:
-		maxTokenAttempts:    3
-		checkingTimeout:     600000
+		git:
+			host: "git.viriciti.com"
+
+		docker:
+			host: "docker.viriciti.com"
+			username: "device-user"
+			password: process.env.DOCKER_REGISTY_TOKEN
+
+		checkingTimeout: 600000
 		numOfVersionsToShow: 10
 
 	defaultColumns:
@@ -67,7 +81,7 @@ module.exports =
 					{ value: "error",    label: "Error" }
 					{ value: "updating", label: "Updating" }
 					{ value: "idle",     label: "Idle" }
-				]
+					]
 			headerStyle:
 				minWidth: "200px"
 			entryInTable:  true
@@ -108,7 +122,7 @@ module.exports =
 			entryInTable: true
 
 		deviceId:
-			headerName:   "Device ID"
+			headerName:   "Serial"
 			defaultValue: ""
 			columnIndex:  40
 			sortable:     true
@@ -121,10 +135,24 @@ module.exports =
 			entryInTable:  true
 			entryInDetail: true
 
+		tun0IP:
+			headerName:   "VPN IP"
+			defaultValue: ""
+			columnIndex:  50
+			sortable:     false
+			filterable:   false
+			copyable:     true
+			getIn:        "systemInfo.tun0IP"
+			editable:     false
+			headerStyle:
+				minWidth: "100px"
+			entryInTable:  true
+			entryInDetail: true
+
 		groups:
 			headerName:   "Groups"
 			defaultValue: ""
-			columnIndex:  50
+			columnIndex:  60
 			sortable:     true
 			filterable:   true
 			copyable:     false
@@ -137,7 +165,7 @@ module.exports =
 		dmVersion:
 			headerName:   "DM Version"
 			defaultValue: ""
-			columnIndex:  60
+			columnIndex:  70
 			sortable:     true
 			filterable:   false
 			copyable:     false
@@ -146,3 +174,42 @@ module.exports =
 			headerStyle:
 				minWidth: "100px"
 			entryInTable: true
+
+		vid:
+			headerName:    "VID"
+			getIn:         "vid"
+			columnIndex:   35
+			entryInDetail: true
+			entryInTable:  true
+			editable:      false
+			sortable:      true
+			filterable:    true
+
+		# Detail-only entries
+		linuxKernel:
+			headerName:    "Linux kernel"
+			getIn:         "systemInfo.linuxKernel"
+			columnIndex:   41
+			entryInDetail: true
+			editable:      false
+
+		version:
+			headerName:   "Docker version"
+			getIn:        "systemInfo.version"
+			columnIndex:   42
+			entryInDetail: true
+			editable:      false
+
+		ppp0IP:
+			headerName:    "Cellular IP"
+			getIn:         "systemInfo.ppp0IP"
+			columnIndex:   51
+			entryInDetail: true
+			editable:      false
+
+		eth0IP:
+			headerName:    "Ethernet IP"
+			getIn:         "systemInfo.eth0IP"
+			columnIndex:   52
+			entryInDetail: true
+			editable:      false
