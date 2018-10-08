@@ -42,7 +42,7 @@ class ConfigurationsForm extends PureComponent {
 			},
 			mounts: value => {
 				return value.reduce((memo, mount, position) => {
-					const [HostPath, ContainerPath] = mount.split('=')
+					const [HostPath, ContainerPath] = mount.split(':')
 
 					return memo.set(position, Map({ HostPath, ContainerPath }))
 				}, List())
