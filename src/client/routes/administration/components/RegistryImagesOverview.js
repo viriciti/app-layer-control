@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
-import { isEmpty, omit } from 'underscore'
+import { isEmpty, omit, size } from 'underscore'
 import classNames from 'classnames'
 
 import { storeEnabledRegistryImages, refreshRegistryImages, removeUnavailableRegistryImage } from '../modules/actions'
@@ -11,18 +11,18 @@ class RegistryImagesOverview extends PureComponent {
 		selectedImages: {},
 	}
 
-	componentDidMount () {
-		this.setState({
-			selectedImages: this.props.enabledRegistryImages.toJS(),
-		})
+	componentDidUpdate (prevProps) {
+		if (isEmpty(this.state.selectedImages) && prevProps.enabledRegistryImages !== this.props.enabledRegistryImages) {
+			this.setState({ selectedImages: this.props.enabledRegistryImages.toJS() })
+		}
 	}
 
-	onSubmit = () => {
+	onPublish = () => {
 		if (isEmpty(this.state.selectedImages)) {
 			return alert('No versions selected!')
 		}
 
-		if (!confirm('Sending enabled images. Are you sure?')) {
+		if (!confirm(`Sending ${size(this.state.selectedImages)} enabled images. Are you sure?`)) {
 			return
 		}
 
@@ -104,9 +104,15 @@ class RegistryImagesOverview extends PureComponent {
 			<div className="card">
 				<div className="card-header">
 					Registry Images
-					<button className="btn btn-sm btn-secondary float-right" onClick={this.onRefresh}>
-						<span className="fas fa-sync" /> Fetch versions
-					</button>
+					<div className="btn-group btn-group--toggle float-right">
+						<button className="btn btn-sm btn-primary" onClick={this.onRefresh}>
+							<span className="fas fa-download" /> Fetch versions
+						</button>
+
+						<button className="btn btn-sm btn-light" onClick={this.onPublish}>
+							<span className="fas fa-cloud-upload-alt" /> Publish
+						</button>
+					</div>
 				</div>
 				<div className="card-body spacing-base">
 					<table className="table">
@@ -118,10 +124,6 @@ class RegistryImagesOverview extends PureComponent {
 						</thead>
 						<tbody>{this.renderImages()}</tbody>
 					</table>
-
-					<button onClick={this.onSubmit} className="btn btn-primary float-right mt-3">
-						Publish
-					</button>
 				</div>
 			</div>
 		)

@@ -27,13 +27,16 @@ class DeviceContainers extends Component {
 	renderContainerIcon (containerStatus) {
 		switch (containerStatus) {
 			case 'running':
-				return <span className="fas fa-circle-notch text-success" />
+				return <span className="fas fa-play-circle text-success" />
 
 			case 'restarting':
-				return <span className="fas fa-circle-notch text-warning" />
+				return <span className="fas fa-dot-circle text-warning" />
 
 			case 'exited':
-				return <span className="fas fa-circle-notch text-danger" />
+				return <span className="fas fa-stop-circle text-danger" />
+
+			case 'created':
+				return <span className="fas fa-circle-notch text-info" />
 
 			default:
 				return <span className="fas fa-question-circle text-secondary" />
@@ -69,7 +72,7 @@ class DeviceContainers extends Component {
 							const deviceIp = selectedDevice.getIn(['systemInfo', 'tun0IP'])
 
 							return (
-								<li className="mb-2" key={container.get('Id')}>
+								<li className="mb-2" key={`${container.get('Id')}`}>
 									<button
 										title={statusToTitle[container.getIn(['state', 'status'])]}
 										onClick={() => {
