@@ -276,10 +276,13 @@ initMqtt = ->
 
 								deviceStates = deviceStates.setIn [deviceId, "containers"], newContainers
 
-								deviceId:   deviceId
-								containers: newContainers
-							.reduce (devices, { deviceId, containers }) ->
-								devices[deviceId] = { containers }
+								deviceId:             deviceId
+								containers:           newContainers
+								containersNotRunning: getContainersNotRunning newContainers
+							.reduce (devices, { deviceId, containers, containersNotRunning }) ->
+								devices[deviceId] =
+									containers:           containers
+									containersNotRunning: containersNotRunningToString containersNotRunning
 								devices
 							, {}
 
