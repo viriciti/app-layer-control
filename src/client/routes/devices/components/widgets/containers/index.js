@@ -1,11 +1,11 @@
-import React, { Component } from 'react'
+import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
 import { connect } from 'react-redux'
 
 import ContainerOverview from './ContainerOverview'
 
-class DeviceContainers extends Component {
+class DeviceContainers extends PureComponent {
 	state = {
 		selectedContainer: null,
 	}
@@ -69,7 +69,7 @@ class DeviceContainers extends Component {
 							const deviceIp = selectedDevice.getIn(['systemInfo', 'tun0IP'])
 
 							return (
-								<li className="mb-2" key={container.get('Id')}>
+								<li className="mb-2" key={`${container.get('Id')}`}>
 									<button
 										title={statusToTitle[container.getIn(['state', 'status'])]}
 										onClick={() => {

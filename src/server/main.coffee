@@ -15,12 +15,13 @@ socketio        = require "socket.io"
 { each, size }  = require "underscore"
 
 {
-	cacheUpdate
+	DevicesAppState
+	DevicesLogs
 	DevicesNsState
 	DevicesState
 	DevicesStatus
 	DockerRegistry
-	DevicesLogs
+	cacheUpdate
 	externals
 }                         = require "./sources"
 populateMqttWithGroups    = require "./helpers/populateMqttWithGroups"
@@ -145,11 +146,12 @@ initMqtt = ->
 
 				log.info "Cache succesfully populated"
 
-				devicesState$   = DevicesState.observable   mqttSocket
-				devicesNsState$ = DevicesNsState.observable mqttSocket
-				devicesStatus$  = DevicesStatus.observable  mqttSocket
-				devicesLogs$    = DevicesLogs.observable    mqttSocket
-				cacheUpdate$    = cacheUpdate               store
+				devicesAppState$ = DevicesAppState.observable mqttSocket
+				devicesLogs$     = DevicesLogs.observable     mqttSocket
+				devicesNsState$  = DevicesNsState.observable  mqttSocket
+				devicesState$    = DevicesState.observable    mqttSocket
+				devicesStatus$   = DevicesStatus.observable   mqttSocket
+				cacheUpdate$     = cacheUpdate               store
 
 				each externals, (source, name) ->
 					{
@@ -250,6 +252,39 @@ initMqtt = ->
 
 						_broadcastAction "devicesBatchState", newStates
 
+				devicesAppState$
+					.bufferTime config.batchStateInterval
+					.subscribe (appStates) ->
+						return unless appStates.length
+
+						newAppStates = appStates
+							.map (appState) ->
+								{ action, deviceId, data, name } = appState
+
+								currentContainers = deviceStates.getIn [deviceId, "containers"]
+								newContainers     = currentContainers
+								containerIndex    = currentContainers.findIndex (container) -> name is container.get "name"
+								containerExists   = containerIndex isnt -1
+
+								if action is "create"
+									newContainers = newContainers.push fromJS data
+								else if action is "destroy" and containerExists
+									newContainers = newContainers.delete containerIndex
+								else if containerExists
+									newContainers = newContainers.update containerIndex, (container) ->
+										container.merge fromJS data
+
+								deviceStates = deviceStates.setIn [deviceId, "containers"], newContainers
+
+								deviceId:   deviceId
+								containers: newContainers
+							.reduce (devices, { deviceId, containers }) ->
+								devices[deviceId] = { containers }
+								devices
+							, {}
+
+						_broadcastAction "devicesBatchAppState", newAppStates
+
 				# Triggers on every nsState topic event
 				# The nsState topic contains split state top level key
 				# It looks like this /devices/<serial>/nsState/<top-level-key>
@@ -309,6 +344,7 @@ initMqtt = ->
 					DevicesLogs.topic
 					DevicesNsState.topic
 					DevicesStatus.topic
+					DevicesAppState.topic
 				], (topic, cb) ->
 					mqttSocket.customSubscribe
 						topic: topic
