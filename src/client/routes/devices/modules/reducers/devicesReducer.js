@@ -43,7 +43,7 @@ const ACTION_HANDLERS = {
 
 				return device
 					.set('containers', updatedAppState.get('containers'))
-					.set('containersNotRunning', updatedAppState.get('containersNotRunning'))
+					.setIn(['activeAlerts', 'containersNotRunning'], updatedAppState.get('containersNotRunning'))
 			})
 	},
 

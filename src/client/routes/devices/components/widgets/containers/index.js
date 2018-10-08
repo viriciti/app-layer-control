@@ -1,11 +1,11 @@
-import React, { PureComponent } from 'react'
+import React, { Component } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
 import { connect } from 'react-redux'
 
 import ContainerOverview from './ContainerOverview'
 
-class DeviceContainers extends PureComponent {
+class DeviceContainers extends Component {
 	state = {
 		selectedContainer: null,
 	}
