@@ -230,11 +230,9 @@ initMqtt = ->
 								currentContainers: currentContainers
 								images:            store.getCache "images"
 
-							lastSeenTimestamp = deviceStates.getIn [ clientId, "lastSeenTimestamp" ]
 							extraState        = fromJS
-								deviceId:             clientId
-								lastSeenTimestamp:    Date.now()
-								lastSeenDuration:     if lastSeenTimestamp then Date.now() - lastSeenTimestamp else 1
+								deviceId:          clientId
+								lastSeenTimestamp: Date.now()
 								activeAlerts:
 									versionsNotMatching:  versionsMismatchToString versionsNotMatching
 									containersNotRunning: containersNotRunningToString containersNotRunning
@@ -281,6 +279,7 @@ initMqtt = ->
 								containersNotRunning: getContainersNotRunning newContainers
 							.reduce (devices, { deviceId, containers, containersNotRunning }) ->
 								devices[deviceId] =
+									lastSeenTimestamp:    Date.now()
 									containers:           containers
 									containersNotRunning: containersNotRunningToString containersNotRunning
 								devices
@@ -301,12 +300,10 @@ initMqtt = ->
 							{ deviceId, key, val } = nsStateUpdate
 							debug "devicesNsState is updating #{deviceId}"
 
-							lastSeenTimestamp = deviceStates.getIn [ deviceId, "lastSeenTimestamp" ]
 							newState = fromJS
 								deviceId:          deviceId
 								"#{key}":          val
 								lastSeenTimestamp: Date.now()
-								lastSeenDuration:  if lastSeenTimestamp then Date.now() - lastSeenTimestamp else -1
 
 							deviceStates      = deviceStates.mergeIn [ deviceId ], newState
 							updates[deviceId] = newState

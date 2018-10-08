@@ -42,6 +42,7 @@ const ACTION_HANDLERS = {
 				const updatedAppState = fromJS(action.data[device.get('deviceId')])
 
 				return device
+					.set('lastSeenTimestamp', updatedAppState.get('lastSeenTimestamp'))
 					.set('containers', updatedAppState.get('containers'))
 					.setIn(['activeAlerts', 'containersNotRunning'], updatedAppState.get('containersNotRunning'))
 			})
