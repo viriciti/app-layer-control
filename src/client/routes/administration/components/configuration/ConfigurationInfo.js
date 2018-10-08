@@ -11,7 +11,7 @@ const ConfigurationInfo = props => {
 	if (!selectedConfiguration) {
 		return (
 			<div className="col-9">
-				<span className="card-message">No configuration selected</span>
+				<span className="card-message">No application selected</span>
 			</div>
 		)
 	}
