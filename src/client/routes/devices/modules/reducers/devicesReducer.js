@@ -1,6 +1,13 @@
 import { Map, fromJS } from 'immutable'
 
-import { DEVICE_STATE, DEVICES_BATCH_STATE, DEVICES_STATE, CONTAINER_LOGS, SELECT_DEVICE } from '../actions'
+import {
+	DEVICE_STATE,
+	DEVICES_BATCH_STATE,
+	DEVICES_BATCH_APP_STATE,
+	DEVICES_STATE,
+	CONTAINER_LOGS,
+	SELECT_DEVICE,
+} from '../actions'
 
 // ------------------------------------
 // Action Handlers
@@ -24,6 +31,20 @@ const ACTION_HANDLERS = {
 
 	[DEVICES_BATCH_STATE]: (devices, action) => {
 		return devices.mergeDeep(fromJS(action.data))
+	},
+
+	[DEVICES_BATCH_APP_STATE]: (devices, action) => {
+		return devices
+			.filter(device => {
+				return !!action.data[device.get('deviceId')]
+			})
+			.map(device => {
+				const updatedAppState = fromJS(action.data[device.get('deviceId')])
+
+				return device
+					.set('containers', updatedAppState.get('containers'))
+					.set('containersNotRunning', updatedAppState.get('containersNotRunning'))
+			})
 	},
 
 	[DEVICE_STATE]: (devices, action) => {
