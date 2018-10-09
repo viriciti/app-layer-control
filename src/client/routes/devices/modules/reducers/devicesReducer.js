@@ -30,7 +30,15 @@ const ACTION_HANDLERS = {
 	},
 
 	[DEVICES_BATCH_STATE]: (devices, action) => {
-		return devices.mergeDeep(fromJS(action.data))
+		return devices.reduce((updatedDevices, device) => {
+			const deviceId = device.get('deviceId')
+
+			if (action.data[deviceId]) {
+				return updatedDevices.mergeIn([deviceId], fromJS(action.data[deviceId]))
+			} else {
+				return updatedDevices
+			}
+		}, devices)
 	},
 
 	[DEVICES_BATCH_APP_STATE]: (devices, action) => {
