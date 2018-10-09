@@ -1,5 +1,4 @@
 module.exports =
-	DevicesAppState:  require "./DevicesAppState"
 	DevicesLogs:      require "./DevicesLogs"
 	DevicesNsState:   require "./DevicesNsState"
 	DevicesState:     require "./DevicesState"
