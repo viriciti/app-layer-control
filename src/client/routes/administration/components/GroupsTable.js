@@ -33,7 +33,12 @@ class GroupsTable extends PureComponent {
 			return (
 				<tr key={label}>
 					<td>{label}</td>
-					<td>{applications.join(', ')}</td>
+					<td>
+						{applications
+							.keySeq()
+							.toArray()
+							.join(', ')}
+					</td>
 					<td className="text-right">
 						<button className="btn btn--text btn--icon" onClick={this.onEditGroup.bind(this, label)} title="Edit group">
 							<span className="fas fa-pen" data-toggle="tooltip" />

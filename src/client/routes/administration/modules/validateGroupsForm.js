@@ -1,4 +1,4 @@
-import { size } from 'underscore'
+import { size, every, identity } from 'underscore'
 
 export default (values, props) => {
 	const errors = {}
@@ -11,6 +11,12 @@ export default (values, props) => {
 
 	if (values.label === 'default' && !size(values.applications)) {
 		errors.applications = 'The default group must have at least one application.'
+	}
+
+	if (size(values.applications)) {
+		if (!every(values.applications, identity)) {
+			errors.applications = 'One or more applications has no version selected.'
+		}
 	}
 
 	return errors

@@ -14,7 +14,7 @@ module.exports = (db) ->
 		], cb
 
 	_getApplicationsConfiguration = (applications, cb) ->
-		async.map applications, (app, next) ->
+		async.mapValues applications, (version, app, next) ->
 			db.Configuration.findOne { applicationName: app }, (error, doc) ->
 				return next error if error
 				debug "Get Configuration from db", app, doc

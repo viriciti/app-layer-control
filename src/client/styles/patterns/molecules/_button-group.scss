@@ -1,0 +1,29 @@
+.btn-flex {
+	display: flex;
+	align-items: stretch;
+	align-content: stretch;
+
+	.btn {
+		border: 1px solid transparent;
+
+		&:first-child {
+			flex-grow: 1;
+		}
+	}
+
+	&:not(.btn-group--single) {
+		.btn:first-child {
+			border-right-color: rgba(0, 0, 0, 0.1);
+
+			+ .btn {
+				padding-left: 0.5rem;
+				padding-right: 0.5rem;
+
+				.far,
+				.fas {
+					padding-right: 0.5rem;
+				}
+			}
+		}
+	}
+}

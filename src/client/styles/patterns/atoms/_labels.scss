@@ -1,5 +1,6 @@
 .label {
 	background-color: $color-gray-1;
+	border: 0;
 	color: $color-gray-2;
 	cursor: pointer;
 	display: block;
@@ -9,6 +10,7 @@
 	text-align: center;
 	text-transform: uppercase;
 	transition: $transition-fastest ease-in-out;
+	width: 100%;
 
 	&:not(.label--no-hover):hover {
 		background-color: darken($color-gray-1, 5%);
