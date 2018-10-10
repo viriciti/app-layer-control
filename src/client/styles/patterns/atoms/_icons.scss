@@ -1,0 +1,17 @@
+.fa-absolute {
+	position: relative;
+
+	&--left,
+	&--right {
+		position: absolute !important;
+		top: 0.5rem;
+	}
+
+	&--left {
+		left: 0.5rem;
+	}
+
+	&--right {
+		right: 0.5rem;
+	}
+}

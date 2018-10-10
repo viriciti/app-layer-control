@@ -10,7 +10,7 @@ module.exports = (db, mqttSocket) ->
 	createGroup = ({ payload }, cb) ->
 		{ label, applications } = payload
 
-		if label is "default" and not applications.length
+		if label is "default" and not _.size applications
 			return cb new Error "Can not have a default group with 0 applications"
 
 		async.series [

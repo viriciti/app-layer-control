@@ -35,8 +35,14 @@ class GroupsTable extends PureComponent {
 					<td>{label}</td>
 					<td>
 						{applications
-							.keySeq()
-							.toArray()
+							.entrySeq()
+							.map(([application, version]) => {
+								if (version) {
+									return [application, version].join('@')
+								} else {
+									return application
+								}
+							})
 							.join(', ')}
 					</td>
 					<td className="text-right">

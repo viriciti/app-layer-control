@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import classNames from 'classnames'
 import { noop, omit, has } from 'underscore'
 import naturalCompare from 'natural-compare-lite'
@@ -7,6 +7,7 @@ const ApplicationVersion = ({ version, onExpandSelectVersion, isCurrentVersion }
 	return (
 		<li>
 			<button
+				type="button"
 				onClick={onExpandSelectVersion}
 				className={classNames('my-1', 'btn', 'btn-block', 'btn--select', 'btn--no-underline', {
 					active: isCurrentVersion,
@@ -22,6 +23,7 @@ const Application = ({ label }) => {
 	return (
 		<li>
 			<button
+				type="button"
 				className="my-1 label label--disabled label--icon-absolute label--no-hover"
 				title="The image for this application has not been synchronized yet"
 			>
@@ -37,6 +39,7 @@ const AvailableApplication = ({ label, version, onToggle, onExpand, isSelected, 
 		<li>
 			<div className={classNames('btn-flex', 'my-1', { 'btn-group': isSelected, 'btn-group--single': !isSelected })}>
 				<button
+					type="button"
 					onClick={onToggle}
 					className={classNames('btn', 'btn--select', 'btn--no-underline', {
 						active: isSelected,
@@ -47,10 +50,10 @@ const AvailableApplication = ({ label, version, onToggle, onExpand, isSelected, 
 
 				{isSelected ? (
 					<button
+						type="button"
 						onClick={isSelected ? onExpand : noop}
 						className={classNames('btn', 'btn--no-underline', {
-							'btn-primary': isSelected && version,
-							'btn-warning': isSelected && !version,
+							'btn-primary': isSelected,
 							disabled:      !isSelected,
 						})}
 						title={!isSelected ? 'You must select this application before you can select a version' : null}
@@ -105,7 +108,11 @@ class ApplicationsList extends PureComponent {
 	}
 
 	onExpandSelectVersion = version => {
-		this.updateApplicationVersion(version)
+		if (this.props.input.value[this.state.expandApplicationName]) {
+			this.updateApplicationVersion(null)
+		} else {
+			this.updateApplicationVersion(version)
+		}
 	}
 
 	render () {

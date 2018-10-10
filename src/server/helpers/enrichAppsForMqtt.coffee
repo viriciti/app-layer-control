@@ -8,42 +8,52 @@ module.exports = (db) ->
 		debug "enrich called with label: #{label} applications: #{JSON.stringify applications}"
 		async.waterfall [
 			(next) ->
-				_getApplicationsConfiguration applications, next
-			(configurations, next) ->
-				_getLatestInstallableApplications configurations, label, next
+				async.parallel [
+					(cb) ->
+						_getApplicationsConfiguration applications, cb
+					(cb) ->
+						_getGroupConfiguration label, cb
+				], next
+			([configurations, group], next) ->
+				_getLatestInstallableApplications configurations, group, next
 		], cb
+
+	_getGroupConfiguration = (label, cb) ->
+		db.Group.findOne { label }, cb
 
 	_getApplicationsConfiguration = (applications, cb) ->
 		async.mapValues applications, (version, app, next) ->
 			db.Configuration.findOne { applicationName: app }, (error, doc) ->
 				return next error if error
-				debug "Get Configuration from db", app, doc
+				# debug "Get Configuration from db", app, doc
 				next null, doc
 		, cb
 
-	_getLatestInstallableApplications = (configurations, groupLabel, cb) ->
+	_getLatestInstallableApplications = (configurations, group, cb) ->
+		{ label, applications } = group
+
 		async.reduce configurations, {}
 		, (apps, config, next) ->
 
 			db.RegistryImages.findOne { name: config.fromImage }, (error, app) ->
 				return next error if error
 
-				if /test$/.test groupLabel
+				if /test$/.test label
 					versionToInstall = semver.maxSatisfying app.versions, config.version
 				else
-					if app.enabledVersion
-						versionToInstall = app.enabledVersion
+					if applications[config.applicationName]
+						versionToInstall = applications[config.applicationName]
 					else
 						versionToInstall = semver.maxSatisfying app.versions, config.version
 
-
+				debug "Version enriched: #{config.applicationName}@#{versionToInstall}"
 				containerName = config.containerName
 
 				enrichedConfig               = _(config.toObject()).omit ["_id", "__v", "version"]
 				enrichedConfig.fromImage     = "#{config.fromImage}:#{versionToInstall}"
 				enrichedConfig.containerName = "#{containerName}"
 				enrichedConfig.labels        =
-					group:  groupLabel
+					group:  label
 					manual: "false"
 
 				appToInstall = {}
