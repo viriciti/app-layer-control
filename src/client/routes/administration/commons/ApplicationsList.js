@@ -37,30 +37,43 @@ const Application = ({ label }) => {
 const AvailableApplication = ({ label, version, onToggle, onExpand, isSelected, isExpanded }) => {
 	return (
 		<li>
-			<div className={classNames('btn-flex', 'my-1', { 'btn-group': isSelected, 'btn-group--single': !isSelected })}>
+			<div className={classNames('btn-flex', 'my-1', { 'btn-group': isSelected })}>
 				<button
 					type="button"
 					onClick={onToggle}
 					className={classNames('btn', 'btn--select', 'btn--no-underline', {
-						active: isSelected,
+						active:               isSelected,
+						'btn--icon-absolute': isSelected && !version,
 					})}
 				>
-					{isSelected && version ? `${label} @ ${version}` : label}
+					{isSelected ? (
+						version ? (
+							`${label} @ ${version}`
+						) : (
+							<Fragment>
+								{label}{' '}
+								<span
+									className="fas fa-code-branch"
+									title="The version will be determined through semantic versioning"
+								/>
+							</Fragment>
+						)
+					) : (
+						label
+					)}
 				</button>
 
-				{isSelected ? (
-					<button
-						type="button"
-						onClick={isSelected ? onExpand : noop}
-						className={classNames('btn', 'btn--no-underline', {
-							'btn-primary': isSelected,
-							disabled:      !isSelected,
-						})}
-						title={!isSelected ? 'You must select this application before you can select a version' : null}
-					>
-						{isExpanded ? <span className="fas fa-times" /> : <span className="fas fa-chevron-right" />}
-					</button>
-				) : null}
+				<button
+					type="button"
+					onClick={isSelected ? onExpand : noop}
+					className={classNames('btn', 'btn--no-underline', {
+						'btn-primary': isSelected,
+						disabled:      !isSelected,
+					})}
+					title={!isSelected ? 'You must select this application before you can select a version' : null}
+				>
+					{isExpanded ? <span className="fas fa-times" /> : <span className="fas fa-chevron-right" />}
+				</button>
 			</div>
 		</li>
 	)
