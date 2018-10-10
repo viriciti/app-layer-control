@@ -22,11 +22,12 @@ socketio        = require "socket.io"
 	DockerRegistry
 	cacheUpdate
 	externals
-}                         = require "./sources"
-populateMqttWithGroups    = require "./helpers/populateMqttWithGroups"
-enrichGroupsByName        = require "./lib/enrichGroupsByName"
-getVersionsNotMatching    = require "./lib/getVersionsNotMatching"
-getContainersNotRunning   = require "./lib/getContainersNotRunning"
+}                       = require "./sources"
+populateMqttWithGroups  = require "./helpers/populateMqttWithGroups"
+enrichGroupsByName      = require "./lib/enrichGroupsByName"
+getVersionsNotMatching  = require "./lib/getVersionsNotMatching"
+getContainersNotRunning = require "./lib/getContainersNotRunning"
+runUpdates              = require "./updates"
 
 log = (require "./lib/Logger") "Main"
 db  = (require "./db") config.db
@@ -447,10 +448,13 @@ else
 	app.get "*", (req, res) ->
 		res.sendFile(path.resolve __dirname, "../client/index.html")
 
+# Run backwards compatible updates first
+runUpdates
+	db:    db
+	store: store
+, ->
+	port = config.server.port
+	server.listen process.env.PORT or port, ->
+		log.info "Server listening on :#{port}"
 
-port = config.server.port
-server.listen process.env.PORT or port, ->
-	log.info "Server listening on port #{port}"
-
-
-main()
+	main()
