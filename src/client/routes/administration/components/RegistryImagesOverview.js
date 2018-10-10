@@ -1,9 +1,7 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
-import { isEmpty, omit, size } from 'underscore'
-import classNames from 'classnames'
 
-import { storeEnabledRegistryImages, refreshRegistryImages, removeUnavailableRegistryImage } from '../modules/actions'
+import { refreshRegistryImages, removeUnavailableRegistryImage } from '../modules/actions'
 import extractImageFromUrl from '../modules/extractImageFromUrl'
 
 class RegistryImagesOverview extends PureComponent {
@@ -11,38 +9,8 @@ class RegistryImagesOverview extends PureComponent {
 		selectedImages: {},
 	}
 
-	componentDidUpdate (prevProps) {
-		if (isEmpty(this.state.selectedImages) && prevProps.enabledRegistryImages !== this.props.enabledRegistryImages) {
-			this.setState({ selectedImages: this.props.enabledRegistryImages.toJS() })
-		}
-	}
-
-	onPublish = () => {
-		if (isEmpty(this.state.selectedImages)) {
-			return alert('No versions selected!')
-		}
-
-		if (!confirm(`Sending ${size(this.state.selectedImages)} enabled images. Are you sure?`)) {
-			return
-		}
-
-		this.props.storeEnabledRegistryImages(this.state.selectedImages)
-	}
-
 	onRefresh = () => {
 		this.props.refreshRegistryImages()
-	}
-
-	onVersionSelected = ({ name, version }) => {
-		this.setState(prevState => {
-			const { selectedImages } = prevState
-
-			if (selectedImages[name] === version) {
-				return { selectedImages: omit(selectedImages, name) }
-			} else {
-				return { selectedImages: { [name]: version } }
-			}
-		})
 	}
 
 	onRemoveImage = ({ name, image }) => {
@@ -52,22 +20,10 @@ class RegistryImagesOverview extends PureComponent {
 	}
 
 	renderImages () {
-		const renderVersions = (name, versions) => {
+		const renderVersions = (_, versions) => {
 			return versions.map(version => {
-				const isVersionPersisted = this.props.enabledRegistryImages.get(name) === version
-				const isVersionSelected = this.state.selectedImages[name] === version
-
 				return (
-					<span
-						className={classNames('label', 'font-weight-normal', 'd-inline-block', 'm-0', 'mr-2', {
-							'label--primary': isVersionPersisted,
-							'label--info':    isVersionSelected && !isVersionPersisted,
-						})}
-						key={version}
-						onClick={() => {
-							return this.onVersionSelected({ name, version })
-						}}
-					>
+					<span className="m-0 mr-3" key={version}>
 						{version}
 					</span>
 				)
@@ -108,10 +64,6 @@ class RegistryImagesOverview extends PureComponent {
 						<button className="btn btn-sm btn-primary" onClick={this.onRefresh}>
 							<span className="fas fa-download" /> Fetch versions
 						</button>
-
-						<button className="btn btn-sm btn-light" onClick={this.onPublish}>
-							<span className="fas fa-cloud-upload-alt" /> Publish
-						</button>
 					</div>
 				</div>
 				<div className="card-body spacing-base">
@@ -119,7 +71,7 @@ class RegistryImagesOverview extends PureComponent {
 						<thead className="thead-light">
 							<tr>
 								<th>Image</th>
-								<th>Versions</th>
+								<th>Available versions</th>
 							</tr>
 						</thead>
 						<tbody>{this.renderImages()}</tbody>
@@ -137,5 +89,5 @@ export default connect(
 			registryImages:        state.get('registryImages'),
 		}
 	},
-	{ storeEnabledRegistryImages, refreshRegistryImages, removeUnavailableRegistryImage }
+	{ refreshRegistryImages, removeUnavailableRegistryImage }
 )(RegistryImagesOverview)

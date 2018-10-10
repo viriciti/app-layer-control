@@ -30,16 +30,6 @@ module.exports = (db, mqttSocket) ->
 				cb
 		, cb
 
-	storeEnabledRegistryImages = ({ payload: images }, cb) ->
-		async.mapValues images
-			, (version, name, next) ->
-				db.RegistryImages.findOneAndUpdate { name },
-					{ enabledVersion: version },
-					next
-			, (error) ->
-				return cb error if error
-				populateMqttWithGroups db, mqttSocket, cb
-
 	refreshRegistryImages = ({ payload: images }, cb) ->
 		async.waterfall [
 			(next) ->
@@ -68,6 +58,5 @@ module.exports = (db, mqttSocket) ->
 	return {
 		storeRegistryImages
 		refreshRegistryImages
-		storeEnabledRegistryImages
 		removeUnavailableRegistryImage
 	}

@@ -67,6 +67,8 @@ module.exports = (db, mqttSocket) ->
 						qos:    0
 						retain: true
 				, cb
+
+
 		], cb
 
 	return {
