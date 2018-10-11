@@ -24,12 +24,17 @@ updateGroups = ({ db, store }, cb) ->
 					fromImage      = configurations.getIn [applicationName, "fromImage"]
 					enabledVersion = enabledRegistryImages.get fromImage
 
+					if enabledVersion
+						log.info "Setting version for #{applicationName} to #{enabledVersion}"
+					else
+						log.warn "No enabled version for #{applicationName} (#{fromImage})"
+
 					newApplications.set applicationName, enabledVersion
 				, Map()
 
-				updateQuery        = label: name
-				updatePayload      = applications: updatedApplications.toJS()
-				updateOptions      = upsert: true
+				updateQuery   = label: name
+				updatePayload = applications: updatedApplications.toJS()
+				updateOptions = upsert: true
 
 				db.Group.findOneAndUpdate updateQuery, updatePayload, updateOptions, next
 			, (error) ->

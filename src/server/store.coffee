@@ -45,8 +45,11 @@ module.exports = (db) ->
 
 		db.RegistryImages.find {}, (error, images) ->
 			return cb error if error
-			cb null, fromJS images.reduce (memo, { name, enabledVersion }) ->
-				memo[name] = enabledVersion
+			cb null, fromJS images.reduce (memo, data) ->
+				{ name }   = data
+				memo[name] = data
+					.toJSON()
+					.enabledVersion
 				memo
 			, {}
 
