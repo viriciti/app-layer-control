@@ -41,21 +41,6 @@ const ACTION_HANDLERS = {
 		}, devices)
 	},
 
-	[DEVICES_BATCH_APP_STATE]: (devices, action) => {
-		return devices
-			.filter(device => {
-				return !!action.data[device.get('deviceId')]
-			})
-			.map(device => {
-				const updatedAppState = fromJS(action.data[device.get('deviceId')])
-
-				return device
-					.set('lastSeenTimestamp', updatedAppState.get('lastSeenTimestamp'))
-					.set('containers', updatedAppState.get('containers'))
-					.setIn(['activeAlerts', 'containersNotRunning'], updatedAppState.get('containersNotRunning'))
-			})
-	},
-
 	[DEVICE_STATE]: (devices, action) => {
 		const deviceId = action.data.deviceId
 		const deviceState = fromJS(action.data)
