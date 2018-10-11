@@ -5,9 +5,12 @@ log     = (require "../lib/Logger") "updates"
 updateGroups = ({ db, store }, cb) ->
 	store.getGroups (error, groups) ->
 		return cb error if error
-		return cb()     if groups.every (applications) -> Map.isMap applications
 
-		log.info "Updating groups to new format ..."
+		if groups.every((applications) -> Map.isMap applications)
+			log.warn "→ No need to update groups"
+			return cb()
+		else
+			log.info "→ Updating groups to new format ..."
 
 		async.parallel [
 			store.getEnabledRegistryImages
@@ -24,14 +27,16 @@ updateGroups = ({ db, store }, cb) ->
 					newApplications.set applicationName, enabledVersion
 				, Map()
 
-				query   = label: name
-				payload = applications: updatedApplications.toJS()
-				options = upsert: true
+				updateQuery        = label: name
+				updatePayload      = applications: updatedApplications.toJS()
+				updateOptions      = upsert: true
 
-				db.Group.findOneAndUpdate query, payload, options, next
-			, cb
+				db.Group.findOneAndUpdate updateQuery, updatePayload, updateOptions, next
+			, (error) ->
+				return cb error if error
 
-module.exports = ({ db, store }, done) ->
-	async.parallel [
-		(cb) -> updateGroups { db, store }, cb
-	], done
+				log.info "→ Done"
+				cb()
+
+module.exports = ({ db, store }, cb) ->
+	updateGroups { db, store }, cb

@@ -1,15 +1,36 @@
-{ last }                               = require "underscore"
-{ createGroupsMixin, getAppsToChange } = require "@tn-group/app-layer-logic"
+semver                                 = require "semver"
 { Map, List, fromJS }                  = require "immutable"
+{ createGroupsMixin, getAppsToChange } = require "@tn-group/app-layer-logic"
+{ last }                               = require "underscore"
 
-module.exports = ({ groups, deviceGroups, currentContainers, images }) ->
+replaceVersionWithConfiguration = ({ images, groups, configurations }) ->
+	groups.map (applications, name) ->
+		applications.map (version, application) ->
+			configuration = configurations.get application
+			fromImage     = configuration.get "fromImage"
+
+			if name.endsWith("test") or not version
+				version = semver.maxSatisfying images.getIn([fromImage, "versions"]), "*"
+
+			configuration.merge fromJS
+				containerName: application
+				fromImage:     "#{fromImage}:#{version}"
+				labels:
+					group:  name
+					manual: "false"
+
+module.exports = ({ store, deviceGroups, currentContainers }) ->
 	currentContainers or= List()
 	containers          = currentContainers.reduce (normalized, container) ->
 		normalized.set container.get("name"), container
 	, Map()
 
-	groupsMixin  = createGroupsMixin groups.toJS(), deviceGroups
-	appsToChange = getAppsToChange groupsMixin, containers.toJS()
+	enrichedGroups = replaceVersionWithConfiguration
+		configurations: store.getCache "configurations"
+		groups        : store.getCache "groups"
+		images        : store.getCache "registryImages"
+	groupsMixin    = createGroupsMixin enrichedGroups.toJS(), deviceGroups
+	appsToChange   = getAppsToChange groupsMixin, containers.toJS()
 
 	fromJS appsToChange.install
 		.map (app) ->
