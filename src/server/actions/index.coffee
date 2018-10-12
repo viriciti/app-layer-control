@@ -39,13 +39,13 @@ module.exports = (db, mqttSocket, broadcastAction, store) ->
 				async.parallel
 					registryImages:        store.getRegistryImages
 					allowedImages:         store.getAllowedImages
-				, (error, { enabledRegistryImages, registryImages, allowedImages } = {}) ->
+				, (error, { registryImages, allowedImages } = {}) ->
 					return log.error error.message if error
 
-					store.cacheEnabledRegistryImages enabledRegistryImages
+					store.cacheRegistryImages registryImages
 
-					broadcastAction "enabledRegistryImages", enabledRegistryImages.toJS()
-					broadcastAction "allowedImages",         allowedImages.toJS()
+					broadcastAction "registryImages", registryImages.toJS()
+					broadcastAction "allowedImages",  allowedImages.toJS()
 
 			else if groupsActions[action]
 				store.getGroups (error, groups) ->

@@ -85,8 +85,7 @@ class RegistryImagesOverview extends PureComponent {
 export default connect(
 	state => {
 		return {
-			enabledRegistryImages: state.get('enabledRegistryImages'),
-			registryImages:        state.get('registryImages'),
+			registryImages: state.get('registryImages'),
 		}
 	},
 	{ refreshRegistryImages, removeUnavailableRegistryImage }
