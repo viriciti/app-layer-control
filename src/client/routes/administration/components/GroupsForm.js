@@ -12,6 +12,7 @@ import getVersionsPerApplication from '../modules/selectors/getVersionsPerApplic
 import validate from '../modules/validateGroupsForm'
 import { createGroup } from '../modules/actions/index'
 import getVersionPerGroupApplication from '../modules/selectors/getVersionPerGroupApplication'
+import countDevicesPerGroup from '../modules/selectors/countDevicesPerGroup'
 
 const initialFormValues = {
 	applications: {},
@@ -49,6 +50,14 @@ class GroupsForm extends PureComponent {
 	}
 
 	onSubmit = ({ label, applications }) => {
+		if (this.props.isEditing) {
+			const affectingCount = this.props.devicesCountPerGroup.get(this.props.editing.get('label'))
+
+			if (affectingCount && !confirm(`Editing this group will affect ${affectingCount} devices, are you sure?`)) {
+				return
+			}
+		}
+
 		this.props.createGroup({ label, applications })
 		this.onRequestClose()
 	}
@@ -99,6 +108,7 @@ export default connect(
 			versionsPerApplication:     getVersionsPerApplication(state),
 			configurations:             state.get('configurations'),
 			groupsLabels:               getGroupsNames(state),
+			devicesCountPerGroup:       countDevicesPerGroup(state),
 		}
 	},
 	{ createGroup }
