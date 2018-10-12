@@ -22,7 +22,24 @@ class DeviceGroups extends PureComponent {
 			return (
 				<tr key={group}>
 					<td>{group}</td>
-					<td>{groups.has(group) ? groups.get(group).join(', ') : <i>Not available</i>}</td>
+					<td>
+						{groups.has(group) ? (
+							groups
+								.get(group)
+								.entrySeq()
+								.map(([name, version]) => {
+									if (version) {
+										return `${name}@${version}`
+									} else {
+										return name
+									}
+								})
+								.toArray()
+								.join(', ')
+						) : (
+							<i>Not available</i>
+						)}
+					</td>
 					<td className="text-right">
 						{group === 'default' ? (
 							''
