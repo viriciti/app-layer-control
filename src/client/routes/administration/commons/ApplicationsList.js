@@ -121,7 +121,7 @@ class ApplicationsList extends PureComponent {
 	}
 
 	onExpandSelectVersion = version => {
-		if (this.props.input.value[this.state.expandApplicationName]) {
+		if (this.props.input.value[this.state.expandApplicationName] === version) {
 			this.updateApplicationVersion(null)
 		} else {
 			this.updateApplicationVersion(version)
