@@ -70,7 +70,11 @@ const AvailableApplication = ({ label, version, onToggle, onExpand, isSelected, 
 						'btn-primary': isSelected,
 						disabled:      !isSelected,
 					})}
-					title={!isSelected ? 'You must select this application before you can select a version' : null}
+					title={
+						!isSelected
+							? 'You must select this application before you can select a version'
+							: 'Lock this application to a specific version'
+					}
 				>
 					{isExpanded ? <span className="fas fa-times" /> : <span className="fas fa-chevron-right" />}
 				</button>
