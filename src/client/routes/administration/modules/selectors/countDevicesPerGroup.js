@@ -14,10 +14,13 @@ export default createSelector([getDevices, getGroups], (devices, groups) => {
 		return counts.set(
 			name,
 			devices.filter(device => {
-				return device
-					.get('groups')
-					.toArray()
-					.includes(name)
+				return (
+					device.get('groups') &&
+					device
+						.get('groups')
+						.toArray()
+						.includes(name)
+				)
 			}).size
 		)
 	}, Map())
