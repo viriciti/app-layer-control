@@ -22,10 +22,10 @@ const VersionInput = ({ input, label, type, placeholder, meta: { touched, error,
 					<span className="form-text text-danger">
 						<span className="fas fa-exclamation-circle fa-fw" /> {error}
 					</span>
-				) : input.value && semver.validRange(input.value) ? (
+				) : input.value ? (
 					<span className="form-text text-info">
-						<span className="fas fa-code-branch fa-fw" /> This semantic version matches:{' '}
-						<b>{semver.validRange(input.value)}</b>
+						<span className="fas fa-code-branch fa-fw" />
+						This semantic version matches: <b>{semver.validRange(input.value)}</b>
 					</span>
 				) : null}
 			</div>

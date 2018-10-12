@@ -1,4 +1,4 @@
-import { validRange } from 'semver'
+import { validRange, ltr } from 'semver'
 
 const validate = values => {
 	const errors = {}
@@ -23,6 +23,8 @@ const validate = values => {
 		errors.version = 'Select a version range'
 	} else if (!validRange(values.version)) {
 		errors.version = 'Invalid semantic version'
+	} else if (validRange(values.version) && !ltr('0.0.0', values.version)) {
+		errors.version = 'This semantic version is not supported'
 	}
 
 	if (values.frontEndPort && (values.frontEndPort < 1 || values.frontEndPort > 65535)) {
