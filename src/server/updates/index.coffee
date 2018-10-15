@@ -32,11 +32,17 @@ updateGroups = ({ db, store }, cb) ->
 					newApplications.set applicationName, enabledVersion
 				, Map()
 
-				updateQuery   = label: name
-				updatePayload = applications: updatedApplications.toJS()
-				updateOptions = upsert: true
+				updateQuery        = label: name
+				updatePayload      = applications: updatedApplications.toJS()
+				updateOptions      = upsert: true
+				updatePayloadUnset = $unset: enabledVersion: ""
 
-				db.Group.findOneAndUpdate updateQuery, updatePayload, updateOptions, next
+				async.parallel [
+					(cb) ->
+						db.Group.findOneAndUpdate updateQuery, updatePayload, updateOptions, cb
+					(cb) ->
+						db.RegistryImages.update {}, updatePayloadUnset, cb
+				], next
 			, (error) ->
 				return cb error if error
 
