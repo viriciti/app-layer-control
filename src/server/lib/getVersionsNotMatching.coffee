@@ -10,7 +10,10 @@ replaceVersionWithConfiguration = ({ images, groups, configurations }) ->
 			fromImage     = configuration.get "fromImage"
 
 			if name.endsWith("test") or not version
-				version = semver.maxSatisfying images.getIn([fromImage, "versions"]), "*"
+				versions = images
+					.getIn  [fromImage, "versions"]
+					.filter (tag) -> semver.valid tag
+				version = semver.maxSatisfying versions, "*"
 
 			configuration.merge fromJS
 				containerName: application
@@ -27,10 +30,10 @@ module.exports = ({ store, deviceGroups, currentContainers }) ->
 
 	enrichedGroups = replaceVersionWithConfiguration
 		configurations: store.getCache "configurations"
-		groups        : store.getCache "groups"
-		images        : store.getCache "registryImages"
-	groupsMixin    = createGroupsMixin enrichedGroups.toJS(), deviceGroups
-	appsToChange   = getAppsToChange groupsMixin, containers.toJS()
+		groups:         store.getCache "groups"
+		images:         store.getCache "registryImages"
+	groupsMixin  = createGroupsMixin enrichedGroups.toJS(), deviceGroups
+	appsToChange = getAppsToChange groupsMixin, containers.toJS()
 
 	fromJS appsToChange.install
 		.map (app) ->

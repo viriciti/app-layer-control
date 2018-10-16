@@ -43,8 +43,11 @@ module.exports = (db, mqttSocket) ->
 					next null, reduce result, (memo, { versions, exists }, imageName) ->
 						versions = chain versions
 							.without "latest", "1"
-							.filter semver.valid
-							.sort semver.compare
+							# .filter semver.valid
+							.sort (left, right) ->
+								return -1 unless semver.valid left
+								return 1  unless semver.valid right
+								semver.compare left, right
 							.last config.versioning.numOfVersionsToShow
 							.value()
 
