@@ -23,7 +23,7 @@ export default createSelector([devices, activeFilters], (devices = Map(), active
 				value = value.join(', ')
 			} else if (Map.isMap(value)) {
 				return predicate.some(p => {
-					return value.get(p).length
+					return value.get(p, '').length
 				})
 			}
 
