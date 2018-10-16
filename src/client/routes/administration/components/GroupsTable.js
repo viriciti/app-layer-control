@@ -39,16 +39,23 @@ class GroupsTable extends PureComponent {
 					<tr key={label}>
 						<td>{label}</td>
 						<td>
-							{applications
-								.entrySeq()
-								.map(([application, version]) => {
+							<ul className="list-unstyled">
+								{applications.entrySeq().map(([application, version]) => {
 									if (version) {
-										return [application, version].join('@')
+										return (
+											<li key={`${label}${application}${version}`} title="Locked version">
+												{[application, version].join('@')}
+											</li>
+										)
 									} else {
-										return application
+										return (
+											<li key={`${label}${application}`} title="Semantic versioning">
+												{[application, this.props.configurations.getIn([application, 'version'])].join('@')}
+											</li>
+										)
 									}
-								})
-								.join(', ')}
+								})}
+							</ul>
 						</td>
 						<td className="text-right">
 							<button
@@ -138,8 +145,9 @@ class GroupsTable extends PureComponent {
 export default connect(
 	state => {
 		return {
-			groups:  state.get('groups'),
-			devices: selectorDevicesDeviceId(state),
+			groups:         state.get('groups'),
+			configurations: state.get('configurations'),
+			devices:        selectorDevicesDeviceId(state),
 		}
 	},
 	{ removeGroup, sendGroupToAllDevices, removeGroupFromAllDevices }
