@@ -1,7 +1,16 @@
-_ = require "underscore"
-fs = require "fs"
+_    = require "underscore"
+fs   = require "fs"
+path = require "path"
 
-module.exports = _.reduce (fs.readdirSync "#{__dirname}/external"), (sources, source) ->
-	sources[source] = require  "#{__dirname}/external/#{source}"
-	sources
-, {}
+directory = path.join __dirname, "external"
+
+try
+	module.exports = _.reduce (fs.readdirSync directory), (sources, source) ->
+		sources[source] = require path.join directory, source
+		sources
+	, {}
+catch error
+	if error.code is "ENOENT"
+		module.exports = {}
+	else
+		throw error
