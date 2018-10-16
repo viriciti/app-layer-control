@@ -59,7 +59,7 @@
 		"webpack-hot-middleware": "^2.21.2"
 	},
 	"dependencies": {
-		"@tn-group/app-layer-logic": "^1.2.3",
+		"@viriciti/app-layer-logic": "^1.2.3",
 		"ansi-to-html": "^0.6.4",
 		"async": "^2.6.0",
 		"bootstrap": "^4.1.3",

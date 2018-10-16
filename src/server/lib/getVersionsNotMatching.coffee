@@ -1,4 +1,5 @@
-semver                                 = require "semver"
+{ last }                               = require "underscore"
+{ createGroupsMixin, getAppsToChange } = require "@viriciti/app-layer-logic"
 { Map, List, fromJS }                  = require "immutable"
 { createGroupsMixin, getAppsToChange } = require "@tn-group/app-layer-logic"
 { last }                               = require "underscore"
