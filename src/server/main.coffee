@@ -96,11 +96,12 @@ initMqtt = ->
 	connOpts =
 		Object.assign(
 			{},
+			config.devicemqtt,
 			config.devicemqtt.connectionOptions,
 			clientId: config.devicemqtt.clientId
 		)
 
-	mqttServer = devicemqtt Object.assign {}, config.devicemqtt, connOpts
+	mqttServer = devicemqtt connOpts
 
 	_onMqttConnected = (socket) ->
 		mqttSocket = socket
@@ -116,7 +117,7 @@ initMqtt = ->
 				log.warn "Read only mode! Not sending action"
 				cb?()
 
-		log.info "Connected to MQTT Broker"
+		log.info "Connected to MQTT Broker at #{connOpts.host}:#{connOpts.port}"
 
 		_onSocketError = (error) -> log.error "mqtt socket error: #{error.message}"
 
