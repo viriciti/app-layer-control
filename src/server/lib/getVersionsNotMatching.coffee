@@ -1,7 +1,6 @@
-{ last }                               = require "underscore"
-{ createGroupsMixin, getAppsToChange } = require "@viriciti/app-layer-logic"
+semver                                 = require "semver"
 { Map, List, fromJS }                  = require "immutable"
-{ createGroupsMixin, getAppsToChange } = require "@tn-group/app-layer-logic"
+{ createGroupsMixin, getAppsToChange } = require "@viriciti/app-layer-logic"
 { last }                               = require "underscore"
 
 replaceVersionWithConfiguration = ({ images, groups, configurations }) ->
