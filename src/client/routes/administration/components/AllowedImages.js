@@ -5,7 +5,7 @@ import { isEmpty } from 'underscore'
 
 import { addAllowedImage, removeAllowedImage } from '../modules/actions'
 
-const Row = ({ name, removeAllowedImage }) => {
+const AllowedImage = ({ name, removeAllowedImage }) => {
 	return (
 		<tr>
 			<td>{name}</td>
@@ -26,29 +26,30 @@ const Row = ({ name, removeAllowedImage }) => {
 
 class AllowedImages extends Component {
 	state = {
-		inputVal: '',
+		disabled: false,
+		value:    '',
 	}
 
 	clear = () => {
-		this.setState({ inputVal: '' })
+		this.setState({ value: '', disabled: false })
 	}
 
 	onChange = e => {
-		this.setState({ inputVal: e.target.value })
+		this.setState({ value: e.target.value, disabled: this.props.allowedImages.includes(e.target.value.trim()) })
 	}
 
 	onAdd = e => {
 		e.preventDefault()
 
-		if (isEmpty(this.state.inputVal)) {
+		if (isEmpty(this.state.value)) {
 			return
 		}
 
-		if (!confirm(`Would you like to add ${this.state.inputVal} to the allowed images`)) {
+		if (!confirm(`Would you like to add ${this.state.value} to the allowed images?`)) {
 			return
 		}
 
-		this.props.addAllowedImage({ name: this.state.inputVal })
+		this.props.addAllowedImage({ name: this.state.value })
 		this.clear()
 	}
 
@@ -69,14 +70,16 @@ class AllowedImages extends Component {
 								className="form-control"
 								type="text"
 								placeholder="Name of the image"
-								value={this.state.inputVal}
+								value={this.state.value}
 								onChange={this.onChange}
 							/>
 
 							<div className="input-group-append">
-								<button className="btn btn-primary btn--no-underline" disabled={!this.state.inputVal}>
-									<span className="fas fa-archive" />
-									Add Image
+								<button
+									className="btn btn-primary btn--no-underline"
+									disabled={this.state.disabled || !this.state.value}
+								>
+									<span className="fas fa-archive" /> Add Image
 								</button>
 							</div>
 						</div>
@@ -92,7 +95,7 @@ class AllowedImages extends Component {
 						<tbody>
 							{this.props.allowedImages.sort().map(name => {
 								return (
-									<Row
+									<AllowedImage
 										key={name}
 										name={name}
 										removeAllowedImage={() => {
