@@ -46,21 +46,7 @@ const AvailableApplication = ({ label, version, onToggle, onExpand, isSelected, 
 						'btn--icon-absolute': isSelected && !version,
 					})}
 				>
-					{isSelected ? (
-						version ? (
-							`${label} @ ${version}`
-						) : (
-							<Fragment>
-								{label}{' '}
-								<span
-									className="fas fa-code-branch"
-									title="The version will be determined through semantic versioning"
-								/>
-							</Fragment>
-						)
-					) : (
-						label
-					)}
+					{isSelected && version ? `${label} @ ${version}` : label}
 				</button>
 
 				<button
@@ -110,6 +96,7 @@ class ApplicationsList extends PureComponent {
 	onToggle = name => {
 		if (has(this.props.input.value, name)) {
 			this.removeApplication(name)
+			this.setState({ expandApplicationName: null })
 		} else {
 			this.addApplication(name)
 			this.setState({ expandApplicationName: name })
@@ -125,11 +112,11 @@ class ApplicationsList extends PureComponent {
 	}
 
 	onExpandSelectVersion = version => {
-		if (this.props.input.value[this.state.expandApplicationName] === version) {
-			this.updateApplicationVersion(null)
-		} else {
-			this.updateApplicationVersion(version)
-		}
+		this.updateApplicationVersion(version)
+	}
+
+	onRemoveVersionLock = () => {
+		this.updateApplicationVersion(null)
 	}
 
 	render () {
@@ -180,6 +167,19 @@ class ApplicationsList extends PureComponent {
 											/>
 										)
 									})}
+
+									{this.props.input.value[this.state.expandApplicationName] ? (
+										<li>
+											<button
+												className="mt-3 btn btn-block btn-secondary btn-sm btn--no-underline"
+												onClick={this.onRemoveVersionLock}
+												title="Use semantic versioning from app configuration"
+												type="button"
+											>
+												<span className="fas fa-unlock-alt" /> Remove version lock
+											</button>
+										</li>
+									) : null}
 								</ul>
 							) : null}
 						</div>
