@@ -1,5 +1,5 @@
 { last }                               = require "underscore"
-{ createGroupsMixin, getAppsToChange } = require "@tn-group/app-layer-logic"
+{ createGroupsMixin, getAppsToChange } = require "@viriciti/app-layer-logic"
 { Map, List, fromJS }                  = require "immutable"
 
 module.exports = ({ groups, deviceGroups, currentContainers, images }) ->
