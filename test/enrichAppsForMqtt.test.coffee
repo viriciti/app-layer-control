@@ -1,6 +1,7 @@
-assert    = require "assert"
-mongoose  = require "mongoose"
-{ pluck } = require "underscore"
+assert         = require "assert"
+mongoose       = require "mongoose"
+{ pluck }      = require "underscore"
+naturalCompare = require "natural-compare-lite"
 
 createTestDatabase = require "./utils/createTestDatabase"
 createStore        = require "../src/server/store"
@@ -40,11 +41,14 @@ describe ".enrichAppsForMqtt", ->
 			enrich name, applications, (error, enriched) ->
 				return done error if error
 
-				# assert.every applications
 				fromImages = pluck enriched, "fromImage"
 				expected   = ["hello-world:1.0.0", "hello-world:1.1.1", "hello-world:tag-1"]
 
-				assert.ok expected.every (tag) ->
-					fromImages.includes tag
+				fromImages = fromImages.sort naturalCompare
+				expected   = expected.sort naturalCompare
+
+				assert.deepEqual fromImages, expected
 
 				done()
+
+		undefined
