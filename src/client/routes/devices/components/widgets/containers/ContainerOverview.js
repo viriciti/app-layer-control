@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import JSONPretty from 'react-json-pretty'
 import { connect } from 'react-redux'
 import Convert from 'ansi-to-html'
@@ -15,7 +15,7 @@ class ContainerOverview extends PureComponent {
 	onRestartButtonClick = () => {
 		const { deviceId, restartContainer } = this.props
 
-		if (confirm('The application will be restarted. Are you sure?')) {
+		if (confirm('The app will be restarted. Are you sure?')) {
 			restartContainer({
 				dest:    deviceId,
 				payload: { id: this.props.selectedContainer.get('name') },
@@ -26,7 +26,7 @@ class ContainerOverview extends PureComponent {
 	onDeleteButtonClick = () => {
 		const { selectedContainer, deviceId, removeContainer } = this.props
 
-		if (confirm('The application will be removed. Are you sure?')) {
+		if (confirm('The app will be deleted. Are you sure?')) {
 			removeContainer({
 				dest:    deviceId,
 				payload: { id: selectedContainer.get('name') },
@@ -119,22 +119,22 @@ class ContainerOverview extends PureComponent {
 
 	renderActionButtons () {
 		return (
-			<ul className="btn-group-vertical float-right">
+			<ul className="btn-group float-right">
 				<button
-					className="btn btn-sm btn--icon"
+					className="btn btn-light btn-sm"
 					type="button"
 					onClick={this.onRestartButtonClick}
-					title="Restart this application"
+					title="Restart this app"
 				>
-					<span className="fas fa-sync" />
+					Restart
 				</button>
 				<button
-					className="btn btn-danger btn-sm btn--icon"
+					className="btn btn-danger btn-sm"
 					type="button"
 					onClick={this.onDeleteButtonClick}
-					title="Delete this application"
+					title="Delete this app"
 				>
-					<span className="fas fa-trash" />
+					Delete
 				</button>
 			</ul>
 		)
@@ -142,10 +142,15 @@ class ContainerOverview extends PureComponent {
 
 	render () {
 		return (
-			<div>
+			<Fragment>
+				<div className="row">
+					<div className="col-6">
+						<h5>{this.props.selectedContainer.get('name')}</h5>
+					</div>
+					<div className="col-6">{this.renderActionButtons()}</div>
+				</div>
 				<div className="row">
 					<div className="col-6">{this.renderLogRequestForm()}</div>
-					<div className="col-6">{this.renderActionButtons()}</div>
 				</div>
 				<div className="row">
 					<div className="col-12">{this.renderContainerLogs()}</div>
@@ -153,7 +158,7 @@ class ContainerOverview extends PureComponent {
 				<div className="row">
 					<div className="col-12">{this.renderContainerInfo()}</div>
 				</div>
-			</div>
+			</Fragment>
 		)
 	}
 }

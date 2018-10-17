@@ -68,7 +68,7 @@ class GroupsTable extends PureComponent {
 
 							{label !== 'default' ? (
 								<button className="btn btn--text btn--icon" onClick={this.onRemoveGroup.bind(this, label)}>
-									<span className="fas fa-trash" data-toggle="tooltip" title="Remove group" />
+									<span className="fas fa-trash" data-toggle="tooltip" title="Delete group" />
 								</button>
 							) : null}
 						</td>
