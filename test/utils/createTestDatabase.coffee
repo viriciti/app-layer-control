@@ -1,10 +1,8 @@
-config = require "config"
-log    = (require "../../src/server/lib/Logger") "createTestDatabase"
+config     = require "config"
+{ random } = require "underscore"
 
+log     = (require "../../src/server/lib/Logger") "createTestDatabase"
 connect = require "../../src/server/db"
-
-testDatabaseName = "app-layer-control-test"
-options          = { config.db..., name: testDatabaseName }
 
 createModels = (db) ->
 	await db.Configuration.create
@@ -39,9 +37,13 @@ createModels = (db) ->
 		]
 
 module.exports = (cb) ->
+	testDatabaseName = "app-layer-control-test-#{random 1, Number.MAX_SAFE_INTEGER}"
+	options          = { config.db..., name: testDatabaseName }
+
+	log.info "Database name: #{testDatabaseName}"
 	db = connect options
 
-	log.info "Creating test models"
+	log.info "Creating models"
 	await createModels db
 	log.info "✓ Done"
 
