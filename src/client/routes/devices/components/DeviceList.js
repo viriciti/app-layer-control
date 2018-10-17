@@ -213,9 +213,9 @@ class DeviceList extends PureComponent {
 		]
 
 		return (
-			<Fragment>
+			<div className="multi-select mb-2">
 				<select
-					className="form-control w-auto"
+					className="custom-select w-auto"
 					disabled={this.props.multiSelectedDevices.size === 0}
 					value={this.props.multiSelectedAction.get('value', '')}
 					onChange={({ target: { value } }) => {
@@ -235,7 +235,7 @@ class DeviceList extends PureComponent {
 
 				{this.props.multiSelectedAction.get('options', Map()).size ? (
 					<select
-						className="form-control w-auto my-3"
+						className="custom-select w-auto ml-1 my-3"
 						disabled={this.props.multiSelectedDevices.size === 0}
 						onChange={({ target }) => {
 							return this.onMultiSelectAction(target.value)
@@ -255,7 +255,7 @@ class DeviceList extends PureComponent {
 						})}
 					</select>
 				) : null}
-			</Fragment>
+			</div>
 		)
 	}
 
@@ -303,12 +303,9 @@ class DeviceList extends PureComponent {
 							<div className="card-header">Devices</div>
 
 							<div className="card-body spacing-md">
-								<div className="row mb-5">
-									<div className="col-md-6">{this.renderMultiSelection()}</div>
-								</div>
-
 								<div className="row">
 									<div className="col">
+										{this.renderMultiSelection()}
 										{this.renderDevicesTable()}
 
 										<PaginationControl pageRange={2} data={this.getSortedDevices()} />
