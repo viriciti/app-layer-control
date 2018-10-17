@@ -1,0 +1,44 @@
+$fa-font-path: "fonts/fontawesome";
+
+// Colors
+$bg: #fafbff;
+
+$color-brand: #4a5e77;
+
+$color-gray-1: #e9eaee;
+$color-gray-2: #727272;
+$color-gray-3: #3f3f3f;
+$color-gray-4: #323232;
+$color-gray-5: #ccc;
+
+// Navbar
+$navbar-bg: $color-brand;
+
+// Sidebar
+$sidebar-bg: #3f3f3f;
+$sidebar-toggle-bg: #323232;
+$sidebar-item-active-bg: $color-brand;
+$sidebar-item-border-color: #323232;
+$sidebar-width: 200px;
+$sidebar-toggled-width: 44px;
+
+// Animations
+$transition-slowest: 1s;
+$transition-slower: 0.7s;
+$transition-slow: 0.5s;
+$transition-medium: 0.4s;
+$transition-fast: 0.3s;
+$transition-faster: 0.2s;
+$transition-fastest: 0.1s;
+
+// Bootstrap overrides
+$border-radius: 2px;
+
+$table-cell-padding: 0.5rem;
+
+$pagination-active-color: #fff;
+$pagination-active-bg: $color-brand;
+$pagination-active-border-color: $color-brand;
+
+$pagination-color: #212529 !default;
+$pagination-hover-color: #212529 !default;

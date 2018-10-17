@@ -1,0 +1,13 @@
+body {
+	background-color: $bg;
+	font-family: "Open Sans", sans-serif;
+}
+
+.sidebar,
+.main {
+	padding-top: 3.375rem;
+}
+
+.main {
+	padding-top: 3.375rem + 2rem;
+}

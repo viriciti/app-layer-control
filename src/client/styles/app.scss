@@ -1,0 +1,27 @@
+@import "base/_variables";
+
+@import "~bootstrap/scss/bootstrap";
+@import "~react-select/dist/react-select.css";
+@import "vendor/fontawesome/fontawesome";
+
+@import "base/_mixins";
+@import "base/_fonts";
+@import "base/_typography";
+@import "base/_base";
+
+@import "patterns/atoms/_buttons";
+@import "patterns/atoms/_inputs";
+@import "patterns/atoms/_labels";
+@import "patterns/atoms/_status";
+@import "patterns/atoms/_loader";
+
+@import "patterns/molecules/_cards";
+@import "patterns/molecules/_dashboard-headers";
+@import "patterns/molecules/_lists";
+@import "patterns/molecules/_tables";
+@import "patterns/molecules/_button-group";
+
+@import "patterns/organisms/_navbar";
+@import "patterns/organisms/_sidebar";
+
+@import "patterns/pages/_sources-preview";

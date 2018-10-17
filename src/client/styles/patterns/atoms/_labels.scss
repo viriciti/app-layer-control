@@ -1,0 +1,61 @@
+.label {
+	background-color: $color-gray-1;
+	border: 0;
+	color: $color-gray-2;
+	cursor: pointer;
+	display: block;
+	font-weight: $font-weight-bold;
+	margin: 0.625rem;
+	padding: 0.3125rem 0.625rem;
+	text-align: center;
+	text-transform: uppercase;
+	transition: $transition-fastest ease-in-out;
+
+	&:not(.label--no-hover):hover {
+		background-color: darken($color-gray-1, 5%);
+		cursor: pointer;
+	}
+}
+
+.label--inline {
+	display: inline-block;
+	margin: initial;
+}
+
+.label--no-hover {
+	cursor: default;
+}
+
+.label--disabled {
+	@include custom-label-variant(lighten($color-gray-1, 5%), lighten($color-gray-2, 25%));
+}
+
+.label--primary {
+	@include custom-label-variant($color-brand, #fff);
+}
+
+.label--success {
+	@include custom-label-variant($success, #fff);
+}
+
+.label--info {
+	@include custom-label-variant($info, #fff);
+}
+
+.label--warning {
+	@include custom-label-variant($warning, #fff);
+}
+
+.label--danger {
+	@include custom-label-variant($danger, #fff);
+}
+
+.label--icon-absolute {
+	position: relative;
+
+	.fas {
+		position: absolute;
+		right: 0.5rem;
+		top: 0.5rem;
+	}
+}
