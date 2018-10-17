@@ -62,7 +62,7 @@ const AvailableApplication = ({ label, version, onToggle, onExpand, isSelected, 
 							: 'Lock this application to a specific version'
 					}
 				>
-					{isExpanded ? <span className="fas fa-times" /> : <span className="fas fa-chevron-right" />}
+					{isExpanded ? <span className="fas fa-chevron-left" /> : <span className="fas fa-chevron-right" />}
 				</button>
 			</div>
 		</li>

@@ -13,11 +13,15 @@
 
 	&:not(.btn-group--single) {
 		.btn:first-child {
+			border-bottom-right-radius: 0;
 			border-right-color: rgba(0, 0, 0, 0.1);
+			border-top-right-radius: 0;
 
 			+ .btn {
+				border-bottom-left-radius: 0;
 				padding-left: 0.5rem;
 				padding-right: 0.5rem;
+				border-top-left-radius: 0;
 
 				.far,
 				.fas {
