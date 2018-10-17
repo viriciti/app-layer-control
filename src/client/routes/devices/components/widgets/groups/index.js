@@ -22,7 +22,32 @@ class DeviceGroups extends PureComponent {
 			return (
 				<tr key={group}>
 					<td>{group}</td>
-					<td>{groups.has(group) ? groups.get(group).join(', ') : <i>Not available</i>}</td>
+					<td>
+						<ul className="list-unstyled">
+							{groups.has(group) ? (
+								groups
+									.get(group)
+									.entrySeq()
+									.map(([name, version]) => {
+										if (version) {
+											return (
+												<li key={`${group}${name}${version}`} title="Locked version">
+													{[name, version].join('@')}
+												</li>
+											)
+										} else {
+											return (
+												<li key={`${group}${name}`} title="Semantic versioning">
+													{[name, this.props.configurations.getIn([name, 'version'])].join('@')}
+												</li>
+											)
+										}
+									})
+							) : (
+								<i>Not available</i>
+							)}
+						</ul>
+					</td>
 					<td className="text-right">
 						{group === 'default' ? (
 							''
@@ -82,7 +107,8 @@ class DeviceGroups extends PureComponent {
 export default connect(
 	state => {
 		return {
-			groups: state.get('groups'),
+			groups:         state.get('groups'),
+			configurations: state.get('configurations'),
 		}
 	},
 	{ removeGroup }

@@ -5,5 +5,4 @@ module.exports =
 	DevicesStatus:    require "./DevicesStatus"
 	DockerRegistry:   require "./DockerRegistry"
 	Groups:           require "./Groups"
-	cacheUpdate:      require "./cacheUpdate"
 	externals:        require "./externals"

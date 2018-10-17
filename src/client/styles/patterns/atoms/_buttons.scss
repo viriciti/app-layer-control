@@ -136,3 +136,14 @@
 		}
 	}
 }
+
+.btn--icon-absolute {
+	position: relative !important;
+
+	.fas,
+	.far {
+		position: absolute !important;
+		right: 0.5rem;
+		top: 1.25rem;
+	}
+}

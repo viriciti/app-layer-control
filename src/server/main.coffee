@@ -20,13 +20,13 @@ socketio        = require "socket.io"
 	DevicesState
 	DevicesStatus
 	DockerRegistry
-	cacheUpdate
 	externals
-}                         = require "./sources"
-populateMqttWithGroups    = require "./helpers/populateMqttWithGroups"
-enrichGroupsByName        = require "./lib/enrichGroupsByName"
-getVersionsNotMatching    = require "./lib/getVersionsNotMatching"
-getContainersNotRunning   = require "./lib/getContainersNotRunning"
+}                       = require "./sources"
+populateMqttWithGroups  = require "./helpers/populateMqttWithGroups"
+getVersionsNotMatching  = require "./lib/getVersionsNotMatching"
+getContainersNotRunning = require "./lib/getContainersNotRunning"
+runUpdates              = require "./updates"
+{ cacheUpdate }         = require "./observables"
 
 log = (require "./lib/Logger") "Main"
 db  = (require "./db") config.db
@@ -133,24 +133,22 @@ initMqtt = ->
 
 			async.parallel
 				configurations:        store.getConfigurations
-				enabledRegistryImages: store.getEnabledRegistryImages
 				registryImages:        store.getRegistryImages
 				groups:                store.getGroups
 			, (error, populate) ->
 				return log.error if error
 
 				store.cacheConfigurations        populate.configurations
-				store.cacheEnabledRegistryImages populate.enabledRegistryImages
 				store.cacheRegistryImages        populate.registryImages
 				store.cacheGroups                populate.groups
 
 				log.info "Cache succesfully populated"
 
-				devicesLogs$     = DevicesLogs.observable     mqttSocket
-				devicesNsState$  = DevicesNsState.observable  mqttSocket
-				devicesState$    = DevicesState.observable    mqttSocket
-				devicesStatus$   = DevicesStatus.observable   mqttSocket
-				cacheUpdate$     = cacheUpdate               store
+				devicesLogs$    = DevicesLogs.observable    mqttSocket
+				devicesNsState$ = DevicesNsState.observable mqttSocket
+				devicesState$   = DevicesState.observable   mqttSocket
+				devicesStatus$  = DevicesStatus.observable  mqttSocket
+				cacheUpdate$    = cacheUpdate               store
 
 				each externals, (source, name) ->
 					{
@@ -189,20 +187,19 @@ initMqtt = ->
 					.subscribe ->
 						log.info "Cache has been updated... Validating outdated software for devices"
 
-						configurationsByGroup = enrichGroupsByName store
 						deviceUpdates         = deviceStates
 							.reduce (updates, device) ->
 								versionsNotMatching = getVersionsNotMatching
-									groups:            configurationsByGroup
+									store:             store
 									deviceGroups:      convertDeviceGroupsToArrayMap device.get "groups"
 									currentContainers: device.get "containers"
-									images:            store.getCache "images"
 
-								alerts = device.get   "activeAlerts", Map()
-								alerts = device.setIn ["activeAlerts", "versionsNotMatching"], versionsMismatchToString versionsNotMatching
-								device = device.set   "activeAlerts", alerts
+								deviceId        = device.get "deviceId"
+								versionMismatch = versionsMismatchToString versionsNotMatching
+								device          = device.setIn ["activeAlerts", "versionsNotMatching"], versionMismatch
+								deviceStates    = deviceStates.mergeIn [deviceId], device
 
-								updates[device.get "deviceId"] = device
+								updates[deviceId] = device
 								updates
 							, {}
 
@@ -220,14 +217,12 @@ initMqtt = ->
 							currentContainers = stateUpdate.get "containers"
 							groups            = stateUpdate.get "groups"
 
-							configurationsByGroup = enrichGroupsByName            store
 							deviceGroups          = convertDeviceGroupsToArrayMap groups
 							containersNotRunning  = getContainersNotRunning       currentContainers
 							versionsNotMatching   = getVersionsNotMatching
-								groups:            configurationsByGroup
+								store:             store
 								deviceGroups:      deviceGroups
 								currentContainers: currentContainers
-								images:            store.getCache "images"
 
 							extraState        = fromJS
 								deviceId:          clientId
@@ -338,7 +333,6 @@ initSocketIO = ->
 			mapActionToValue =
 				configurations:        state.get "configurations"
 				groups:                state.get "groups"
-				enabledRegistryImages: state.get "enabledRegistryImages"
 				registryImages:        state.get "registryImages"
 				devicesState:          state.get "devicesState"
 				deviceSources:         state.get "deviceSources"
@@ -448,10 +442,13 @@ else
 	app.get "*", (req, res) ->
 		res.sendFile(path.resolve __dirname, "../client/index.html")
 
+# Run backwards compatible updates first
+runUpdates
+	db:    db
+	store: store
+, ->
+	port = config.server.port
+	server.listen process.env.PORT or port, ->
+		log.info "Server listening on :#{port}"
 
-port = config.server.port
-server.listen process.env.PORT or port, ->
-	log.info "Server listening on port #{port}"
-
-
-main()
+	main()

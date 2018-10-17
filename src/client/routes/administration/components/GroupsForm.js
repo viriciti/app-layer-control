@@ -2,17 +2,20 @@ import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import { reduxForm, Field } from 'redux-form/immutable'
 
-import Modal from '../../../components/common/Modal'
 import ApplicationsList from '../commons/ApplicationsList'
 import ApplicationsTextInput from '../commons/ApplicationsTextInput'
+import Modal from '../../../components/common/Modal'
+import extractImageFromUrl from '../modules/extractImageFromUrl'
 import getGroupsNames from '../modules/selectors/getGroupsNames'
 import getRegistryImagesNames from '../modules/selectors/getRegistryImagesNames'
+import getVersionsPerApplication from '../modules/selectors/getVersionsPerApplication'
 import validate from '../modules/validateGroupsForm'
 import { createGroup } from '../modules/actions/index'
-import extractImageFromUrl from '../modules/extractImageFromUrl'
+import getVersionPerGroupApplication from '../modules/selectors/getVersionPerGroupApplication'
+import countDevicesPerGroup from '../modules/selectors/countDevicesPerGroup'
 
 const initialFormValues = {
-	applications: [],
+	applications: {},
 }
 
 class GroupsForm extends PureComponent {
@@ -22,7 +25,7 @@ class GroupsForm extends PureComponent {
 		} else if (!this.props.isEditing && nextProps.isEditing) {
 			this.props.initialize({
 				label:        nextProps.editing.get('label'),
-				applications: nextProps.editing.get('applications').toArray(),
+				applications: nextProps.editing.get('applications').toJS(),
 			})
 		}
 	}
@@ -47,6 +50,14 @@ class GroupsForm extends PureComponent {
 	}
 
 	onSubmit = ({ label, applications }) => {
+		if (this.props.isEditing) {
+			const affectingCount = this.props.devicesCountPerGroup.get(this.props.editing.get('label'))
+
+			if (affectingCount && !confirm(`Editing this group will affect ${affectingCount} devices, are you sure?`)) {
+				return
+			}
+		}
+
 		this.props.createGroup({ label, applications })
 		this.onRequestClose()
 	}
@@ -59,9 +70,18 @@ class GroupsForm extends PureComponent {
 				onClose={this.onRequestClose}
 			>
 				<form onSubmit={this.props.handleSubmit(this.onSubmit.bind(this))}>
-					<Field name="label" label="Label" component={ApplicationsTextInput} type="text" />
 					<Field
+						name="label"
+						label="Label"
+						component={ApplicationsTextInput}
+						type="text"
+						disabled={this.props.isEditing}
+					/>
+					<Field
+						groupName={this.props.editing && this.props.editing.get('label')}
 						registryImagesNames={this.props.registryImagesNames}
+						versionsPerApplication={this.props.versionsPerApplication}
+						versionPerGroupApplication={this.props.versionPerGroupApplication}
 						component={ApplicationsList}
 						helpText="Leave unselected to create an empty group."
 						label="Applications"
@@ -83,9 +103,12 @@ class GroupsForm extends PureComponent {
 export default connect(
 	state => {
 		return {
-			registryImagesNames: getRegistryImagesNames(state),
-			configurations:      state.get('configurations'),
-			groupsLabels:        getGroupsNames(state),
+			registryImagesNames:        getRegistryImagesNames(state),
+			versionPerGroupApplication: getVersionPerGroupApplication(state),
+			versionsPerApplication:     getVersionsPerApplication(state),
+			configurations:             state.get('configurations'),
+			groupsLabels:               getGroupsNames(state),
+			devicesCountPerGroup:       countDevicesPerGroup(state),
 		}
 	},
 	{ createGroup }

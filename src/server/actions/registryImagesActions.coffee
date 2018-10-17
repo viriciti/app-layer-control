@@ -30,16 +30,6 @@ module.exports = (db, mqttSocket) ->
 				cb
 		, cb
 
-	storeEnabledRegistryImages = ({ payload: images }, cb) ->
-		async.mapValues images
-			, (version, name, next) ->
-				db.RegistryImages.findOneAndUpdate { name },
-					{ enabledVersion: version },
-					next
-			, (error) ->
-				return cb error if error
-				populateMqttWithGroups db, mqttSocket, cb
-
 	refreshRegistryImages = ({ payload: images }, cb) ->
 		async.waterfall [
 			(next) ->
@@ -53,8 +43,11 @@ module.exports = (db, mqttSocket) ->
 					next null, reduce result, (memo, { versions, exists }, imageName) ->
 						versions = chain versions
 							.without "latest", "1"
-							.filter semver.valid
-							.sort semver.compare
+							# .filter semver.valid
+							.sort (left, right) ->
+								return -1 unless semver.valid left
+								return 1  unless semver.valid right
+								semver.compare left, right
 							.last config.versioning.numOfVersionsToShow
 							.value()
 
@@ -68,6 +61,5 @@ module.exports = (db, mqttSocket) ->
 	return {
 		storeRegistryImages
 		refreshRegistryImages
-		storeEnabledRegistryImages
 		removeUnavailableRegistryImage
 	}

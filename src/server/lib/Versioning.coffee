@@ -2,6 +2,7 @@ _       = require "underscore"
 async   = require "async"
 config  = require "config"
 debug   = (require "debug") "app:Versioning"
+log     = (require "./Logger") "Versioning"
 request = require "request"
 semver  = require "semver"
 url     = require "url"
@@ -34,6 +35,15 @@ class Versioning
 			catch error
 				debug "Failed parsing body: #{error.message}. Json: \n", body.toString()
 				return cb error
+
+			if json?.errors
+				message = json
+					.errors
+					.map  (error) -> "[#{image}] #{error.message}"
+					.join ", "
+
+				log.warn message
+				return cb new Error message
 
 			unless json?.token
 				debug "Wrong token object", json

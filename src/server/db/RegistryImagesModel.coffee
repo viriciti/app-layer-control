@@ -1,8 +1,8 @@
 module.exports = (mongoose) ->
 	RegistryImages = mongoose.model "registryImages",
-		enabledVersion: String
 		exists:         Boolean
 		name:           String
 		versions:       [String]
+		enabledVersion: String # deprecated, required to remove the field from the document
 
 	RegistryImages

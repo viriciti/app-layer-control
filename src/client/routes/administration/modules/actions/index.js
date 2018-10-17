@@ -8,8 +8,6 @@ export const REMOVE_CONFIGURATION = 'REMOVE_CONFIGURATION'
 export const APPLICATIONS = 'APPLICATIONS'
 
 export const REMOVE_UNAVAILABLE_REGISTRY_IMAGE = 'REMOVE_UNAVAILABLE_REGISTRY_IMAGE'
-export const STORE_ENABLED_REGISTRY_IMAGES = 'STORE_ENABLED_REGISTRY_IMAGES'
-export const ENABLED_REGISTRY_IMAGES = 'ENABLED_REGISTRY_IMAGES'
 export const REFRESH_REGISTRY_IMAGES = 'REFRESH_REGISTRY_IMAGES'
 export const ADD_ALLOWED_IMAGE = 'ADD_ALLOWED_IMAGE'
 export const REMOVE_ALLOWED_IMAGE = 'REMOVE_ALLOWED_IMAGE'
@@ -43,13 +41,6 @@ export function sendConfigurationToAllDevices (payload) {
 export function removeConfiguration (payload) {
 	return {
 		type: DB_NAMESPACE + REMOVE_CONFIGURATION,
-		payload,
-	}
-}
-
-export function storeEnabledRegistryImages (payload) {
-	return {
-		type: DB_NAMESPACE + STORE_ENABLED_REGISTRY_IMAGES,
 		payload,
 	}
 }

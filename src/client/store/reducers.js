@@ -9,7 +9,6 @@ import multiSelectReducer from '../routes/devices/modules/reducers/multiSelectRe
 import groupsReducer from '../routes/administration/modules/reducers/groupsReducer'
 import registryImagesReducer from './globalReducers/registryImages'
 import configurationsReducer from '../routes/administration/modules/reducers/configurationsReducer'
-import enabledRegistryImagesReducer from '../routes/administration/modules/reducers/enabledRegistryImagesReducer'
 import paginateReducer from '../routes/devices/modules/reducers/paginateReducer'
 import deviceSourcesReducer from './globalReducers/deviceSources'
 import allowedImagesReducer from './globalReducers/allowedImages'
@@ -17,19 +16,18 @@ import allowedImagesReducer from './globalReducers/allowedImages'
 export const makeRootReducer = asyncReducers => {
 	return combineReducers({
 		...asyncReducers,
-		devices:               devicesReducer,
-		filters:               filtersReducer,
-		devicesLogs:           devicesLogsReducer,
-		toastr:                toastrReducer,
-		form:                  formReducer,
-		groups:                groupsReducer,
-		configurations:        configurationsReducer,
-		registryImages:        registryImagesReducer,
-		enabledRegistryImages: enabledRegistryImagesReducer,
-		multiSelect:           multiSelectReducer,
-		paginate:              paginateReducer,
-		deviceSources:         deviceSourcesReducer,
-		allowedImages:         allowedImagesReducer,
+		devices:        devicesReducer,
+		filters:        filtersReducer,
+		devicesLogs:    devicesLogsReducer,
+		toastr:         toastrReducer,
+		form:           formReducer,
+		groups:         groupsReducer,
+		configurations: configurationsReducer,
+		registryImages: registryImagesReducer,
+		multiSelect:    multiSelectReducer,
+		paginate:       paginateReducer,
+		deviceSources:  deviceSourcesReducer,
+		allowedImages:  allowedImagesReducer,
 	})
 }
 

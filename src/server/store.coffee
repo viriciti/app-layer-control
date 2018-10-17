@@ -3,17 +3,18 @@ async                 = require "async"
 config                = require "config"
 { Map, List, fromJS } = require "immutable"
 
+log = (require "./lib/Logger") "store"
+
 module.exports = (db) ->
 	{ storeRegistryImages } = (require "./actions/registryImagesActions") db
 
-	# An immutable map keyed on clientId containing a client's state
-	cache          = Map()
+	# An immutable map keyed on clientId containing a client's state <
+	cache = Map()
 
 	kick = (cb) ->
 		async.parallel
 			configurations:        getConfigurations
 			groups:                getGroups
-			enabledRegistryImages: getEnabledRegistryImages
 			registryImages:        getRegistryImages
 			deviceSources:         getDeviceSources
 			allowedImages:         getAllowedImages
@@ -38,11 +39,17 @@ module.exports = (db) ->
 				memo
 			, {}
 
+	# @deprecated: Do not use in production
 	getEnabledRegistryImages = (cb) ->
+		log.warn "'getEnabledRegistryImages' is deprecated ..."
+
 		db.RegistryImages.find {}, (error, images) ->
 			return cb error if error
-			cb null, fromJS images.reduce (memo, { name, enabledVersion }) ->
-				memo[name] = enabledVersion
+			cb null, fromJS images.reduce (memo, data) ->
+				{ name }   = data
+				memo[name] = data
+					.toJSON()
+					.enabledVersion
 				memo
 			, {}
 
