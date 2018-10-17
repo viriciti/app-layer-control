@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-{ last }                               = require "underscore"
-{ createGroupsMixin, getAppsToChange } = require "@viriciti/app-layer-logic"
-=======
 semver                                 = require "semver"
->>>>>>> feature/per_group_versioning
 { Map, List, fromJS }                  = require "immutable"
 { createGroupsMixin, getAppsToChange } = require "@viriciti/app-layer-logic"
 { last }                               = require "underscore"
