@@ -150,7 +150,7 @@ initMqtt = ->
 				devicesStatus$  = DevicesStatus.observable  mqttSocket
 				cacheUpdate$    = cacheUpdate               store
 
-				each externals, (source, name) ->
+				each externals, (source) ->
 					{
 						observable
 						mapFrom

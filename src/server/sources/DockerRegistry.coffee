@@ -18,16 +18,16 @@ module.exports = (config, db) ->
 				return cb error if error
 
 				cb null, reduce result, (memo, { versions, exists }, imageName) ->
-						versions = chain versions
-							.without "latest", "1"
-							.filter semver.valid
-							.sort semver.compare
-							.last config.numOfVersionsToShow
-							.value()
+					versions = chain versions
+						.without "latest", "1"
+						.filter semver.valid
+						.sort semver.compare
+						.last config.numOfVersionsToShow
+						.value()
 
-						memo["#{config.docker.host}/#{imageName}"] = { versions, exists }
-						memo
-					, {}
+					memo["#{config.docker.host}/#{imageName}"] = { versions, exists }
+					memo
+				, {}
 
 
 	initRegistry$ = (Observable.bindNodeCallback _getRegistryImages)()
