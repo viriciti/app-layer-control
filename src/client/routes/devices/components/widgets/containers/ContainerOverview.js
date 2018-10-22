@@ -105,8 +105,9 @@ class ContainerOverview extends PureComponent {
 				<div
 					style={{
 						backgroundColor: '#282828',
-						overflow:        'scroll',
+						color:           '#FFF',
 						height:          '20em',
+						overflow:        'scroll',
 					}}
 				>
 					{logs.map((l, i) => {
