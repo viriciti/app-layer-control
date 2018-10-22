@@ -83,8 +83,8 @@ class Versioning
 				debug "[getImage] Serving #{name} from cache, time left: #{cacheTimeDiff - Date.now()}ms"
 				return cb null,
 					"#{name}":
-						versions:   @cached[name].versions
-						exists: true
+						versions: @cached[name].versions
+						exists:   true
 			else
 				debug "[getImage] '#{name}' in cache expired, invalidating"
 				delete @cached[name]
@@ -128,12 +128,12 @@ class Versioning
 
 					debug "[getImage] Returning",
 						"#{name}":
-							versions: json.tags
+							versions: json.tags or []
 							exists:   true
 
 					return cb null,
 						"#{name}":
-							versions: json.tags
+							versions: json.tags or []
 							exists:   true
 
 				debug "[getImage] Unauthorized access to image '#{token.image}', renewing token and trying again!"
