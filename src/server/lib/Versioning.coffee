@@ -22,38 +22,43 @@ class Versioning
 		@tokenAttempts[image] or= 0
 		@tokenAttempts[image] +=  1
 
-		request
-			url:     @getGitURL image
-			headers: @getGitHeaders()
-		, (error, response, body) =>
-			return cb error if error
+		async.retry
+			times:    10
+			interval: 2000
+		, (cb) =>
+			request
+				url:     @getGitURL image
+				headers: @getGitHeaders()
+			, (error, response, body) =>
+				return cb error if error
 
-			debug "[renewToken] Renewed token for '#{image}', body", body.toString()
+				debug "[renewToken] Renewed token for '#{image}', body", body.toString()
 
-			try
-				json = JSON.parse body.toString()
-			catch error
-				debug "Failed parsing body: #{error.message}. Json: \n", body.toString()
-				return cb error
+				try
+					json = JSON.parse body.toString()
+				catch error
+					debug "Failed parsing body: #{error.message}. Json: \n", body.toString()
+					return cb error
 
-			if json?.errors
-				message = json
-					.errors
-					.map  (error) -> "[#{image}] #{error.message}"
-					.join ", "
+				if json?.errors
+					message = json
+						.errors
+						.map  (error) -> "[#{image}] #{error.message}"
+						.join ", "
 
-				log.warn message
-				return cb new Error message
+					log.warn message
+					return cb new Error message
 
-			unless json?.token
-				debug "Wrong token object", json
-				return cb new Error "Wrong token object"
+				unless json?.token
+					debug "Wrong token object", json
+					return cb new Error "Wrong token object"
 
-			token = @tokens[image] = json.token
+				token = @tokens[image] = json.token
 
-			cb null,
-				image: image
-				token: token
+				cb null,
+					image: image
+					token: token
+		, cb
 
 	getToken: (image, cb) =>
 		if @tokens[image]?
