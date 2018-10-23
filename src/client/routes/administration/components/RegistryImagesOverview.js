@@ -20,14 +20,18 @@ class RegistryImagesOverview extends PureComponent {
 	}
 
 	renderImages () {
-		const renderVersions = (_, versions) => {
-			return versions.map(version => {
-				return (
-					<span className="m-0 mr-3" key={version}>
-						{version}
-					</span>
-				)
-			})
+		const renderVersions = (versions) => {
+			if (versions && versions.size) {
+				return versions.map(version => {
+					return (
+						<span className="m-0 mr-3" key={version}>
+							{version}
+						</span>
+					)
+				})
+			} else {
+				return <i>No available versions</i>
+			}
 		}
 
 		const renderNotExisting = name => {
@@ -49,7 +53,7 @@ class RegistryImagesOverview extends PureComponent {
 			return (
 				<tr key={name}>
 					<td>{name}</td>
-					<td>{image.get('exists') ? renderVersions(name, image.get('versions')) : renderNotExisting(name)}</td>
+					<td>{image.get('exists') ? renderVersions(image.get('versions')) : renderNotExisting(name)}</td>
 				</tr>
 			)
 		})
