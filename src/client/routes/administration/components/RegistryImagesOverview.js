@@ -20,7 +20,7 @@ class RegistryImagesOverview extends PureComponent {
 	}
 
 	renderImages () {
-		const renderVersions = (versions) => {
+		const renderVersions = versions => {
 			if (versions && versions.size) {
 				return versions.map(version => {
 					return (
@@ -34,10 +34,11 @@ class RegistryImagesOverview extends PureComponent {
 			}
 		}
 
-		const renderNotExisting = name => {
+		const renderNoAccess = name => {
 			return (
 				<p className="text-muted">
-					<span className="fas fa-search fa-fw mr-2" /> Image not found in the repository.
+					<span className="fas fa-user-lock fa-fw mr-2" />
+					No access to this image or image was not found in the repository.
 					<button
 						className="btn btn--text btn--icon float-right"
 						title={`Remove ${name} from (allowed) registry images`}
@@ -53,7 +54,7 @@ class RegistryImagesOverview extends PureComponent {
 			return (
 				<tr key={name}>
 					<td>{name}</td>
-					<td>{image.get('exists') ? renderVersions(image.get('versions')) : renderNotExisting(name)}</td>
+					<td>{image.get('access') ? renderVersions(image.get('versions')) : renderNoAccess(name)}</td>
 				</tr>
 			)
 		})
