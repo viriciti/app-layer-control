@@ -84,7 +84,7 @@ class Versioning
 				return cb null,
 					"#{name}":
 						versions: @cached[name].versions
-						exists:   true
+						access:   true
 			else
 				debug "[getImage] '#{name}' in cache expired, invalidating"
 				delete @cached[name]
@@ -99,8 +99,8 @@ class Versioning
 				debug "[getImage] Too many failed attempts to renew token. '#{name}' most likely does not exist in the repository"
 				return cb null,
 					"#{name}":
-						versions:   []
-						exists: false
+						versions: []
+						access:   false
 
 			request
 				url:     @getDockerURL token.image
@@ -129,12 +129,12 @@ class Versioning
 					debug "[getImage] Returning",
 						"#{name}":
 							versions: json.tags or []
-							exists:   true
+							access:   true
 
 					return cb null,
 						"#{name}":
 							versions: json.tags or []
-							exists:   true
+							access:   true
 
 				debug "[getImage] Unauthorized access to image '#{token.image}', renewing token and trying again!"
 
