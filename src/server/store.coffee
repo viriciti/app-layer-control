@@ -34,8 +34,8 @@ module.exports = (db) ->
 	getRegistryImages = (cb) ->
 		db.RegistryImages.find {}, (error, images) ->
 			return cb error if error
-			cb null, fromJS images.reduce (memo, { name, versions, access }) ->
-				memo[name] = { versions, access }
+			cb null, fromJS images.reduce (memo, { name, versions, access, exists }) ->
+				memo[name] = { versions, access, exists }
 				memo
 			, {}
 
