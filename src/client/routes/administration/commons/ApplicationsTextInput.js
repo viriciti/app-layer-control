@@ -1,7 +1,7 @@
 import React from 'react'
 import classNames from 'classnames'
 
-export default ({ helpText, input, label, type, placeholder, meta: { touched, error, warning, disabled } }) => {
+export default ({ helpText, input, label, type, placeholder, disabled, meta: { touched, error, warning } }) => {
 	return (
 		<div className="form-group row">
 			<label className="col-sm-2 col-form-label" htmlFor={input.name}>
@@ -14,6 +14,7 @@ export default ({ helpText, input, label, type, placeholder, meta: { touched, er
 					id={input.name}
 					type={type}
 					placeholder={placeholder}
+					disabled={disabled}
 					className={classNames('form-control', 'input-md', { 'is-invalid': touched && error && !disabled })}
 				/>
 

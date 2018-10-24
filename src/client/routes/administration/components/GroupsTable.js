@@ -13,21 +13,6 @@ class GroupsTable extends PureComponent {
 		editing:   null,
 	}
 
-	renderNoDefaultGroupAlert () {
-		if (!this.props.groups.has('default')) {
-			return (
-				<div className="row">
-					<div className="col-12">
-						<div className="alert alert-info">
-							<span className="fas fa-info-circle mr-2" />
-							You must create the default group before you can create other groups.
-						</div>
-					</div>
-				</div>
-			)
-		}
-	}
-
 	renderGroups () {
 		return this.props.groups
 			.sortBy((_, label) => {
@@ -110,8 +95,6 @@ class GroupsTable extends PureComponent {
 				<div className="card mb-3">
 					<div className="card-header">Groups</div>
 					<div className="card-body">
-						{this.renderNoDefaultGroupAlert()}
-
 						<div className="float-right mt-1 mb-3">
 							<button className="btn btn-primary" onClick={this.onAddGroup}>
 								<span className="fas fa-layer-group" /> Add Group
@@ -132,6 +115,7 @@ class GroupsTable extends PureComponent {
 				</div>
 
 				<GroupsForm
+					hasDefaultGroup={this.props.groups.has('default')}
 					isAdding={this.state.isAdding}
 					isEditing={this.state.isEditing}
 					editing={this.state.editing}
