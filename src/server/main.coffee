@@ -129,8 +129,6 @@ initMqtt = ->
 		populateMqttWithGroups db, mqttSocket, (error) ->
 			return log.error if error
 
-			log.info "Populated MQTT with groups"
-
 			async.parallel
 				configurations:        store.getConfigurations
 				registryImages:        store.getRegistryImages
@@ -224,7 +222,7 @@ initMqtt = ->
 								deviceGroups:      deviceGroups
 								currentContainers: currentContainers
 
-							extraState        = fromJS
+							extraState = fromJS
 								deviceId:          clientId
 								lastSeenTimestamp: Date.now()
 								activeAlerts:
