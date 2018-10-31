@@ -125,7 +125,6 @@ class Versioning
 						versions:  json.tags
 						cacheTime: Date.now()
 
-
 					debug "[getImage] Returning",
 						"#{name}":
 							versions: json.tags or []

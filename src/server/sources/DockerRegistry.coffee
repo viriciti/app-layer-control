@@ -17,7 +17,7 @@ module.exports = (config, db) ->
 			versioning.getImages images, (error, result) ->
 				return cb error if error
 
-				cb null, reduce result, (memo, { versions, exists }, imageName) ->
+				cb null, reduce result, (memo, { versions, access, exists }, imageName) ->
 					versions = chain versions
 						.without "latest", "1"
 						.filter semver.valid
@@ -25,7 +25,7 @@ module.exports = (config, db) ->
 						.last config.numOfVersionsToShow
 						.value()
 
-					memo["#{config.docker.host}/#{imageName}"] = { versions, exists }
+					memo["#{config.docker.host}/#{imageName}"] = { versions, access, exists }
 					memo
 				, {}
 
