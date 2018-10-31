@@ -23,9 +23,9 @@ module.exports = (db, mqttSocket) ->
 			cb null, "Registry image #{name} removed"
 
 	storeRegistryImages = ({ payload: images }, cb) ->
-		async.mapValues images, ({ versions, exists }, name, cb) ->
+		async.mapValues images, ({ versions, access, exists }, name, cb) ->
 			db.RegistryImages.findOneAndUpdate { name },
-				{ name, versions, exists },
+				{ name, versions, access, exists },
 				{ upsert: true, new: true },
 				cb
 		, cb
@@ -40,7 +40,7 @@ module.exports = (db, mqttSocket) ->
 				versioning.getImages images, (error, result) ->
 					return next error if error
 
-					next null, reduce result, (memo, { versions, exists }, imageName) ->
+					next null, reduce result, (memo, { versions, access, exists }, imageName) ->
 						versions = chain versions
 							.without "latest", "1"
 							# .filter semver.valid
@@ -51,7 +51,7 @@ module.exports = (db, mqttSocket) ->
 							.last config.versioning.numOfVersionsToShow
 							.value()
 
-						memo["#{config.versioning.docker.host}/#{imageName}"] = { versions, exists }
+						memo["#{config.versioning.docker.host}/#{imageName}"] = { versions, access, exists }
 						memo
 					, {}
 			(images, next) ->
