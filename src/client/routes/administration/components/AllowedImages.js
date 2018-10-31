@@ -63,6 +63,7 @@ class AllowedImages extends Component {
 		return (
 			<div className="card mb-3">
 				<div className="card-header">Allowed Images</div>
+
 				<div className="card-body">
 					<form onSubmit={this.onAdd}>
 						<div className="input-group mb-3">
@@ -85,27 +86,29 @@ class AllowedImages extends Component {
 						</div>
 					</form>
 
-					<table className="table">
-						<thead className="thead-light">
-							<tr>
-								<th>Name</th>
-								<th />
-							</tr>
-						</thead>
-						<tbody>
-							{this.props.allowedImages.sort().map(name => {
-								return (
-									<AllowedImage
-										key={name}
-										name={name}
-										removeAllowedImage={() => {
-											this.onRemove(name)
-										}}
-									/>
-								)
-							})}
-						</tbody>
-					</table>
+					{this.props.allowedImages.size ? (
+						<table className="table">
+							<thead className="thead-light">
+								<tr>
+									<th>Name</th>
+									<th />
+								</tr>
+							</thead>
+							<tbody>
+								{this.props.allowedImages.sort().map(name => {
+									return (
+										<AllowedImage
+											key={name}
+											name={name}
+											removeAllowedImage={() => {
+												this.onRemove(name)
+											}}
+										/>
+									)
+								})}
+							</tbody>
+						</table>
+					) : null}
 				</div>
 			</div>
 		)

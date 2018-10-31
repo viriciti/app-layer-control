@@ -101,16 +101,20 @@ class GroupsTable extends PureComponent {
 							</button>
 						</div>
 
-						<table className="table">
-							<thead className="thead-light">
-								<tr>
-									<th>Label</th>
-									<th>Applications</th>
-									<th />
-								</tr>
-							</thead>
-							<tbody>{this.renderGroups()}</tbody>
-						</table>
+						{this.props.groups.size ? (
+							<table className="table">
+								<thead className="thead-light">
+									<tr>
+										<th>Label</th>
+										<th>Applications</th>
+										<th />
+									</tr>
+								</thead>
+								<tbody>{this.renderGroups()}</tbody>
+							</table>
+						) : (
+							<div className="card-message mt-3">You must create a group first</div>
+						)}
 					</div>
 				</div>
 
