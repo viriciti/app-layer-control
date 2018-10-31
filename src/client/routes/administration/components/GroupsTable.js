@@ -25,21 +25,25 @@ class GroupsTable extends PureComponent {
 						<td>{label}</td>
 						<td>
 							<ul className="list-unstyled">
-								{applications.entrySeq().map(([application, version]) => {
-									if (version) {
-										return (
-											<li key={`${label}${application}${version}`} title="Locked version">
-												{[application, version].join('@')}
-											</li>
-										)
-									} else {
-										return (
-											<li key={`${label}${application}`} title="Semantic versioning">
-												{[application, this.props.configurations.getIn([application, 'version'])].join('@')}
-											</li>
-										)
-									}
-								})}
+								{applications.size ? (
+									applications.entrySeq().map(([application, version]) => {
+										if (version) {
+											return (
+												<li key={`${label}${application}${version}`} title="Locked version">
+													{[application, version].join('@')}
+												</li>
+											)
+										} else {
+											return (
+												<li key={`${label}${application}`} title="Semantic versioning">
+													{[application, this.props.configurations.getIn([application, 'version'])].join('@')}
+												</li>
+											)
+										}
+									})
+								) : (
+									<i className="text-secondary">Empty group</i>
+								)}
 							</ul>
 						</td>
 						<td className="text-right">
