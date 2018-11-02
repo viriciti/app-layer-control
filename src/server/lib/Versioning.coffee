@@ -83,8 +83,8 @@ class Versioning
 				debug "[getImage] Serving #{name} from cache, time left: #{cacheTimeDiff - Date.now()}ms"
 				return cb null,
 					"#{name}":
-						versions:   @cached[name].versions
-						exists: true
+						versions: @cached[name].versions
+						access:   true
 			else
 				debug "[getImage] '#{name}' in cache expired, invalidating"
 				delete @cached[name]
@@ -99,8 +99,8 @@ class Versioning
 				debug "[getImage] Too many failed attempts to renew token. '#{name}' most likely does not exist in the repository"
 				return cb null,
 					"#{name}":
-						versions:   []
-						exists: false
+						versions: []
+						access:   false
 
 			request
 				url:     @getDockerURL token.image
@@ -125,16 +125,15 @@ class Versioning
 						versions:  json.tags
 						cacheTime: Date.now()
 
-
 					debug "[getImage] Returning",
 						"#{name}":
-							versions: json.tags
-							exists:   true
+							versions: json.tags or []
+							access:   true
 
 					return cb null,
 						"#{name}":
-							versions: json.tags
-							exists:   true
+							versions: json.tags or []
+							access:   true
 
 				debug "[getImage] Unauthorized access to image '#{token.image}', renewing token and trying again!"
 

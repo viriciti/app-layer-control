@@ -20,20 +20,25 @@ class RegistryImagesOverview extends PureComponent {
 	}
 
 	renderImages () {
-		const renderVersions = (_, versions) => {
-			return versions.map(version => {
-				return (
-					<span className="m-0 mr-3" key={version}>
-						{version}
-					</span>
-				)
-			})
+		const renderVersions = versions => {
+			if (versions && versions.size) {
+				return versions.map(version => {
+					return (
+						<span className="m-0 mr-3" key={version}>
+							{version}
+						</span>
+					)
+				})
+			} else {
+				return <i>No available versions</i>
+			}
 		}
 
-		const renderNotExisting = name => {
+		const renderNoAccess = name => {
 			return (
 				<p className="text-muted">
-					<span className="fas fa-search fa-fw mr-2" /> Image not found in the repository.
+					<span className="fas fa-user-lock fa-fw mr-2" />
+					No access to this image or image was not found in the repository.
 					<button
 						className="btn btn--text btn--icon float-right"
 						title={`Remove ${name} from (allowed) registry images`}
@@ -49,7 +54,7 @@ class RegistryImagesOverview extends PureComponent {
 			return (
 				<tr key={name}>
 					<td>{name}</td>
-					<td>{image.get('exists') ? renderVersions(name, image.get('versions')) : renderNotExisting(name)}</td>
+					<td>{image.get('access') ? renderVersions(image.get('versions')) : renderNoAccess(name)}</td>
 				</tr>
 			)
 		})
@@ -61,21 +66,26 @@ class RegistryImagesOverview extends PureComponent {
 				<div className="card-header">
 					Registry Images
 					<div className="btn-group btn-group--toggle float-right">
-						<button className="btn btn-sm btn-primary" onClick={this.onRefresh}>
+						<button className="btn btn-sm btn-light btn--no-underline" onClick={this.onRefresh}>
 							<span className="fas fa-download" /> Fetch versions
 						</button>
 					</div>
 				</div>
+
 				<div className="card-body spacing-base">
-					<table className="table">
-						<thead className="thead-light">
-							<tr>
-								<th>Image</th>
-								<th>Available versions</th>
-							</tr>
-						</thead>
-						<tbody>{this.renderImages()}</tbody>
-					</table>
+					{this.props.registryImages.size ? (
+						<table className="table">
+							<thead className="thead-light">
+								<tr>
+									<th>Image</th>
+									<th>Available versions</th>
+								</tr>
+							</thead>
+							<tbody>{this.renderImages()}</tbody>
+						</table>
+					) : (
+						<div className="card-message">No registry images available, try to fetch versions first</div>
+					)}
 				</div>
 			</div>
 		)

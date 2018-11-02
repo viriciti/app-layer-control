@@ -17,17 +17,17 @@ module.exports = (config, db) ->
 			versioning.getImages images, (error, result) ->
 				return cb error if error
 
-				cb null, reduce result, (memo, { versions, exists }, imageName) ->
-						versions = chain versions
-							.without "latest", "1"
-							.filter semver.valid
-							.sort semver.compare
-							.last config.numOfVersionsToShow
-							.value()
+				cb null, reduce result, (memo, { versions, access, exists }, imageName) ->
+					versions = chain versions
+						.without "latest", "1"
+						.filter semver.valid
+						.sort semver.compare
+						.last config.numOfVersionsToShow
+						.value()
 
-						memo["#{config.docker.host}/#{imageName}"] = { versions, exists }
-						memo
-					, {}
+					memo["#{config.docker.host}/#{imageName}"] = { versions, access, exists }
+					memo
+				, {}
 
 
 	initRegistry$ = (Observable.bindNodeCallback _getRegistryImages)()

@@ -106,14 +106,10 @@ class DeviceContainers extends Component {
 	renderContainerOverview () {
 		if (this.state.selectedContainer) {
 			return (
-				<div>
-					<h5>{this.state.selectedContainer.get('name')}</h5>
-
-					<ContainerOverview
-						selectedContainer={this.state.selectedContainer}
-						deviceId={this.props.selectedDevice.get('deviceId')}
-					/>
-				</div>
+				<ContainerOverview
+					selectedContainer={this.state.selectedContainer}
+					deviceId={this.props.selectedDevice.get('deviceId')}
+				/>
 			)
 		} else {
 			return <span className="card-message">No application selected</span>

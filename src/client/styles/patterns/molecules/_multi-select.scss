@@ -1,0 +1,11 @@
+.multi-select {
+	float: right;
+
+	.custom-select {
+		@extend .pl-1;
+		@extend .py-1;
+
+		font-size: 0.8125rem;
+		display: block;
+	}
+}

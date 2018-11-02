@@ -20,6 +20,10 @@ const initialFormValues = {
 
 class GroupsForm extends PureComponent {
 	componentWillReceiveProps (nextProps) {
+		if ((this.props.isAdding || this.props.isEditing) && !this.props.hasDefaultGroup) {
+			this.props.change('label', 'default')
+		}
+
 		if (this.props.isEditing && !nextProps.isEditing) {
 			this.props.initialize(initialFormValues)
 		} else if (!this.props.isEditing && nextProps.isEditing) {
@@ -72,10 +76,11 @@ class GroupsForm extends PureComponent {
 				<form onSubmit={this.props.handleSubmit(this.onSubmit.bind(this))}>
 					<Field
 						name="label"
-						label="Label"
+						label="Name"
 						component={ApplicationsTextInput}
 						type="text"
-						disabled={this.props.isEditing}
+						disabled={!this.props.hasDefaultGroup || this.props.isEditing}
+						helpText={!this.props.hasDefaultGroup ? 'This group is mandatory.' : ''}
 					/>
 					<Field
 						groupName={this.props.editing && this.props.editing.get('label')}

@@ -103,7 +103,7 @@ class SourceCustomisation extends PureComponent {
 	}
 
 	render () {
-		const defaultToggleClassName = 'btn btn-sm'
+		const defaultToggleClassName = 'btn btn-sm btn--no-underline'
 
 		return (
 			<div className="card mb-3">

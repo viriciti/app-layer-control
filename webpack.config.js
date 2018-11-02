@@ -4,6 +4,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const webpack = require('webpack')
 const path = require('path')
 
+const package = require('./package')
 const __DEV__ = process.env.NODE_ENV !== 'production'
 console.log(`Compiling in ${process.env.NODE_ENV || 'development'} mode`)
 
@@ -34,7 +35,7 @@ const APP_ENTRY = './src/client/main.js'
 // ExtractTextPlugin config
 const extractSass = new ExtractTextPlugin({
 	filename: __DEV__ ? '[name].css' : '[name].[contenthash].css',
-	disable:  __DEV__,
+	disable: __DEV__,
 })
 
 // Css loader options
@@ -43,8 +44,8 @@ const cssLoaderOptions = {
 
 	minimize: {
 		autoprefixer: {
-			add:      true,
-			remove:   true,
+			add: true,
+			remove: true,
 			browsers: ['last 2 versions'],
 		},
 
@@ -53,10 +54,10 @@ const cssLoaderOptions = {
 		},
 
 		discardUnused: false,
-		mergeIdents:   false,
-		reduceIdents:  false,
-		safe:          true,
-		sourcemap:     true,
+		mergeIdents: false,
+		reduceIdents: false,
+		safe: true,
+		sourcemap: true,
 	},
 }
 
@@ -64,7 +65,7 @@ const cssLoaderOptions = {
 const webpackConfig = {
 	resolve: {
 		extensions: ['.wasm', '.mjs', '.js', '.json', '.coffee'],
-		alias:      {
+		alias: {
 			styles: path.resolve(__dirname, 'src/client/styles'),
 		},
 	},
@@ -78,30 +79,30 @@ const webpackConfig = {
 	},
 
 	output: {
-		path:          path.join(__dirname, 'dist/client'),
-		filename:      __DEV__ ? '[name].js' : '[name].[chunkhash].js',
+		path: path.join(__dirname, 'dist/client'),
+		filename: __DEV__ ? '[name].js' : '[name].[chunkhash].js',
 		chunkFilename: __DEV__ ? '[name].js' : '[name].[chunkhash].js',
-		publicPath:    '/',
+		publicPath: '/',
 	},
 
 	module: {
 		rules: [
 			{
-				test:    /\.js$/,
-				use:     ['babel-loader'],
+				test: /\.js$/,
+				use: ['babel-loader'],
 				exclude: /node_modules/,
 			},
 
 			{
 				test: /\.scss$/,
-				use:  extractSass.extract({
+				use: extractSass.extract({
 					use: [
 						{
-							loader:  'css-loader',
+							loader: 'css-loader',
 							options: cssLoaderOptions,
 						},
 						{
-							loader:  'sass-loader',
+							loader: 'sass-loader',
 							options: {
 								sourceMap: true,
 							},
@@ -114,29 +115,29 @@ const webpackConfig = {
 
 			{
 				test: /\.css$/,
-				use:  !__DEV__
+				use: !__DEV__
 					? ExtractTextPlugin.extract({
-						fallback: 'style-loader',
-						use:      [
-							{
-								loader:  'css-loader',
-								options: cssLoaderOptions,
-							},
-						],
+							fallback: 'style-loader',
+							use: [
+								{
+									loader: 'css-loader',
+									options: cssLoaderOptions,
+								},
+							],
 					  }) // eslint-disable-line no-mixed-spaces-and-tabs
 					: ['style-loader', 'css-loader'],
 			},
 
 			{
-				test:   /\.styl$/,
+				test: /\.styl$/,
 				loader: 'style-loader!css-loader!stylus-loader',
 			},
 
 			{
 				test: /\.coffee$/,
-				use:  [
+				use: [
 					{
-						loader:  'coffee-loader',
+						loader: 'coffee-loader',
 						options: {
 							transpile: {
 								presets: ['env', 'react'],
@@ -148,9 +149,9 @@ const webpackConfig = {
 
 			{
 				test: /\.(jpe?g|png|gif)$/,
-				use:  [
+				use: [
 					{
-						loader:  'url-loader',
+						loader: 'url-loader',
 						options: { limit: 40000 },
 					},
 					'image-webpack-loader',
@@ -158,10 +159,10 @@ const webpackConfig = {
 			},
 
 			{
-				test:    /\.(ttf|eot|woff|woff2|svg)$/,
-				loader:  'file-loader',
+				test: /\.(ttf|eot|woff|woff2|svg)$/,
+				loader: 'file-loader',
 				options: {
-					name:  'fonts/[name].[ext]',
+					name: 'fonts/[name].[ext]',
 					limit: 40000,
 				},
 			},
@@ -182,7 +183,7 @@ const webpackConfig = {
 		new HtmlWebpackPlugin({
 			template: 'src/client/index.html',
 			filename: 'index.html',
-			minify:   {
+			minify: {
 				collapseWhitespace: true,
 			},
 		}),
@@ -190,26 +191,27 @@ const webpackConfig = {
 		new webpack.DefinePlugin({
 			// Used to define windows variables
 			'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+			'process.env.VERSION': JSON.stringify(package.version),
 		}),
 
 		new webpack.optimize.UglifyJsPlugin({
 			parallel: {
-				cache:   true,
+				cache: true,
 				workers: 4,
 			},
 			sourceMap: true,
-			comments:  false,
-			compress:  {
-				warnings:     false,
-				screw_ie8:    true,
+			comments: false,
+			compress: {
+				warnings: false,
+				screw_ie8: true,
 				conditionals: true,
-				unused:       true,
-				comparisons:  true,
-				sequences:    true,
-				dead_code:    true,
-				evaluate:     true,
-				if_return:    true,
-				join_vars:    true,
+				unused: true,
+				comparisons: true,
+				sequences: true,
+				dead_code: true,
+				evaluate: true,
+				if_return: true,
+				join_vars: true,
 			},
 		}),
 

@@ -87,6 +87,18 @@
 
 		&.active {
 			background: $sidebar-item-active-bg;
+			box-shadow: inset 0px -4px 0px 0px darken($sidebar-item-active-bg, 5%);
+			transition: all $transition-fastest ease-in-out;
+
+			&:hover {
+				background: darken($sidebar-item-active-bg, 5%);
+				box-shadow: inset 0px -4px 0px 0px darken($sidebar-item-active-bg, 10%);
+			}
+
+			&:focus {
+				background: darken($sidebar-item-active-bg, 5%);
+				box-shadow: none;
+			}
 		}
 	}
 }
