@@ -52,14 +52,16 @@ class DeviceGroups extends PureComponent {
 						{group === 'default' ? (
 							''
 						) : (
-							<span
-								className="fas fa-times-circle text-danger group-icon"
+							<button
+								className="btn btn--text btn--icon float-right"
 								onClick={() => {
 									return this.onRemoveGroup(group)
 								}}
 								data-toggle="tooltip"
-								title="Remove group"
-							/>
+								title="Delete group"
+							>
+								<span className="fas fa-times-circle text-danger" />
+							</button>
 						)}
 					</td>
 				</tr>

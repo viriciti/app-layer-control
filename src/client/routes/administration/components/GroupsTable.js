@@ -13,21 +13,6 @@ class GroupsTable extends PureComponent {
 		editing:   null,
 	}
 
-	renderNoDefaultGroupAlert () {
-		if (!this.props.groups.has('default')) {
-			return (
-				<div className="row">
-					<div className="col-12">
-						<div className="alert alert-info">
-							<span className="fas fa-info-circle mr-2" />
-							You must create the default group before you can create other groups.
-						</div>
-					</div>
-				</div>
-			)
-		}
-	}
-
 	renderGroups () {
 		return this.props.groups
 			.sortBy((_, label) => {
@@ -40,21 +25,25 @@ class GroupsTable extends PureComponent {
 						<td>{label}</td>
 						<td>
 							<ul className="list-unstyled">
-								{applications.entrySeq().map(([application, version]) => {
-									if (version) {
-										return (
-											<li key={`${label}${application}${version}`} title="Locked version">
-												{[application, version].join('@')}
-											</li>
-										)
-									} else {
-										return (
-											<li key={`${label}${application}`} title="Semantic versioning">
-												{[application, this.props.configurations.getIn([application, 'version'])].join('@')}
-											</li>
-										)
-									}
-								})}
+								{applications.size ? (
+									applications.entrySeq().map(([application, version]) => {
+										if (version) {
+											return (
+												<li key={`${label}${application}${version}`} title="Locked version">
+													{[application, version].join('@')}
+												</li>
+											)
+										} else {
+											return (
+												<li key={`${label}${application}`} title="Semantic versioning">
+													{[application, this.props.configurations.getIn([application, 'version'])].join('@')}
+												</li>
+											)
+										}
+									})
+								) : (
+									<i className="text-secondary">Empty group</i>
+								)}
 							</ul>
 						</td>
 						<td className="text-right">
@@ -68,7 +57,7 @@ class GroupsTable extends PureComponent {
 
 							{label !== 'default' ? (
 								<button className="btn btn--text btn--icon" onClick={this.onRemoveGroup.bind(this, label)}>
-									<span className="fas fa-trash" data-toggle="tooltip" title="Remove group" />
+									<span className="fas fa-trash" data-toggle="tooltip" title="Delete group" />
 								</button>
 							) : null}
 						</td>
@@ -110,28 +99,31 @@ class GroupsTable extends PureComponent {
 				<div className="card mb-3">
 					<div className="card-header">Groups</div>
 					<div className="card-body">
-						{this.renderNoDefaultGroupAlert()}
-
 						<div className="float-right mt-1 mb-3">
 							<button className="btn btn-primary" onClick={this.onAddGroup}>
 								<span className="fas fa-layer-group" /> Add Group
 							</button>
 						</div>
 
-						<table className="table">
-							<thead className="thead-light">
-								<tr>
-									<th>Label</th>
-									<th>Applications</th>
-									<th />
-								</tr>
-							</thead>
-							<tbody>{this.renderGroups()}</tbody>
-						</table>
+						{this.props.groups.size ? (
+							<table className="table">
+								<thead className="thead-light">
+									<tr>
+										<th>Label</th>
+										<th>Applications</th>
+										<th />
+									</tr>
+								</thead>
+								<tbody>{this.renderGroups()}</tbody>
+							</table>
+						) : (
+							<div className="card-message mt-3">You must create a group first</div>
+						)}
 					</div>
 				</div>
 
 				<GroupsForm
+					hasDefaultGroup={this.props.groups.has('default')}
 					isAdding={this.state.isAdding}
 					isEditing={this.state.isEditing}
 					editing={this.state.editing}

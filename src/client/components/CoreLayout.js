@@ -1,8 +1,9 @@
 import React, { Fragment } from 'react'
 import ReduxToastr from 'react-redux-toastr'
 
-import Header from './header'
-import Sidebar from './sidebar'
+import Header from './Header'
+import Sidebar from './Sidebar'
+import Footer from './Footer'
 
 import 'styles/vendor/react-redux-toastr.min.css'
 
@@ -28,6 +29,8 @@ const CoreLayout = ({ children }) => {
 						/>
 					</div>
 				</div>
+
+				<Footer />
 			</div>
 		</Fragment>
 	)

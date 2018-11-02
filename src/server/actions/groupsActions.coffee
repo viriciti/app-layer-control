@@ -10,16 +10,13 @@ module.exports = (db, mqttSocket) ->
 	createGroup = ({ payload }, cb) ->
 		{ label, applications } = payload
 
-		if label is "default" and not _.size applications
-			return cb new Error "Can not have a default group with 0 applications"
-
 		async.series [
 			(cb) ->
 				return cb() if label is "default"
 
 				db.Group.findOne { label: "default" }, (error, group) ->
 					return cb error if error
-					return cb new Error "Can't add new group if the 'default' group does not exist" unless group
+					return cb new Error "Group 'default' must exist prior to other groups" unless group
 
 					cb()
 			(cb) ->

@@ -11,7 +11,8 @@ module.exports = (config) ->
 		options:  options or null
 
 	mongoose.connect url, useMongoClient: true, (error) ->
-		return log.error "Error connecting to mongodb: #{error.message}" if error
+		throw new Error "No connection could be made to MongoDB"         if error?.message?.includes "ECONNREFUSED"
+		return log.error "Error connecting to MongoDB: #{error.message}" if error
 
 		log.info "Connected to MongoDB"
 

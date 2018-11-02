@@ -43,9 +43,12 @@ module.exports = ({ store, deviceGroups, currentContainers }) ->
 		.reduce (versions, app) ->
 			fromImage     = app.get "fromImage"
 			containerName = app.get "containerName"
+			actual        = last containers.getIn([containerName, "image"])?.split ":"
+			expected      = last fromImage.split ":"
 
-			versions.set containerName, Map
-				actual:        last containers.getIn([containerName, "image"])?.split ":"
-				expected:      last fromImage.split ":"
-				containerName: containerName
+			versions.set containerName, Map {
+				actual
+				expected
+				containerName
+			}
 		, Map()
