@@ -2,6 +2,7 @@
 
 @import "~bootstrap/scss/bootstrap";
 @import "~react-select/dist/react-select.css";
+@import "~react-toastify/dist/ReactToastify.css";
 @import "vendor/fontawesome/fontawesome";
 
 @import "base/_mixins";
@@ -21,7 +22,7 @@
 @import "patterns/molecules/_tables";
 @import "patterns/molecules/_button-group";
 @import "patterns/molecules/_multi-select";
-
+@import "patterns/molecules/_toasts";
 @import "patterns/organisms/_navbar";
 @import "patterns/organisms/_sidebar";
 

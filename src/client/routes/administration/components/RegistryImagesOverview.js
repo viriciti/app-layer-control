@@ -1,8 +1,9 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 
 import { refreshRegistryImages, removeUnavailableRegistryImage } from '../modules/actions'
 import extractImageFromUrl from '../modules/extractImageFromUrl'
+import AsyncButton from '../../../components/common/AsyncButton'
 
 class RegistryImagesOverview extends PureComponent {
 	state = {
@@ -66,23 +67,32 @@ class RegistryImagesOverview extends PureComponent {
 				<div className="card-header">
 					Registry Images
 					<div className="btn-group btn-group--toggle float-right">
-						<button className="btn btn-sm btn-light btn--no-underline" onClick={this.onRefresh}>
-							<span className="fas fa-download" /> Fetch versions
-						</button>
+						<AsyncButton
+							className="btn btn-sm btn-light btn--no-underline"
+							onClick={this.onRefresh}
+							busy={this.props.isFetchingVersions}
+							busyText="Fetching ..."
+						>
+							<Fragment>
+								<span className="fas fa-download" /> Fetch versions
+							</Fragment>
+						</AsyncButton>
 					</div>
 				</div>
 
 				<div className="card-body spacing-base">
 					{this.props.registryImages.size ? (
-						<table className="table">
-							<thead className="thead-light">
-								<tr>
-									<th>Image</th>
-									<th>Available versions</th>
-								</tr>
-							</thead>
-							<tbody>{this.renderImages()}</tbody>
-						</table>
+						<div className="table-responsive">
+							<table className="table">
+								<thead className="thead-light">
+									<tr>
+										<th>Image</th>
+										<th>Available versions</th>
+									</tr>
+								</thead>
+								<tbody>{this.renderImages()}</tbody>
+							</table>
+						</div>
 					) : (
 						<div className="card-message">No registry images available, try to fetch versions first</div>
 					)}
@@ -95,7 +105,8 @@ class RegistryImagesOverview extends PureComponent {
 export default connect(
 	state => {
 		return {
-			registryImages: state.get('registryImages'),
+			registryImages:     state.get('registryImages'),
+			isFetchingVersions: state.getIn(['userInterface', 'isFetchingVersions']),
 		}
 	},
 	{ refreshRegistryImages, removeUnavailableRegistryImage }

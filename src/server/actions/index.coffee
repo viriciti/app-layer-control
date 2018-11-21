@@ -3,10 +3,10 @@ _     = require "underscore"
 async = require "async"
 
 module.exports = (db, mqttSocket, broadcastAction, store) ->
-	configurationsActions   = (require "./configurationsActions")   db, mqttSocket
+	configurationsActions   = (require "./configurationsActions")   db, mqttSocket, store
 	registryImagesActions   = (require "./registryImagesActions")   db, mqttSocket
 	groupsActions           = (require "./groupsActions")           db, mqttSocket
-	deviceSourceActions     = (require "./deviceSourceActions")      db
+	deviceSourceActions     = (require "./deviceSourceActions")     db
 	allowedImagesActions    = (require "./allowedImageActions")     db
 
 	actionsMap = _.extend {},

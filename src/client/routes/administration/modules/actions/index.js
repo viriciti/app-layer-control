@@ -48,6 +48,9 @@ export function removeConfiguration (payload) {
 export function refreshRegistryImages () {
 	return {
 		type: DB_NAMESPACE + REFRESH_REGISTRY_IMAGES,
+		meta: {
+			async: 'isFetchingVersions',
+		},
 	}
 }
 

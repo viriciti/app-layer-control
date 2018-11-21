@@ -1,5 +1,5 @@
 import { isEqual, find } from 'underscore'
-import React, { PureComponent, Fragment } from 'react'
+import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import { Map, List } from 'immutable'
 

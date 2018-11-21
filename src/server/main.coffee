@@ -373,7 +373,7 @@ _onActionDevice = (action, cb) ->
 			if error
 				log.error "Error publishing on mqtt", error
 				return cb "Error publishing on mqtt" # NOTE typeof error is string as cb is a sio callback
-			cb null, timeout: "Response took a while but action is published on mqtt"
+			cb null, timeout: "Action published, but socket timed out"
 		, config.responseTimeout
 
 	mqttSocket.send action, resultCb, timeoutCb
@@ -394,15 +394,15 @@ _onActionDeviceGet = (action, resultCb) ->
 		return log.error error.message if error
 		debug "Action #{action.action} sent correctly"
 
-_onActionDb = ({ action, payload, meta }, resultCb) ->
+_onActionDb = ({ action, payload, meta }, cb) ->
 	{ execute } = (require "./actions") db, mqttSocket, _broadcastAction, store
 
 	execute { action, payload, meta }, (error, result) ->
 		debug "Received an error: #{error.message}" if error
-		return resultCb error if error
+		return cb message: error.message if error
 
 		debug "Received result for action: #{action} - #{result}"
-		resultCb null, result
+		cb null, result
 
 # Webpack section
 if process.env.NODE_ENV not in ["production", "local-production"]
