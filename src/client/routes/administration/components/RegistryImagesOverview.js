@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
+import { noop } from 'underscore'
 
 import { refreshRegistryImages, removeUnavailableRegistryImage } from '../modules/actions'
 import extractImageFromUrl from '../modules/extractImageFromUrl'
@@ -66,8 +67,12 @@ class RegistryImagesOverview extends PureComponent {
 				<div className="card-header">
 					Registry Images
 					<div className="btn-group btn-group--toggle float-right">
-						<button className="btn btn-sm btn-light btn--no-underline" onClick={this.onRefresh}>
-							<span className="fas fa-download" /> Fetch versions
+						<button
+							className="btn btn-sm btn-light btn--no-underline"
+							onClick={this.props.isFetchingVersions ? noop : this.onRefresh}
+							disabled={this.props.isFetchingVersions}
+						>
+							<span className="fas fa-download" /> {this.props.isFetchingVersions ? 'Fetching ...' : 'Fetch versions'}
 						</button>
 					</div>
 				</div>
@@ -95,7 +100,8 @@ class RegistryImagesOverview extends PureComponent {
 export default connect(
 	state => {
 		return {
-			registryImages: state.get('registryImages'),
+			registryImages:     state.get('registryImages'),
+			isFetchingVersions: state.getIn(['userInterface', 'isFetchingVersions']),
 		}
 	},
 	{ refreshRegistryImages, removeUnavailableRegistryImage }

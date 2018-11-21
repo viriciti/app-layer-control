@@ -3,6 +3,8 @@ import camelCase from 'camel-case'
 import decamelize from 'decamelize'
 import { toast } from 'react-toastify'
 
+import { updateAsyncState } from '../globalReducers/userInterface'
+
 const socket = io(window.location.origin)
 
 export default function ({ dispatch }) {
@@ -43,10 +45,17 @@ export default function ({ dispatch }) {
 			meta:    action.meta,
 		}
 
-		socket.emit('action:db', actionToDispatch, error => {
-			const { action } = actionToDispatch
+		if (action.meta && action.meta.async) {
+			dispatch(updateAsyncState(action.meta.async, true))
+		}
 
-			console.log(error)
+		socket.emit('action:db', actionToDispatch, error => {
+			const { action, meta } = actionToDispatch
+
+			if (meta && meta.async) {
+				dispatch(updateAsyncState(meta.async, false))
+			}
+
 			if (error) {
 				return notify('error', `Error executing action ${decamelize(action, ' ').toUpperCase()}:`, error.message)
 			}

@@ -11,6 +11,7 @@ import configurationsReducer from '../routes/administration/modules/reducers/con
 import paginateReducer from '../routes/devices/modules/reducers/paginateReducer'
 import deviceSourcesReducer from './globalReducers/deviceSources'
 import allowedImagesReducer from './globalReducers/allowedImages'
+import userInterfaceReducer from './globalReducers/userInterface'
 
 export const makeRootReducer = asyncReducers => {
 	return combineReducers({
@@ -26,6 +27,7 @@ export const makeRootReducer = asyncReducers => {
 		paginate:       paginateReducer,
 		deviceSources:  deviceSourcesReducer,
 		allowedImages:  allowedImagesReducer,
+		userInterface:  userInterfaceReducer,
 	})
 }
 
