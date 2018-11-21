@@ -1,6 +1,5 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
-import { noop } from 'underscore'
 
 import { refreshRegistryImages, removeUnavailableRegistryImage } from '../modules/actions'
 import extractImageFromUrl from '../modules/extractImageFromUrl'

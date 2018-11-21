@@ -22,17 +22,11 @@ export default function ({ dispatch }) {
 		}
 
 		socket.emit('action:devices', actionToDispatch, (error, result) => {
-			const { action } = actionToDispatch
-
 			if (error) {
-				return notify(
-					'error',
-					`Error executing action ${decamelize(action, ' ').toUpperCase()} on ${dest.length} devices:`,
-					error.data
-				)
+				return notify('error', error.message)
 			}
 
-			notify('success', `Action ${decamelize(action, ' ').toUpperCase()} executed correctly on ${dest.length} devices.`)
+			notify('success', `✓ Action executed correctly on ${dest.length} devices`)
 		})
 
 		return next(action)
@@ -50,17 +44,17 @@ export default function ({ dispatch }) {
 		}
 
 		socket.emit('action:db', actionToDispatch, error => {
-			const { action, meta } = actionToDispatch
+			const { meta } = actionToDispatch
 
 			if (meta && meta.async) {
 				dispatch(updateAsyncState(meta.async, false))
 			}
 
 			if (error) {
-				return notify('error', `Error executing action ${decamelize(action, ' ').toUpperCase()}:`, error.message)
+				return notify('error', error.message)
 			}
 
-			notify('success', `Action ${decamelize(action, ' ').toUpperCase()} executed correctly.`)
+			notify('success', `✓ Done`)
 		})
 
 		return next(action)
@@ -76,29 +70,17 @@ export default function ({ dispatch }) {
 		}
 
 		socket.emit('action:device', actionToDispatch, (error, result) => {
-			const { dest, action } = actionToDispatch
-
 			if (error) {
-				return notify(
-					'error',
-					`Error action ${decamelize(action, ' ').toUpperCase()} to device ${dest.toUpperCase()}:`,
-					error.data
-				)
+				return notify('error', error.message)
 			}
 
 			if (!result) return
 
 			if (result.timeout) {
-				return notify(
-					'warning',
-					`${dest.toUpperCase()} ${decamelize(action, '_').toUpperCase()}: ${JSON.stringify(result.timeout)}`
-				)
+				return notify('warning', `Timed out: ${JSON.stringify(result.timeout)}`)
 			}
 			if (result.data) {
-				return notify(
-					'success',
-					`${dest.toUpperCase()} ${decamelize(action, '_').toUpperCase()}: ${JSON.stringify(result.data)}`
-				)
+				return notify('success', `Timed out: ${JSON.stringify(result.data)}`)
 			}
 		})
 
@@ -116,11 +98,7 @@ export default function ({ dispatch }) {
 
 		socket.emit('action:device:get', actionToDispatch, (error, result) => {
 			if (error) {
-				return notify(
-					'error',
-					`Error action ${decamelize(actionToDispatch.action, ' ').toUpperCase()} to device ${dest.toUpperCase()}:`,
-					error.data
-				)
+				return notify('error', error.message)
 			}
 
 			if (actionToDispatch.action === 'getContainerLogs') {

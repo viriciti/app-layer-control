@@ -43,11 +43,6 @@ export const RESET_PAGINATION = 'RESET_PAGINATION'
 export function addFilter (payload) {
 	return {
 		type: ADD_FILTER,
-		/*
-		 * payload = {
-		 *   columnName: "String"
-		 * }
-		 */
 		payload,
 	}
 }
@@ -55,12 +50,6 @@ export function addFilter (payload) {
 export function setFilter (payload) {
 	return {
 		type: SET_FILTER,
-		/*
-		 * payload = {
-		 *   value: "String",
-		 *   key:   "String"
-		 * }
-		 */
 		payload,
 	}
 }
