@@ -1,5 +1,4 @@
 import { combineReducers } from 'redux-immutable'
-import { reducer as toastrReducer } from 'react-redux-toastr'
 import { reducer as formReducer } from 'redux-form'
 
 import devicesReducer from '../routes/devices/modules/reducers/devicesReducer'
@@ -19,7 +18,6 @@ export const makeRootReducer = asyncReducers => {
 		devices:        devicesReducer,
 		filters:        filtersReducer,
 		devicesLogs:    devicesLogsReducer,
-		toastr:         toastrReducer,
 		form:           formReducer,
 		groups:         groupsReducer,
 		configurations: configurationsReducer,

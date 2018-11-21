@@ -1,23 +1,13 @@
 import io from 'socket.io-client'
 import camelCase from 'camel-case'
 import decamelize from 'decamelize'
+import { toast } from 'react-toastify'
 
 const socket = io(window.location.origin)
 
 export default function ({ dispatch }) {
-	const notify = (type, title, message) => {
-		return dispatch({
-			type:    '@ReduxToastr/toastr/ADD',
-			payload: {
-				title,
-				type,
-				message,
-				timeOut: 5000,
-				options: {
-					showCloseButton: true,
-				},
-			},
-		})
+	const notify = (type, ...message) => {
+		toast(message.join(' '), { type })
 	}
 
 	const _handleActionsToDevices = (action, next) => {
@@ -53,11 +43,12 @@ export default function ({ dispatch }) {
 			meta:    action.meta,
 		}
 
-		socket.emit('action:db', actionToDispatch, (error, result) => {
+		socket.emit('action:db', actionToDispatch, error => {
 			const { action } = actionToDispatch
 
+			console.log(error)
 			if (error) {
-				return notify('error', `Error executing action ${decamelize(action, ' ').toUpperCase()}`, error.data)
+				return notify('error', `Error executing action ${decamelize(action, ' ').toUpperCase()}:`, error.message)
 			}
 
 			notify('success', `Action ${decamelize(action, ' ').toUpperCase()} executed correctly.`)
@@ -81,7 +72,7 @@ export default function ({ dispatch }) {
 			if (error) {
 				return notify(
 					'error',
-					`Error action ${decamelize(action, ' ').toUpperCase()} to device ${dest.toUpperCase()}`,
+					`Error action ${decamelize(action, ' ').toUpperCase()} to device ${dest.toUpperCase()}:`,
 					error.data
 				)
 			}
@@ -118,7 +109,7 @@ export default function ({ dispatch }) {
 			if (error) {
 				return notify(
 					'error',
-					`Error action ${decamelize(actionToDispatch.action, ' ').toUpperCase()} to device ${dest.toUpperCase()}`,
+					`Error action ${decamelize(actionToDispatch.action, ' ').toUpperCase()} to device ${dest.toUpperCase()}:`,
 					error.data
 				)
 			}
