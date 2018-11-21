@@ -165,7 +165,13 @@ class ConfigurationsForm extends PureComponent {
 			>
 				<form className="form-horizontal" onSubmit={this.props.handleSubmit(this.onSubmit.bind(this))}>
 					<fieldset>
-						<Field name="applicationName" label="Application name" component={TextInput} required />
+						<Field
+							name="applicationName"
+							label="Application name"
+							component={TextInput}
+							readOnly={this.props.isEditing}
+							required
+						/>
 						<Field name="containerName" label="Container name" component={TextInput} required />
 
 						<Field name="fromImage" label="Image" component={SelectInput} options={this.renderImagesNames()} required />
