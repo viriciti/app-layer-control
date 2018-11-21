@@ -14,8 +14,6 @@ module.exports = (db) ->
 		db.DeviceSource.create payload, cb
 
 	removeColumn = ({ meta }, cb) ->
-		query = headerName: meta.name
-
-		db.DeviceSource.findOneAndRemove query, cb
+		db.DeviceSource.findOneAndRemove headerName: meta.name, cb
 
 	{ editColumn, addColumn, removeColumn }

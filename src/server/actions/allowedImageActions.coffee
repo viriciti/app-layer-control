@@ -12,4 +12,3 @@ module.exports = (db, mqttSocket) ->
 			cb null, "AllowedImage #{name} removed"
 
 	{ addAllowedImage, removeAllowedImage }
-
