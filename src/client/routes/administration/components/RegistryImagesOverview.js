@@ -87,15 +87,17 @@ class RegistryImagesOverview extends PureComponent {
 
 				<div className="card-body spacing-base">
 					{this.props.registryImages.size ? (
-						<table className="table">
-							<thead className="thead-light">
-								<tr>
-									<th>Image</th>
-									<th>Available versions</th>
-								</tr>
-							</thead>
-							<tbody>{this.renderImages()}</tbody>
-						</table>
+						<div className="table-responsive">
+							<table className="table">
+								<thead className="thead-light">
+									<tr>
+										<th>Image</th>
+										<th>Available versions</th>
+									</tr>
+								</thead>
+								<tbody>{this.renderImages()}</tbody>
+							</table>
+						</div>
 					) : (
 						<div className="card-message">No registry images available, try to fetch versions first</div>
 					)}
