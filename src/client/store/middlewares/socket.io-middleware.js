@@ -1,6 +1,5 @@
 import io from 'socket.io-client'
 import camelCase from 'camel-case'
-import decamelize from 'decamelize'
 import { toast } from 'react-toastify'
 
 import { updateAsyncState } from '../globalReducers/userInterface'

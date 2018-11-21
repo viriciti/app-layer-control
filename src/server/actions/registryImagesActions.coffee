@@ -23,12 +23,17 @@ module.exports = (db, mqttSocket) ->
 			cb null, "Registry image #{name} removed"
 
 	storeRegistryImages = ({ payload: images }, cb) ->
-		async.mapValues images, ({ versions, access, exists }, name, cb) ->
-			db.RegistryImages.findOneAndUpdate { name },
-				{ name, versions, access, exists },
-				{ upsert: true, new: true },
-				cb
-		, cb
+		async.series [
+			(next) ->
+				db.RegistryImages.remove {}, next
+			(next) ->
+				async.mapValues images, ({ versions, access, exists }, name, cb) ->
+					db.RegistryImages.findOneAndUpdate { name },
+						{ name, versions, access, exists },
+						{ upsert: true, new: true },
+						cb
+				, next
+		], cb
 
 	refreshRegistryImages = ({ payload: images }, cb) ->
 		async.waterfall [
