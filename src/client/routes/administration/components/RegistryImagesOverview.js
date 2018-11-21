@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 import { noop } from 'underscore'
 
@@ -72,7 +72,15 @@ class RegistryImagesOverview extends PureComponent {
 							onClick={this.props.isFetchingVersions ? noop : this.onRefresh}
 							disabled={this.props.isFetchingVersions}
 						>
-							<span className="fas fa-download" /> {this.props.isFetchingVersions ? 'Fetching ...' : 'Fetch versions'}
+							{this.props.isFetchingVersions ? (
+								<Fragment>
+									<div className="loader" /> Fetching ...
+								</Fragment>
+							) : (
+								<Fragment>
+									<span className="fas fa-download" /> Fetch versions
+								</Fragment>
+							)}
 						</button>
 					</div>
 				</div>

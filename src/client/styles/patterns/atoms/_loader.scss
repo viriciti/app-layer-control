@@ -7,4 +7,15 @@
 	background-size: cover;
 	height: 2rem;
 	width: 2rem;
+
+	.btn & {
+		@extend .my-0;
+		@extend .mr-1;
+
+		display: inline-block;
+		height: 0.75rem;
+		position: relative;
+		top: 1px;
+		width: 0.75rem;
+	}
 }
