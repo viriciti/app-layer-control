@@ -4,6 +4,7 @@ import { noop } from 'underscore'
 
 import { refreshRegistryImages, removeUnavailableRegistryImage } from '../modules/actions'
 import extractImageFromUrl from '../modules/extractImageFromUrl'
+import AsyncButton from '../../../components/common/AsyncButton'
 
 class RegistryImagesOverview extends PureComponent {
 	state = {
@@ -67,21 +68,16 @@ class RegistryImagesOverview extends PureComponent {
 				<div className="card-header">
 					Registry Images
 					<div className="btn-group btn-group--toggle float-right">
-						<button
+						<AsyncButton
 							className="btn btn-sm btn-light btn--no-underline"
-							onClick={this.props.isFetchingVersions ? noop : this.onRefresh}
-							disabled={this.props.isFetchingVersions}
+							onClick={this.onRefresh}
+							busy={this.props.isFetchingVersions}
+							busyText="Fetching ..."
 						>
-							{this.props.isFetchingVersions ? (
-								<Fragment>
-									<div className="loader" /> Fetching ...
-								</Fragment>
-							) : (
-								<Fragment>
-									<span className="fas fa-download" /> Fetch versions
-								</Fragment>
-							)}
-						</button>
+							<Fragment>
+								<span className="fas fa-download" /> Fetch versions
+							</Fragment>
+						</AsyncButton>
 					</div>
 				</div>
 
