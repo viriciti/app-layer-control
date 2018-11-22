@@ -2,7 +2,7 @@ import io from 'socket.io-client'
 import camelCase from 'camel-case'
 import { toast } from 'react-toastify'
 
-import { updateAsyncState } from '../globalReducers/userInterface'
+import { updateAsyncState, updateDeviceAsyncState } from '../globalReducers/userInterface'
 
 const socket = io(window.location.origin)
 
@@ -68,12 +68,22 @@ export default function ({ dispatch }) {
 			dest,
 		}
 
+		if (action.meta && action.meta.async) {
+			dispatch(updateDeviceAsyncState(action.meta.async, [dest], true))
+		}
+
 		socket.emit('action:device', actionToDispatch, (error, result) => {
+			if (action.meta && action.meta.async) {
+				dispatch(updateDeviceAsyncState(action.meta.async, [dest], false))
+			}
+
 			if (error) {
 				return notify('error', error.message)
 			}
 
-			if (!result) return
+			if (!result) {
+				return
+			}
 
 			if (result.timeout) {
 				return notify('warning', `Timed out: ${JSON.stringify(result.timeout)}`)

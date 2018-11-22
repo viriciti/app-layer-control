@@ -125,6 +125,7 @@ export function refreshState (payload) {
 		type: DEVICE_NAMESPACE + REFRESH_STATE,
 		payload,
 		meta: {
+			async:    'isRefreshingState',
 			debounce: {
 				time: 500,
 			},
