@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import Modal from '../../../components/common/Modal'
 import { refreshState, selectDevice } from '../modules/actions'
 import getSelectedDevice from '../modules/selectors/getSelectedDevice'
+import AsyncButton from '../../../components/common/AsyncButton'
 
 import { SystemInfo, DeviceLogs, DeviceContainers, DeviceImages, DeviceGroups, Queue, FinishedQueue } from './widgets'
 
@@ -72,9 +73,14 @@ class DeviceDetail extends PureComponent {
 
 									<hr />
 
-									<button className="btn btn-secondary d-block mb-1" onClick={this.onRefreshState}>
+									<AsyncButton
+										className="btn btn-secondary d-block mb-1"
+										onClick={this.onRefreshState}
+										busy={this.props.isRefreshingState.includes(deviceId)}
+										busyText="Refreshing ..."
+									>
 										<span className="fas fa-cloud-download-alt" /> Refresh State
-									</button>
+									</AsyncButton>
 								</div>
 							</div>
 						</div>
@@ -142,7 +148,8 @@ class DeviceDetail extends PureComponent {
 export default connect(
 	state => {
 		return {
-			selectedDevice: getSelectedDevice(state),
+			selectedDevice:    getSelectedDevice(state),
+			isRefreshingState: state.getIn(['userInterface', 'isRefreshingState']),
 		}
 	},
 	{
