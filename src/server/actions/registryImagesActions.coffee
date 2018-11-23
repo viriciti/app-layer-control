@@ -1,7 +1,7 @@
-async                                   = require "async"
-config                                  = require "config"
-{ map, chain, reduce, pick, mapObject } = require "underscore"
-semver                                  = require "semver"
+async                                          = require "async"
+config                                         = require "config"
+{ map, chain, reduce, pick, mapObject, pluck } = require "underscore"
+semver                                         = require "semver"
 
 Versioning = require "../lib/Versioning"
 
