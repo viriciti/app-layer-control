@@ -26,13 +26,13 @@ module.exports = (db, mqttSocket) ->
 		async.mapValues images, ({ versions, access, exists }, name, cb) ->
 			async.series [
 				(next) ->
-					db.RegistryImages.remove { name }, next
+					db.RegistryImages.findOneAndRemove { name }, next
 				(next) ->
 					db.RegistryImages.findOneAndUpdate { name },
 						{ name, versions, access, exists },
 						{ upsert: true, new: true },
-						cb
-			], next
+					next
+			], cb
 		, cb
 
 	refreshRegistryImages = ({ payload: images }, cb) ->
