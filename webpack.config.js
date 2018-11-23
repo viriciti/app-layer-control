@@ -9,7 +9,6 @@ const __DEV__ = process.env.NODE_ENV !== 'production'
 console.log(`Compiling in ${process.env.NODE_ENV || 'development'} mode`)
 
 const VENDOR_LIBS = [
-	'decamelize',
 	'camel-case',
 	'react',
 	'react-dom',

@@ -1,6 +1,6 @@
 {
 	"name": "app-layer-control",
-	"version": "4.2.1",
+	"version": "4.2.2",
 	"main": "index.js",
 	"scripts": {
 		"test": "mocha",
@@ -75,7 +75,6 @@
 		"constant-case": "^2.0.0",
 		"cookie-parser": "^1.4.3",
 		"cors": "^2.8.4",
-		"decamelize": "^1.2.0",
 		"device-mqtt": "^1.0.10",
 		"express": "^4.16.1",
 		"immutable": "^3.8.2",

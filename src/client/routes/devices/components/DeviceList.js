@@ -100,7 +100,7 @@ class DeviceList extends PureComponent {
 									title="Select all devices"
 									className="d-block mx-auto w-auto"
 									type="checkbox"
-									onClick={() => {
+									onChange={() => {
 										this.props.multiSelectDevices(
 											this.props.filteredItems
 												.valueSeq()
@@ -121,7 +121,6 @@ class DeviceList extends PureComponent {
 								.map((column, key) => {
 									return (
 										<TableHead
-											position={key}
 											key={`header-${key}`}
 											onClick={() => {
 												this.onSort(key)
