@@ -28,7 +28,7 @@ getContainersNotRunning = require "./lib/getContainersNotRunning"
 runUpdates              = require "./updates"
 { cacheUpdate }         = require "./observables"
 
-log = (require "./lib/Logger") "Main"
+log = (require "./lib/Logger") "main"
 db  = (require "./db") config.db
 
 # Server initialization
@@ -362,18 +362,25 @@ _broadcastAction = (type, data) ->
 
 _onActionDevice = (action, cb) ->
 	responseTimeout = -1
+	messageTable    =
+		refreshState: "State refreshed"
+		storeGroups:  "Group(s) added"
 
 	resultCb = (error, result) ->
-		log.error "Error in mqttSocket.send result", error if error
-		clearTimeout responseTimeout
-		cb error?.message, result
+		if error
+			log.error "Error in mqttSocket.send result", error
+			clearTimeout responseTimeout
+			return cb message: error.message
+
+		cb null, messageTable[action.action] or "✓ Done"
 
 	timeoutCb = (error, ack) ->
 		setTimeout ->
 			if error
-				log.error "Error publishing on mqtt", error
-				return cb "Error publishing on mqtt" # NOTE typeof error is string as cb is a sio callback
-			cb null, timeout: "Action published, but socket timed out"
+				log.error "Error publishing on MQTT", error
+				return cb message: "Error publishing on MQTT"
+
+			cb message: "Socket timed out"
 		, config.responseTimeout
 
 	mqttSocket.send action, resultCb, timeoutCb

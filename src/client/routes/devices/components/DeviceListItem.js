@@ -41,7 +41,7 @@ class DeviceListItem extends PureComponent {
 			<tr className="device-item" onClick={this.onSelectDevice}>
 				<td className="table-checkbox">
 					<label className="checkbox-inline">
-						<input className="check-box" type="checkbox" onClick={this.onMultiSelect} checked={this.props.selected} />
+						<input className="check-box" type="checkbox" onChange={this.onMultiSelect} checked={this.props.selected} />
 					</label>
 				</td>
 
