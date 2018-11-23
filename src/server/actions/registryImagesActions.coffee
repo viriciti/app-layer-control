@@ -40,9 +40,7 @@ module.exports = (db, mqttSocket) ->
 			(next) ->
 				db.AllowedImage.find {}, next
 			(images, next) ->
-				images = map images, (i) -> i.name
-
-				versioning.getImages images, (error, result) ->
+				versioning.getImages pluck(images, "name"), (error, result) ->
 					return next error if error
 
 					next null, reduce result, (memo, { versions, access, exists }, imageName) ->
