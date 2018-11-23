@@ -31,7 +31,7 @@ module.exports = (db, mqttSocket) ->
 					db.RegistryImages.findOneAndUpdate { name },
 						{ name, versions, access, exists },
 						{ upsert: true, new: true },
-					next
+						next
 			], cb
 		, cb
 
