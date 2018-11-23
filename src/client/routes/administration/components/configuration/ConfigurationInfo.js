@@ -1,13 +1,13 @@
-import React from 'react'
 import JSONPretty from 'react-json-pretty'
-import { connect } from 'react-redux'
+import React from 'react'
+import { List } from 'immutable'
 import { change } from 'redux-form'
+import { connect } from 'react-redux'
 
 import { removeConfiguration } from '../../modules/actions/index'
+import getConfigurationDependents from '../../modules/selectors/getConfigurationDependents'
 
-const ConfigurationInfo = props => {
-	const { selectedConfiguration, removeConfiguration } = props
-
+const ConfigurationInfo = ({ selectedConfiguration, removeConfiguration, onEditApplication, dependents }) => {
 	if (!selectedConfiguration) {
 		return (
 			<div className="col-9">
@@ -16,6 +16,7 @@ const ConfigurationInfo = props => {
 		)
 	}
 
+	const configurationDependents = dependents.get(selectedConfiguration.get('applicationName'), List())
 	const onRemoveConfiguration = () => {
 		if (confirm('The configuration will be removed. Are you sure?')) {
 			removeConfiguration(selectedConfiguration.get('applicationName'))
@@ -24,12 +25,24 @@ const ConfigurationInfo = props => {
 
 	return (
 		<div className="col-9">
+			<div className="row mb-1">
+				<div className="col-12 text-right">
+					{configurationDependents.size ? (
+						<small>
+							<b>Dependents:</b> {configurationDependents.join(', ')}
+						</small>
+					) : (
+						<small className="text-secondary">No dependents</small>
+					)}
+				</div>
+			</div>
+
 			<JSONPretty id="json-pretty" className="p-2" json={selectedConfiguration} />
 
 			<div className="row">
 				<div className="col-12">
 					<div className="btn-group float-right">
-						<button onClick={props.onEditApplication} className="btn btn-primary" type="button">
+						<button onClick={onEditApplication} className="btn btn-primary" type="button">
 							<span className="fas fa-paste" /> Edit
 						</button>
 
@@ -44,7 +57,11 @@ const ConfigurationInfo = props => {
 }
 
 export default connect(
-	null,
+	state => {
+		return {
+			dependents: getConfigurationDependents(state),
+		}
+	},
 	{
 		removeConfiguration,
 		change,
