@@ -81,16 +81,7 @@ export default function ({ dispatch }) {
 				return notify('error', error.message)
 			}
 
-			if (!result) {
-				return
-			}
-
-			if (result.timeout) {
-				return notify('warning', `Timed out: ${JSON.stringify(result.timeout)}`)
-			}
-			if (result.data) {
-				return notify('success', `Timed out: ${JSON.stringify(result.data)}`)
-			}
+			notify('success', result)
 		})
 
 		return next(action)
