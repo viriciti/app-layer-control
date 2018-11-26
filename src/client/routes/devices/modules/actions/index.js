@@ -144,6 +144,9 @@ export function storeGroups (payload) {
 	return {
 		type: DEVICE_NAMESPACE + STORE_GROUPS,
 		payload,
+		meta: {
+			async: 'isStoringGroups',
+		},
 	}
 }
 
