@@ -85,9 +85,10 @@ class DeviceContainers extends Component {
 									</button>
 									{frontEndPort ? (
 										<a
-											href={`http://${deviceIp}:${frontEndPort}`}
-											target="_blank"
 											className="btn btn-secondary btn--reset-icon float-right"
+											href={`http://${deviceIp}:${frontEndPort}`}
+											rel="noopener noreferrer"
+											target="_blank"
 										>
 											Go to
 											<span className="fas fa-paper-plane pl-2" />
