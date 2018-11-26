@@ -3,7 +3,7 @@ import moment from 'moment'
 import { List } from 'immutable'
 import { connect } from 'react-redux'
 
-import { cleanLogs } from '../../modules/actions'
+import { cleanLogs } from 'routes/devices/modules/actions'
 
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 
@@ -44,13 +44,15 @@ class DeviceLogs extends Component {
 	}
 
 	render () {
+		const isLogsEmpty = this.props.logs.get(this.props.deviceId, List()).isEmpty()
+
 		return (
 			<Fragment>
 				<button
 					className="btn btn-danger btn-sm btn--icon float-right"
 					onClick={this.onCleanLogs}
-					disabled={this.props.logs.get(this.props.deviceId, List()).isEmpty()}
-					title="Clean logs"
+					disabled={isLogsEmpty}
+					title={isLogsEmpty ? 'Nothing to clean' : 'Clean'}
 				>
 					<span className="fas fa-trash" />
 				</button>

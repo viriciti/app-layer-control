@@ -3,11 +3,10 @@ import { Map, fromJS } from 'immutable'
 import {
 	DEVICE_STATE,
 	DEVICES_BATCH_STATE,
-	DEVICES_BATCH_APP_STATE,
 	DEVICES_STATE,
 	CONTAINER_LOGS,
 	SELECT_DEVICE,
-} from '../actions'
+} from 'routes/devices/modules/actions'
 
 // ------------------------------------
 // Action Handlers

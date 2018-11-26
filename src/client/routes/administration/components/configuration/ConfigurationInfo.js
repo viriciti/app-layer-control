@@ -4,8 +4,8 @@ import { List } from 'immutable'
 import { change } from 'redux-form'
 import { connect } from 'react-redux'
 
-import { removeConfiguration } from '../../modules/actions/index'
-import getConfigurationDependents from '../../modules/selectors/getConfigurationDependents'
+import { removeConfiguration } from 'routes/administration/modules/actions/index'
+import getConfigurationDependents from 'routes/administration/modules/selectors/getConfigurationDependents'
 
 const ConfigurationInfo = ({ selectedConfiguration, removeConfiguration, onEditApplication, dependents }) => {
 	if (!selectedConfiguration) {

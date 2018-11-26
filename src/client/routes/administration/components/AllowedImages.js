@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Map } from 'immutable'
 import { isEmpty } from 'underscore'
 
-import { addAllowedImage, removeAllowedImage } from '../modules/actions'
+import { addAllowedImage, removeAllowedImage } from 'routes/administration/modules/actions'
 
 const AllowedImage = ({ name, removeAllowedImage }) => {
 	return (

@@ -2,7 +2,7 @@ import io from 'socket.io-client'
 import camelCase from 'camel-case'
 import { toast } from 'react-toastify'
 
-import { updateAsyncState, updateDeviceAsyncState } from '../globalReducers/userInterface'
+import { updateAsyncState, updateDeviceAsyncState } from 'store/globalReducers/userInterface'
 
 const socket = io(window.location.origin)
 

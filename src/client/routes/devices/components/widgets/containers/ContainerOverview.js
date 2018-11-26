@@ -3,7 +3,7 @@ import JSONPretty from 'react-json-pretty'
 import { connect } from 'react-redux'
 import Convert from 'ansi-to-html'
 
-import { removeContainer, restartContainer, getContainerLogs } from '../../../modules/actions/index'
+import { removeContainer, restartContainer, getContainerLogs } from 'routes/devices/modules/actions/index'
 
 const convert = new Convert()
 
@@ -36,12 +36,6 @@ class ContainerOverview extends PureComponent {
 				numOfLogs: 100,
 			},
 		})
-	}
-
-	onNumOfLogsInputChange = ({ target: { value } }) => {
-		if (value.match(/^[0-9]*$/)) {
-			this.setState({ numOfRequestedLogs: value })
-		}
 	}
 
 	renderContainerInfo () {

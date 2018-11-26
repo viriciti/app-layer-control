@@ -2,9 +2,9 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { without, isEmpty } from 'underscore'
 
-import { storeGroups } from '../../../modules/actions'
-import AsyncButton from '../../../../../components/common/AsyncButton'
-import selectedDeviceSelector from '../../../modules/selectors/getSelectedDevice'
+import { storeGroups } from 'routes/devices/modules/actions'
+import AsyncButton from 'components/common/AsyncButton'
+import selectedDeviceSelector from 'routes/devices/modules/selectors/getSelectedDevice'
 
 class AddGroupsForm extends Component {
 	state = {

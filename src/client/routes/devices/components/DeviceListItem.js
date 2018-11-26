@@ -4,7 +4,7 @@ import clipboard from 'clipboard-polyfill'
 
 import formats from './table/formats'
 
-import { selectDevice, multiSelectDevice } from '../modules/actions'
+import { selectDevice, multiSelectDevice } from 'routes/devices/modules/actions'
 
 class DeviceListItem extends PureComponent {
 	copyToClipboardIcon = (columnName, value) => {
