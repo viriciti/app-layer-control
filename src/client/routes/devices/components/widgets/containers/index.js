@@ -57,7 +57,7 @@ class DeviceContainers extends PureComponent {
 			</Fragment>
 		)
 
-		if (!deviceIp) {
+		if (deviceIp) {
 			return (
 				<a className={className} href={`http://${deviceIp}:${frontEndPort}`} rel="noopener noreferrer" target="_blank">
 					{child}
