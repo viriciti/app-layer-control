@@ -38,6 +38,16 @@ class DeviceDetail extends PureComponent {
 				<div className="col">
 					<div className="row">
 						<div className="col-12">
+							{this.props.selectedDevice.getIn(['updateState', 'short'], '').match(/error/i) ? (
+								<div className="row">
+									<div className="col-12">
+										<div className="alert alert-danger">
+											<span className="fas fa-exclamation-triangle mr-2" />
+											{this.props.selectedDevice.getIn(['updateState', 'long'])}
+										</div>
+									</div>
+								</div>
+							) : null}
 							<div className="row">
 								<div className="col-lg-5 mb-4">
 									<h5>
