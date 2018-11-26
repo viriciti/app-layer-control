@@ -1,15 +1,13 @@
-async                                          = require "async"
-config                                         = require "config"
-{ map, chain, reduce, pick, mapObject, pluck } = require "underscore"
-semver                                         = require "semver"
+async                    = require "async"
+config                   = require "config"
+{ chain, reduce, pluck } = require "underscore"
+semver                   = require "semver"
 
 Versioning = require "../lib/Versioning"
 
 versioning = new Versioning config.versioning
 
 module.exports = (db, mqttSocket) ->
-	populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
-
 	removeUnavailableRegistryImage = ({ payload }, cb) ->
 		{ name, image } = payload
 
@@ -35,12 +33,12 @@ module.exports = (db, mqttSocket) ->
 			], cb
 		, cb
 
-	refreshRegistryImages = ({ payload: images }, cb) ->
+	refreshRegistryImages = ({ payload }, cb) ->
 		async.waterfall [
 			(next) ->
 				db.AllowedImage.find {}, next
 			(images, next) ->
-				versioning.getImages pluck(images, "name"), (error, result) ->
+				versioning.getImages pluck(payload, "name"), (error, result) ->
 					return next error if error
 
 					next null, reduce result, (memo, { versions, access, exists }, imageName) ->

@@ -1,6 +1,5 @@
 async  = require "async"
 config = require "config"
-_      = require "underscore"
 
 debug = (require "debug") "app:actions:groupsActions"
 
@@ -8,7 +7,7 @@ module.exports = (db, mqttSocket) ->
 	{ enrich } = (require "../helpers/enrichAppsForMqtt") db
 
 	createGroup = ({ payload }, cb) ->
-		{ label, applications } = payload
+		{ label } = payload
 
 		async.series [
 			(cb) ->
