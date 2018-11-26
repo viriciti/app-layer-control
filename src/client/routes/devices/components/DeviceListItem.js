@@ -24,14 +24,16 @@ class DeviceListItem extends PureComponent {
 		)
 	}
 
-	onMultiSelect = e => {
-		e.stopPropagation()
-
+	onMultiSelect = () => {
 		this.props.multiSelectDevice(this.props.info.get('deviceId'))
 	}
 
 	onSelectDevice = () => {
 		this.props.selectDevice(this.props.info)
+	}
+
+	stopPropagation = e => {
+		e.stopPropagation()
 	}
 
 	render () {
@@ -41,7 +43,13 @@ class DeviceListItem extends PureComponent {
 			<tr className="device-item" onClick={this.onSelectDevice}>
 				<td className="table-checkbox">
 					<label className="checkbox-inline">
-						<input className="check-box" type="checkbox" onChange={this.onMultiSelect} checked={this.props.selected} />
+						<input
+							className="check-box"
+							type="checkbox"
+							onClick={this.stopPropagation}
+							onChange={this.onMultiSelect}
+							checked={this.props.selected}
+						/>
 					</label>
 				</td>
 
