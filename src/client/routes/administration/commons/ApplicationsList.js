@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from 'react'
+import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import { noop, omit, has } from 'underscore'
 import naturalCompare from 'natural-compare-lite'
