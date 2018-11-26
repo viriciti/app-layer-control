@@ -1,4 +1,4 @@
 {
 	"presets": [["env", { "modules": false }], "stage-0", "react"],
-	"plugins": ["syntax-dynamic-import", "react-hot-loader/babel"]
+	"plugins": ["syntax-dynamic-import", "react-hot-loader/babel", ["module-resolver", { "root": ["./src/client"] }]]
 }
