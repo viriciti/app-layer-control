@@ -1,11 +1,8 @@
-async                    = require "async"
-config                   = require "config"
-{ chain, reduce, pluck } = require "underscore"
-semver                   = require "semver"
+async     = require "async"
+config    = require "config"
+{ pluck } = require "underscore"
 
-Versioning = require "../lib/Versioning"
-
-versioning = new Versioning config.versioning
+getRegistryImages = require "../lib/getRegistryImages"
 
 module.exports = (db, mqttSocket) ->
 	removeUnavailableRegistryImage = ({ payload }, cb) ->
@@ -38,21 +35,7 @@ module.exports = (db, mqttSocket) ->
 			(next) ->
 				db.AllowedImage.find {}, next
 			(images, next) ->
-				versioning.getImages pluck(payload, "name"), (error, result) ->
-					return next error if error
-
-					next null, reduce result, (memo, { versions, access, exists }, imageName) ->
-						versions = chain versions
-							.without "latest", "1"
-							.sort (left, right) ->
-								return -1 unless semver.valid left
-								return 1  unless semver.valid right
-								semver.compare left, right
-							.value()
-
-						memo["#{config.versioning.docker.host}/#{imageName}"] = { versions, access, exists }
-						memo
-					, {}
+				getRegistryImages pluck(images, "name"), next
 			(images, next) ->
 				storeRegistryImages payload: images, next
 		], cb

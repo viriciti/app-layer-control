@@ -62,6 +62,7 @@ main = ->
 	registry$.subscribe(
 		(images) ->
 			debug "Getting images from registry..."
+
 			store.setImages images, (error, result) ->
 				return log.error error.message if error
 				log.info "Images have been updated!"
