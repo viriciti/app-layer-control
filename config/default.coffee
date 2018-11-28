@@ -27,7 +27,6 @@ module.exports =
 	versioning:
 		maxTokenAttempts:    3
 		checkingTimeout:     600000
-		numOfVersionsToShow: 10
 
 	defaultColumns:
 		onlineStatus:

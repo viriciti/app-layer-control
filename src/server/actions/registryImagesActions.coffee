@@ -48,7 +48,6 @@ module.exports = (db, mqttSocket) ->
 								return -1 unless semver.valid left
 								return 1  unless semver.valid right
 								semver.compare left, right
-							.last config.versioning.numOfVersionsToShow
 							.value()
 
 						memo["#{config.versioning.docker.host}/#{imageName}"] = { versions, access, exists }

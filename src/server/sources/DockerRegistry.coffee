@@ -22,7 +22,6 @@ module.exports = (config, db) ->
 						.without "latest", "1"
 						.filter semver.valid
 						.sort semver.compare
-						.last config.numOfVersionsToShow
 						.value()
 
 					memo["#{config.docker.host}/#{imageName}"] = { versions, access, exists }
