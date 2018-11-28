@@ -3,8 +3,8 @@ import { List, Map } from 'immutable'
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 
-import { setFilter, clearFilters, applyFilters } from '../modules/actions'
-import isFilterEmpty from '../modules/selectors/getEmptyFilters'
+import { setFilter, clearFilters, applyFilters } from 'routes/devices/modules/actions'
+import isFilterEmpty from 'routes/devices/modules/selectors/getEmptyFilters'
 
 class Filters extends PureComponent {
 	debouncedApplyFilters = _.debounce(this.props.applyFilters, 200)

@@ -1,9 +1,9 @@
 import _ from 'underscore'
 import { Map, List, fromJS } from 'immutable'
 
-import { ADD_FILTER, SET_FILTER, CLEAR_FILTERS, APPLY_FILTERS } from '../actions'
+import { ADD_FILTER, SET_FILTER, CLEAR_FILTERS, APPLY_FILTERS } from 'routes/devices/modules/actions'
 
-import { DEVICE_SOURCES } from '../../../../store/globalReducers/actions'
+import { DEVICE_SOURCES } from 'store/globalReducers/actions'
 
 const ACTION_HANDLERS = {
 	[DEVICE_SOURCES]: (filters = Map(), action) => {

@@ -1,9 +1,9 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 
-import { refreshRegistryImages, removeUnavailableRegistryImage } from '../modules/actions'
-import extractImageFromUrl from '../modules/extractImageFromUrl'
-import AsyncButton from '../../../components/common/AsyncButton'
+import { refreshRegistryImages, removeUnavailableRegistryImage } from 'routes/administration/modules/actions'
+import extractImageFromUrl from 'routes/administration/modules/extractImageFromUrl'
+import AsyncButton from 'components/common/AsyncButton'
 
 class RegistryImagesOverview extends PureComponent {
 	state = {

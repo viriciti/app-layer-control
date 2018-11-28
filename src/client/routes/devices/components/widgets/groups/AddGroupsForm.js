@@ -2,8 +2,9 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { without, isEmpty } from 'underscore'
 
-import { storeGroups } from '../../../modules/actions'
-import selectedDeviceSelector from '../../../modules/selectors/getSelectedDevice'
+import { storeGroups } from 'routes/devices/modules/actions'
+import AsyncButton from 'components/common/AsyncButton'
+import selectedDeviceSelector from 'routes/devices/modules/selectors/getSelectedDevice'
 
 class AddGroupsForm extends Component {
 	state = {
@@ -114,9 +115,15 @@ class AddGroupsForm extends Component {
 								</select>
 							</div>
 							<div className="form-group">{this.renderSelectedGroups()}</div>
-							<button type="submit" className="btn btn-primary" onClick={this.onSubmit}>
+							<AsyncButton
+								type="submit"
+								className="btn btn-light"
+								onClick={this.onSubmit}
+								busy={this.props.isStoringGroups.includes(this.props.selectedDevice.get('deviceId'))}
+								busyText="Sending ..."
+							>
 								Send
-							</button>
+							</AsyncButton>
 						</form>
 					</div>
 				</div>
@@ -128,8 +135,9 @@ class AddGroupsForm extends Component {
 export default connect(
 	state => {
 		return {
-			selectedDevice: selectedDeviceSelector(state),
-			groups:         state.get('groups'),
+			selectedDevice:  selectedDeviceSelector(state),
+			groups:          state.get('groups'),
+			isStoringGroups: state.getIn(['userInterface', 'isStoringGroups']),
 		}
 	},
 	{ storeGroups }

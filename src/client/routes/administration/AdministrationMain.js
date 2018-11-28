@@ -1,9 +1,9 @@
 import React from 'react'
 
-import ConfigurationInfoMain from './components/configuration/ConfigurationInfoMain'
-import GroupsTable from './components/GroupsTable'
-import AllowedImages from './components/AllowedImages'
-import RegistryImagesOverview from './components/RegistryImagesOverview'
+import ConfigurationInfoMain from 'routes/administration/components/configuration/ConfigurationInfoMain'
+import GroupsTable from 'routes/administration/components/GroupsTable'
+import AllowedImages from 'routes/administration/components/AllowedImages'
+import RegistryImagesOverview from 'routes/administration/components/RegistryImagesOverview'
 
 const AdministrationMain = () => {
 	return (

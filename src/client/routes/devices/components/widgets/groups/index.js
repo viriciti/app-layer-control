@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 
 import AddGroupsForm from './AddGroupsForm'
-import { removeGroup } from '../../../modules/actions'
+import { removeGroup } from 'routes/devices/modules/actions'
 
 class DeviceGroups extends PureComponent {
 	onRemoveGroup = group => {

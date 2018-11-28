@@ -62,6 +62,7 @@ main = ->
 	registry$.subscribe(
 		(images) ->
 			debug "Getting images from registry..."
+
 			store.setImages images, (error, result) ->
 				return log.error error.message if error
 				log.info "Images have been updated!"
@@ -372,7 +373,7 @@ _onActionDevice = (action, cb) ->
 			clearTimeout responseTimeout
 			return cb message: error.message
 
-		cb null, messageTable[action.action] or "✓ Done"
+		cb null, messageTable[action.action] or "Done"
 
 	timeoutCb = (error, ack) ->
 		setTimeout ->
@@ -402,14 +403,19 @@ _onActionDeviceGet = (action, resultCb) ->
 		debug "Action #{action.action} sent correctly"
 
 _onActionDb = ({ action, payload, meta }, cb) ->
-	{ execute } = (require "./actions") db, mqttSocket, _broadcastAction, store
+	{ execute }  = (require "./actions") db, mqttSocket, _broadcastAction, store
+	messageTable =
+		createConfiguration: "Application updated"
+		removeConfiguration: "Application removed"
+		createGroup:         "Group updated"
+		removeGroup:         "Group removed"
 
 	execute { action, payload, meta }, (error, result) ->
 		debug "Received an error: #{error.message}" if error
 		return cb message: error.message if error
 
 		debug "Received result for action: #{action} - #{result}"
-		cb null, result
+		cb null, messageTable[action] or "Done"
 
 # Webpack section
 if process.env.NODE_ENV not in ["production", "local-production"]

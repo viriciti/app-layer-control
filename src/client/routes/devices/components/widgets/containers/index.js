@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from 'react'
+import React, { Component, Fragment } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
 import { connect } from 'react-redux'
@@ -6,7 +6,7 @@ import { partial } from 'underscore'
 
 import ContainerOverview from './ContainerOverview'
 
-class DeviceContainers extends PureComponent {
+class DeviceContainers extends Component {
 	state = {
 		selectedContainer: null,
 	}
@@ -57,7 +57,7 @@ class DeviceContainers extends PureComponent {
 			</Fragment>
 		)
 
-		if (!deviceIp) {
+		if (deviceIp) {
 			return (
 				<a className={className} href={`http://${deviceIp}:${frontEndPort}`} rel="noopener noreferrer" target="_blank">
 					{child}

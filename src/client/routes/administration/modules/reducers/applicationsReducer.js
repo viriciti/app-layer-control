@@ -1,6 +1,6 @@
 import { Map, fromJS } from 'immutable'
 
-import { APPLICATIONS } from '../actions'
+import { APPLICATIONS } from 'routes/administration/modules/actions'
 
 // ------------------------------------
 // Specialized Action Creator
