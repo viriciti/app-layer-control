@@ -20,7 +20,7 @@ export default function ({ dispatch }) {
 			dest,
 		}
 
-		socket.emit('action:devices', actionToDispatch, (error, result) => {
+		socket.emit('action:devices', actionToDispatch, error => {
 			if (error) {
 				return notify('error', error.message)
 			}
@@ -42,7 +42,7 @@ export default function ({ dispatch }) {
 			dispatch(updateAsyncState(action.meta.async, true))
 		}
 
-		socket.emit('action:db', actionToDispatch, error => {
+		socket.emit('action:db', actionToDispatch, (error, message) => {
 			const { meta } = actionToDispatch
 
 			if (meta && meta.async) {
@@ -53,7 +53,7 @@ export default function ({ dispatch }) {
 				return notify('error', error.message)
 			}
 
-			notify('success', `✓ Done`)
+			notify('success', `✓ ${message}`)
 		})
 
 		return next(action)
@@ -72,7 +72,7 @@ export default function ({ dispatch }) {
 			dispatch(updateDeviceAsyncState(action.meta.async, [dest], true))
 		}
 
-		socket.emit('action:device', actionToDispatch, (error, result) => {
+		socket.emit('action:device', actionToDispatch, (error, message) => {
 			if (action.meta && action.meta.async) {
 				dispatch(updateDeviceAsyncState(action.meta.async, [dest], false))
 			}
@@ -81,7 +81,7 @@ export default function ({ dispatch }) {
 				return notify('error', error.message)
 			}
 
-			notify('success', result)
+			notify('success', `✓ ${message}`)
 		})
 
 		return next(action)
