@@ -34,7 +34,8 @@ module.exports = (db) ->
 
 		async.reduce configurations, {}, (apps, config, next) ->
 			db.RegistryImages.findOne { name: config.fromImage }, (error, app) ->
-				return next error if error
+				return next error                                                       if error
+				throw new Error "No registry images configured for #{config.fromImage}" unless app?
 
 				versions = app.versions.filter (tag) -> semver.valid tag
 
