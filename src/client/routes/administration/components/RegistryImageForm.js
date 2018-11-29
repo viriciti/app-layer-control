@@ -5,16 +5,23 @@ import TextInputGroup from 'routes/administration/commons/TextInputGroup'
 import validate from 'routes/administration/modules/validateImageForm'
 
 class RegistryImageForm extends PureComponent {
+	onSubmit = values => {
+		this.props.onSubmit(values)
+		this.props.reset()
+	}
+
 	render () {
 		return (
-			<form className="mb-3" onSubmit={this.props.handleSubmit(this.props.onSubmit)}>
+			<form className="mb-3" onSubmit={this.props.handleSubmit(this.onSubmit)}>
 				<Field
 					component={TextInputGroup}
 					name="name"
 					placeholder="Name of the image"
 					submit={{
-						text: 'Add Image',
-						icon: 'fas fa-archive',
+						text:     'Add image',
+						textBusy: 'Adding image',
+						icon:     'fas fa-archive',
+						reduxKey: 'isAddingImage',
 					}}
 					type="text"
 				/>

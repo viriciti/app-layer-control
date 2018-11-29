@@ -1,11 +1,33 @@
-async     = require "async"
-config    = require "config"
-{ pluck } = require "underscore"
+async                    = require "async"
+config                   = require "config"
+{ pluck, first, values } = require "underscore"
 
-getRegistryImages = require "../lib/getRegistryImages"
+getRegistryImages  = require "../lib/getRegistryImages"
+prependRegistryUrl = require "../helpers/prependRegistryUrl"
 
 module.exports = (db, mqttSocket) ->
-	removeUnavailableRegistryImage = ({ payload }, cb) ->
+	addRegistryImage = ({ payload }, cb) ->
+		{ name } = payload
+
+		async.parallel [
+			(cb) ->
+				db.AllowedImage.create { name }, cb
+			(cb) ->
+				async.waterfall [
+					(next) ->
+						getRegistryImages [name], next
+					(images, next) ->
+						{ versions, access } = first values images
+
+						db.RegistryImages.create
+							name:     prependRegistryUrl name
+							versions: versions
+							access:   access
+						, next
+				], cb
+		], cb
+
+	removeRegistryImage = ({ payload }, cb) ->
 		{ name, image } = payload
 
 		async.parallel [
@@ -13,9 +35,7 @@ module.exports = (db, mqttSocket) ->
 				db.AllowedImage.findOneAndRemove { name }, cb
 			(cb) ->
 				db.RegistryImages.findOneAndRemove name: image, cb
-		], (error) ->
-			return cb error if error
-			cb null, "Registry image #{name} removed"
+		], cb
 
 	storeRegistryImages = ({ payload: images }, cb) ->
 		async.mapValues images, ({ versions, access, exists }, name, cb) ->
@@ -43,5 +63,6 @@ module.exports = (db, mqttSocket) ->
 	return {
 		storeRegistryImages
 		refreshRegistryImages
-		removeUnavailableRegistryImage
+		addRegistryImage
+		removeRegistryImage
 	}

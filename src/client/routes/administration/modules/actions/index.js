@@ -57,6 +57,9 @@ export function addRegistryImage (payload) {
 	return {
 		type: DB_NAMESPACE + ADD_REGISTRY_IMAGE,
 		payload,
+		meta: {
+			async: 'isAddingImage',
+		},
 	}
 }
 

@@ -1,8 +1,11 @@
 import React, { Fragment } from 'react'
 import classNames from 'classnames'
 import { noop } from 'underscore'
+import { connect } from 'react-redux'
 
-const TextInputGroup = ({ helpText, input, type, placeholder, readOnly, submit, meta: { touched, error } }) => {
+import AsyncButton from 'components/common/AsyncButton'
+
+const TextInputGroup = ({ async, helpText, input, type, placeholder, readOnly, submit, meta: { touched, error } }) => {
 	return (
 		<Fragment>
 			<div className="input-group">
@@ -18,9 +21,13 @@ const TextInputGroup = ({ helpText, input, type, placeholder, readOnly, submit, 
 				/>
 
 				<div className="input-group-append">
-					<button className="btn btn-primary btn--no-underline">
+					<AsyncButton
+						className="btn btn-primary btn--no-underline"
+						busy={!!async[submit.reduxKey]}
+						busyText={submit.textBusy}
+					>
 						<span className={submit.icon} /> {submit.text}
-					</button>
+					</AsyncButton>
 				</div>
 			</div>
 
@@ -37,4 +44,10 @@ const TextInputGroup = ({ helpText, input, type, placeholder, readOnly, submit, 
 	)
 }
 
-export default TextInputGroup
+export default connect((state, ownProps) => {
+	return {
+		async: {
+			[ownProps.submit.reduxKey]: state.getIn(['userInterface', ownProps.submit && ownProps.submit.reduxKey]),
+		},
+	}
+})(TextInputGroup)

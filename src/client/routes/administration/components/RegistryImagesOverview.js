@@ -1,17 +1,25 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
-import { List } from 'immutable'
+import { Map } from 'immutable'
 import { partial } from 'underscore'
 
 import AsyncButton from 'components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'
 import { refreshRegistryImages, addRegistryImage, removeRegistryImage } from 'routes/administration/modules/actions'
 
-const RegistryImage = ({ name, versions, onRemoveImage }) => {
+const RegistryImage = ({ name, image, onRemoveImage }) => {
 	return (
 		<tr>
 			<td>{name}</td>
-			<td title={versions.toArray()}>{versions.size} available versions</td>
+			{image.get('access') ? (
+				<td title={image.get('versions').toArray()}>{image.get('versions').size} available versions</td>
+			) : (
+				<td className="text-muted">
+					<span className="fas fa-user-lock fa-fw mr-2" />
+					No access to this image or image was not found in the repository.
+				</td>
+			)}
+
 			<td className="text-right">
 				<button className="btn btn--text btn--icon" onClick={onRemoveImage} title={`Remove image ${name}`}>
 					<span className="fas fa-trash" />
@@ -80,7 +88,7 @@ class RegistryImagesOverview extends PureComponent {
 											<RegistryImage
 												key={name}
 												name={this.withRegistryUrl(name)}
-												versions={this.props.registryImages.getIn([`docker.viriciti.com/${name}`, 'versions'], List())}
+												image={this.props.registryImages.get(this.withRegistryUrl(name), Map())}
 												onRemoveImage={partial(this.onRemoveImage, { name, image: this.withRegistryUrl(name) })}
 											/>
 										)
@@ -100,7 +108,7 @@ class RegistryImagesOverview extends PureComponent {
 export default connect(
 	state => {
 		return {
-			allowedImages:      state.get('allowedImages', List()),
+			allowedImages:      state.get('allowedImages'),
 			registryImages:     state.get('registryImages'),
 			isFetchingVersions: state.getIn(['userInterface', 'isFetchingVersions']),
 		}
