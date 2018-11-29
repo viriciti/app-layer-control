@@ -2,7 +2,6 @@ import React from 'react'
 
 import ConfigurationInfoMain from 'routes/administration/components/configuration/ConfigurationInfoMain'
 import GroupsTable from 'routes/administration/components/GroupsTable'
-import AllowedImages from 'routes/administration/components/AllowedImages'
 import RegistryImagesOverview from 'routes/administration/components/RegistryImagesOverview'
 
 const AdministrationMain = () => {
@@ -24,11 +23,8 @@ const AdministrationMain = () => {
 				</div>
 			</div>
 			<div className="row">
-				<div className="col-lg-9">
+				<div className="col-12">
 					<RegistryImagesOverview />
-				</div>
-				<div className="col-3">
-					<AllowedImages />
 				</div>
 			</div>
 		</div>
