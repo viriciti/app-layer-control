@@ -30,6 +30,7 @@
 		"coffee-loader": "^0.9.0",
 		"coffee-react-transform": "^5.0.0",
 		"coffeescope2": "^0.5.1",
+		"config-webpack": "^1.0.4",
 		"copy-webpack-plugin": "^4.5.0",
 		"css-loader": "^0.28.10",
 		"debug": "^2.6.8",
