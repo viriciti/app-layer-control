@@ -5,7 +5,15 @@ config                   = require "config"
 getRegistryImages  = require "../lib/getRegistryImages"
 prependRegistryUrl = require "../helpers/prependRegistryUrl"
 
-module.exports = (db, mqttSocket) ->
+isRegistryImageDependentOn = (image, configurations) ->
+	configurations
+		.map (configuration) ->
+			configuration.get "fromImage"
+		.valueSeq()
+		.toArray()
+		.includes image
+
+module.exports = (db, mqttSocket, store) ->
 	addRegistryImage = ({ payload }, cb) ->
 		{ name } = payload
 
@@ -30,12 +38,16 @@ module.exports = (db, mqttSocket) ->
 	removeRegistryImage = ({ payload }, cb) ->
 		{ name, image } = payload
 
-		async.parallel [
-			(cb) ->
-				db.AllowedImage.findOneAndRemove { name }, cb
-			(cb) ->
-				db.RegistryImages.findOneAndRemove name: image, cb
-		], cb
+		store.getConfigurations (error, configurations) ->
+			return cb error                                                                if error
+			return cb new Error "One or more configurations depend on this registry image" if isRegistryImageDependentOn image, configurations
+
+			async.parallel [
+				(cb) ->
+					db.AllowedImage.findOneAndRemove { name }, cb
+				(cb) ->
+					db.RegistryImages.findOneAndRemove name: image, cb
+			], cb
 
 	storeRegistryImages = ({ payload: images }, cb) ->
 		async.mapValues images, ({ versions, access, exists }, name, cb) ->

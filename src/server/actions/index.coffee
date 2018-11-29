@@ -4,7 +4,7 @@ async = require "async"
 
 module.exports = (db, mqttSocket, broadcastAction, store) ->
 	configurationsActions   = (require "./configurationsActions")   db, mqttSocket, store
-	registryImagesActions   = (require "./registryImagesActions")   db, mqttSocket
+	registryImagesActions   = (require "./registryImagesActions")   db, mqttSocket, store
 	groupsActions           = (require "./groupsActions")           db, mqttSocket
 	deviceSourceActions     = (require "./deviceSourceActions")     db
 	allowedImagesActions    = (require "./allowedImageActions")     db

@@ -31,7 +31,10 @@ const RegistryImage = ({ name, image, onRemoveImage }) => {
 
 class RegistryImagesOverview extends PureComponent {
 	withRegistryUrl = repository => {
-		return `docker.viriciti.com/${repository}`
+		const configuredHost = CONFIG.versioning.docker.host
+		const registryUrl = configuredHost.endsWith('/') ? configuredHost : configuredHost.concat('/')
+
+		return `${registryUrl}${repository}`
 	}
 
 	onRefresh = () => {
