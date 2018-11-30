@@ -2,7 +2,8 @@
 semver            = require "semver"
 config            = require "config"
 
-Versioning = require "../lib/Versioning"
+Versioning         = require "../lib/Versioning"
+prependRegistryUrl = require "../helpers/prependRegistryUrl"
 
 versioning = new Versioning config.versioning
 
@@ -19,6 +20,6 @@ module.exports = (images, cb) ->
 					semver.compare left, right
 				.value()
 
-			memo["#{config.versioning.docker.host}/#{imageName}"] = { versions, access, exists }
+			memo[prependRegistryUrl imageName] = { versions, access, exists }
 			memo
 		, {}

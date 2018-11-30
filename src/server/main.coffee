@@ -409,6 +409,8 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 		removeConfiguration: "Application removed"
 		createGroup:         "Group updated"
 		removeGroup:         "Group removed"
+		addRegistryImage:    "Registry image added"
+		removeRegistryImage: "Registry image removed"
 
 	execute { action, payload, meta }, (error, result) ->
 		debug "Received an error: #{error.message}" if error

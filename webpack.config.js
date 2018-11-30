@@ -1,8 +1,9 @@
+const ConfigWebpackPlugin = require('config-webpack')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
-const webpack = require('webpack')
 const path = require('path')
+const webpack = require('webpack')
 
 const pkg = require('./package')
 const __DEV__ = process.env.NODE_ENV !== 'production'
@@ -213,6 +214,8 @@ const webpackConfig = {
 				join_vars:    true,
 			},
 		}),
+
+		new ConfigWebpackPlugin(),
 
 		extractSass,
 		// new (require('webpack-bundle-analyzer').BundleAnalyzerPlugin)()

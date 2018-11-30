@@ -32,6 +32,7 @@ module.exports = (db, mqttSocket, store) ->
 
 	removeConfiguration = ({ payload: configName }, cb) ->
 		store.getGroups (error, groups) ->
+			return cb error                                                       if error
 			return cb new Error "One or more groups depend on this configuration" if isDependentOn groups, configName
 
 			db.Configuration.findOneAndRemove { applicationName: configName }, (error) ->

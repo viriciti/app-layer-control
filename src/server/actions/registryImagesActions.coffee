@@ -1,21 +1,53 @@
-async     = require "async"
-config    = require "config"
-{ pluck } = require "underscore"
+async                    = require "async"
+config                   = require "config"
+{ pluck, first, values } = require "underscore"
 
-getRegistryImages = require "../lib/getRegistryImages"
+getRegistryImages  = require "../lib/getRegistryImages"
+prependRegistryUrl = require "../helpers/prependRegistryUrl"
 
-module.exports = (db, mqttSocket) ->
-	removeUnavailableRegistryImage = ({ payload }, cb) ->
-		{ name, image } = payload
+isRegistryImageDependentOn = (image, configurations) ->
+	configurations
+		.map (configuration) ->
+			configuration.get "fromImage"
+		.valueSeq()
+		.toArray()
+		.includes image
+
+module.exports = (db, mqttSocket, store) ->
+	addRegistryImage = ({ payload }, cb) ->
+		{ name } = payload
 
 		async.parallel [
 			(cb) ->
-				db.AllowedImage.findOneAndRemove { name }, cb
+				db.AllowedImage.create { name }, cb
 			(cb) ->
-				db.RegistryImages.findOneAndRemove name: image, cb
-		], (error) ->
-			return cb error if error
-			cb null, "Registry image #{name} removed"
+				async.waterfall [
+					(next) ->
+						getRegistryImages [name], next
+					(images, next) ->
+						{ versions, access } = first values images
+
+						db.RegistryImages.create
+							name:     prependRegistryUrl name
+							versions: versions
+							access:   access
+						, next
+				], cb
+		], cb
+
+	removeRegistryImage = ({ payload }, cb) ->
+		{ name, image } = payload
+
+		store.getConfigurations (error, configurations) ->
+			return cb error                                                                if error
+			return cb new Error "One or more configurations depend on this registry image" if isRegistryImageDependentOn image, configurations
+
+			async.parallel [
+				(cb) ->
+					db.AllowedImage.findOneAndRemove { name }, cb
+				(cb) ->
+					db.RegistryImages.findOneAndRemove name: image, cb
+			], cb
 
 	storeRegistryImages = ({ payload: images }, cb) ->
 		async.mapValues images, ({ versions, access, exists }, name, cb) ->
@@ -43,5 +75,6 @@ module.exports = (db, mqttSocket) ->
 	return {
 		storeRegistryImages
 		refreshRegistryImages
-		removeUnavailableRegistryImage
+		addRegistryImage
+		removeRegistryImage
 	}

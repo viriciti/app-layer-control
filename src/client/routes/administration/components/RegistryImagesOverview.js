@@ -1,13 +1,40 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
+import { Map } from 'immutable'
+import { partial } from 'underscore'
 
-import { refreshRegistryImages, removeUnavailableRegistryImage } from 'routes/administration/modules/actions'
-import extractImageFromUrl from 'routes/administration/modules/extractImageFromUrl'
 import AsyncButton from 'components/common/AsyncButton'
+import RegistryImageForm from './RegistryImageForm'
+import { refreshRegistryImages, addRegistryImage, removeRegistryImage } from 'routes/administration/modules/actions'
+
+const RegistryImage = ({ name, image, onRemoveImage }) => {
+	return (
+		<tr>
+			<td>{name}</td>
+			{image.get('access') ? (
+				<td title={image.get('versions').toArray()}>{image.get('versions').size} available versions</td>
+			) : (
+				<td className="text-muted">
+					<span className="fas fa-user-lock fa-fw mr-2" />
+					No access to this image or image was not found in the repository.
+				</td>
+			)}
+
+			<td className="text-right">
+				<button className="btn btn--text btn--icon" onClick={onRemoveImage} title={`Remove image ${name}`}>
+					<span className="fas fa-trash" />
+				</button>
+			</td>
+		</tr>
+	)
+}
 
 class RegistryImagesOverview extends PureComponent {
-	state = {
-		selectedImages: {},
+	withRegistryUrl = repository => {
+		const configuredHost = CONFIG.versioning.docker.host
+		const registryUrl = configuredHost.endsWith('/') ? configuredHost : configuredHost.concat('/')
+
+		return `${registryUrl}${repository}`
 	}
 
 	onRefresh = () => {
@@ -15,50 +42,15 @@ class RegistryImagesOverview extends PureComponent {
 	}
 
 	onRemoveImage = ({ name, image }) => {
-		if (confirm(`Would you like to remove ${name} from the (allowed) images?`)) {
-			this.props.removeUnavailableRegistryImage({ name, image })
+		if (confirm(`Remove registry image ${name}?`)) {
+			this.props.removeRegistryImage({ name, image })
 		}
 	}
 
-	renderImages () {
-		const renderVersions = versions => {
-			if (versions && versions.size) {
-				return versions.map(version => {
-					return (
-						<span className="m-0 mr-3" key={version}>
-							{version}
-						</span>
-					)
-				})
-			} else {
-				return <i>No available versions</i>
-			}
+	onAddImage = ({ name }) => {
+		if (confirm(`Add registry image ${name}?`)) {
+			this.props.addRegistryImage({ name })
 		}
-
-		const renderNoAccess = name => {
-			return (
-				<p className="text-muted">
-					<span className="fas fa-user-lock fa-fw mr-2" />
-					No access to this image or image was not found in the repository.
-					<button
-						className="btn btn--text btn--icon float-right"
-						title={`Remove ${name} from (allowed) registry images`}
-						onClick={this.onRemoveImage.bind(null, { image: name, name: extractImageFromUrl(name) })}
-					>
-						<span className="fas fa-trash" />
-					</button>
-				</p>
-			)
-		}
-
-		return this.props.registryImages.entrySeq().map(([name, image]) => {
-			return (
-				<tr key={name}>
-					<td>{name}</td>
-					<td>{image.get('access') ? renderVersions(image.get('versions')) : renderNoAccess(name)}</td>
-				</tr>
-			)
-		})
 	}
 
 	render () {
@@ -81,16 +73,30 @@ class RegistryImagesOverview extends PureComponent {
 				</div>
 
 				<div className="card-body spacing-base">
-					{this.props.registryImages.size ? (
+					<RegistryImageForm imageNames={this.props.allowedImages} onSubmit={this.onAddImage} />
+
+					{this.props.allowedImages.size ? (
 						<div className="table-responsive">
 							<table className="table">
 								<thead className="thead-light">
 									<tr>
-										<th>Image</th>
-										<th>Available versions</th>
+										<th style={{ width: '30%' }}>Image</th>
+										<th>Versions</th>
+										<th />
 									</tr>
 								</thead>
-								<tbody>{this.renderImages()}</tbody>
+								<tbody>
+									{this.props.allowedImages.sort().map(name => {
+										return (
+											<RegistryImage
+												key={name}
+												name={this.withRegistryUrl(name)}
+												image={this.props.registryImages.get(this.withRegistryUrl(name), Map())}
+												onRemoveImage={partial(this.onRemoveImage, { name, image: this.withRegistryUrl(name) })}
+											/>
+										)
+									})}
+								</tbody>
 							</table>
 						</div>
 					) : (
@@ -105,9 +111,10 @@ class RegistryImagesOverview extends PureComponent {
 export default connect(
 	state => {
 		return {
+			allowedImages:      state.get('allowedImages'),
 			registryImages:     state.get('registryImages'),
 			isFetchingVersions: state.getIn(['userInterface', 'isFetchingVersions']),
 		}
 	},
-	{ refreshRegistryImages, removeUnavailableRegistryImage }
+	{ refreshRegistryImages, addRegistryImage, removeRegistryImage }
 )(RegistryImagesOverview)
