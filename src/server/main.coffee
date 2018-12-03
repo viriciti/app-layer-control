@@ -5,14 +5,17 @@ constantCase    = require "constant-case"
 cookieParser    = require "cookie-parser"
 cors            = require "cors"
 debug           = (require "debug") "app:main"
-devicemqtt      = require "device-mqtt"
 express         = require "express"
 http            = require "http"
 path            = require "path"
 socketio        = require "socket.io"
 { Map, fromJS } = require "immutable"
 { Observable }  = require "rxjs"
-{ each, size }  = require "underscore"
+{ each, size, noop }  = require "underscore"
+mqtt            = require "mqtt"
+RPC             = require "mqtt-json-rpc"
+randomstring    = require "randomstring"
+semver          = require "semver"
 
 {
 	DevicesLogs
@@ -42,7 +45,8 @@ app.use cors()
 app.use compress()
 app.use cookieParser()
 
-mqttSocket      = null
+rpc             = null
+mqttClient      = null
 store           = (require "./store") db
 deviceStates    = Map()
 getDeviceStates = -> deviceStates
@@ -94,40 +98,22 @@ containersNotRunningToString = (containers) ->
 		.join "\n"
 
 initMqtt = ->
-	connOpts =
+	options =
 		Object.assign(
 			{},
-			config.devicemqtt,
-			config.devicemqtt.connectionOptions,
+			config.devicemqtt
+			config.devicemqtt.connectionOptions
 			clientId: config.devicemqtt.clientId
 		)
 
-	mqttServer = devicemqtt connOpts
+	client         = mqttClient = mqtt.connect options
+	client.publish = noop if config.readOnly
+	rpc            = new RPC client
 
-	_onMqttConnected = (socket) ->
-		mqttSocket = socket
+	onConnect = ->
+		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
 
-		if config.readOnly
-			log.warn "Running in read only mode"
-
-			mqttSocket.customPublish = (opts, cb) ->
-				log.warn "Read only mode! Not publishing to '#{opts.topic}'"
-				cb?()
-
-			mqttSocket.send = (opts, cb) ->
-				log.warn "Read only mode! Not sending action"
-				cb?()
-
-		log.info "Connected to MQTT Broker at #{connOpts.host}:#{connOpts.port}"
-
-		_onSocketError = (error) -> log.error "mqtt socket error: #{error.message}"
-
-		mqttSocket
-			.on   "error", _onSocketError
-			.once "disconnected", ->
-				mqttSocket.removeListener "error", _onSocketError
-
-		populateMqttWithGroups db, mqttSocket, (error) ->
+		populateMqttWithGroups db, mqttClient, (error) ->
 			return log.error if error
 
 			async.parallel
@@ -143,10 +129,10 @@ initMqtt = ->
 
 				log.info "Cache succesfully populated"
 
-				devicesLogs$    = DevicesLogs.observable    mqttSocket
-				devicesNsState$ = DevicesNsState.observable mqttSocket
-				devicesState$   = DevicesState.observable   mqttSocket
-				devicesStatus$  = DevicesStatus.observable  mqttSocket
+				devicesLogs$    = DevicesLogs.observable    mqttClient
+				devicesNsState$ = DevicesNsState.observable mqttClient
+				devicesState$   = DevicesState.observable   mqttClient
+				devicesStatus$  = DevicesStatus.observable  mqttClient
 				cacheUpdate$    = cacheUpdate               store
 
 				each externals, (source) ->
@@ -158,7 +144,7 @@ initMqtt = ->
 					} = source getDeviceStates
 
 					observable
-						.takeUntil Observable.fromEvent mqttSocket, "disconnected"
+						.takeUntil Observable.fromEvent mqttClient, "disconnected"
 						.bufferTime config.batchStateInterval
 						.subscribe (externalOutputs) ->
 							return unless externalOutputs.length
@@ -182,7 +168,7 @@ initMqtt = ->
 							_broadcastAction "devicesBatchState", deviceStates
 
 				cacheUpdate$
-					.takeUntil Observable.fromEvent mqttSocket, "disconnected"
+					.takeUntil Observable.fromEvent mqttClient, "disconnected"
 					.subscribe ->
 						log.info "Cache has been updated... Validating outdated software for devices"
 
@@ -295,31 +281,30 @@ initMqtt = ->
 
 				# After we have subscribed to all socket events. We subscribe to the mqtt topics.
 				# We do this so we do not miss any data that might come through when we are not listening for events yet.
-				async.eachSeries [
+				client.subscribe [
 					DevicesState.topic
 					DevicesLogs.topic
 					DevicesNsState.topic
 					DevicesStatus.topic
-				], (topic, cb) ->
-					mqttSocket.customSubscribe
-						topic: topic
-						qos:   0
-					, cb
-				, (error) ->
+				], (error, granted) ->
 					throw new Error "Error subscribing topics: #{error.message}" if error
-					log.info "Subscribed to MQTT topics"
 
-	mqttServer
-		.on "connected", _onMqttConnected
-		.on "disconnected", ->
-			log.warn "Disconnected from MQTT Broker."
-		.on "error", (error) ->
-			log.error "An error occured #{error.message}"
+					log.info "Subscribed to MQTT"
+					log.info "Topics: #{granted.map(({ topic }) -> topic).join ", "}"
 
-	mqttServer.connect()
+	onError = ->
+
+	onClose = ->
+		log.info "Connecting to the MQTT broker closed"
+
+	client
+		.on "connect", onConnect
+		.on "error",   onError
+		.on "close",   onClose
 
 initSocketIO = ->
 	log.info "Initializing socket.io"
+
 	io.on "connection", (socket) ->
 		log.info "Client connected: #{socket.id}"
 		sockets[socket.id] = socket
@@ -362,29 +347,25 @@ _broadcastAction = (type, data) ->
 			data: data
 
 _onActionDevice = (action, cb) ->
-	responseTimeout = -1
 	messageTable    =
 		refreshState: "State refreshed"
 		storeGroups:  "Group(s) added"
 
-	resultCb = (error, result) ->
-		if error
-			log.error "Error in mqttSocket.send result", error
-			clearTimeout responseTimeout
-			return cb message: error.message
+	appVersion = deviceStates.getIn [action.dest, "systemInfo", "appVersion"]
+	appVersion = deviceStates.getIn [action.dest, "systemInfo", "dmVersion"] unless appVersion
 
-		cb null, messageTable[action.action] or "Done"
-
-	timeoutCb = (error, ack) ->
-		setTimeout ->
+	# device-mqtt has been removed since 1.16.0
+	if semver.gt appVersion, "1.15.0"
+		rpc
+			.call "actions/#{action.dest}/#{action.action}"
+			.then          -> cb null, messageTable[action.action] or "Done"
+			.catch (error) -> cb message: error.message
+	else
+		legacy_sendToMqtt action, (error) ->
 			if error
-				log.error "Error publishing on MQTT", error
-				return cb message: "Error publishing on MQTT"
-
-			cb message: "Socket timed out"
-		, config.responseTimeout
-
-	mqttSocket.send action, resultCb, timeoutCb
+				cb message: error.message
+			else
+				cb null, messageTable[action.action] or "Done"
 
 _onActionDevices = (action, cb) ->
 	{ payload, dest } = action
@@ -393,17 +374,40 @@ _onActionDevices = (action, cb) ->
 
 	async.map dest, (device, next) ->
 		actionToSend = Object.assign {}, action, { payload, dest: device }
-		mqttSocket.send actionToSend, next, (error, ack) ->
-			return log.error error.message if error
+		legacy_sendToMqtt actionToSend, next
 	, cb
 
-_onActionDeviceGet = (action, resultCb) ->
-	mqttSocket.send action, resultCb, (error, ack) ->
-		return log.error error.message if error
-		debug "Action #{action.action} sent correctly"
+_onActionDeviceGet = (action, cb) ->
+	legacy_sendToMqtt action, cb
+
+legacy_sendToMqtt = (action, cb) ->
+	actionId       = randomstring.generate()
+	origin         = config.devicemqtt.clientId
+	publishTopic   = "commands/#{action.dest}/#{actionId}"
+	subscribeTopic = "commands/#{config.devicemqtt.clientId}/#{actionId}/response"
+	message        = JSON.stringify
+		origin:  origin
+		action:  action.action
+		payload: action.payload
+
+	mqttClient.on "message", (topic, payload) ->
+		return unless topic is subscribeTopic
+
+		mqttClient.unsubscribe subscribeTopic
+
+		payload              = JSON.parse payload.toString()
+		{ statusCode, data } = payload
+
+		if statusCode is "OK"
+			cb null, { data }
+		else
+			cb { data }
+
+	mqttClient.subscribe subscribeTopic
+	mqttClient.publish   publishTopic, message
 
 _onActionDb = ({ action, payload, meta }, cb) ->
-	{ execute }  = (require "./actions") db, mqttSocket, _broadcastAction, store
+	{ execute }  = (require "./actions") db, mqttClient, _broadcastAction, store
 	messageTable =
 		createConfiguration: "Application updated"
 		removeConfiguration: "Application removed"
@@ -420,7 +424,7 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 		cb null, messageTable[action] or "Done"
 
 # Webpack section
-if process.env.NODE_ENV not in ["production", "local-production"]
+unless process.env.NODE_ENV is "production"
 	webpackHotMiddleware = require "webpack-hot-middleware"
 	webpackMiddleware    = require "webpack-dev-middleware"
 	webpackConfig        = require "../../webpack.config.js"

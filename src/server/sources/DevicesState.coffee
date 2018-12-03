@@ -2,10 +2,11 @@ debug          = (require "debug") "app: sources:DevicesState"
 { Observable } = require "rxjs"
 { fromJS }     = require "immutable"
 
+createTopicListener = require "../helpers/createTopicListener"
+
 module.exports =
 	observable: (socket) ->
-		Observable
-			.fromEvent socket, "devices/*/state"
+		createTopicListener socket, /devices\/.+\/state/
 			.map (raw) ->
 				try
 					JSON.parse raw
@@ -16,6 +17,6 @@ module.exports =
 				data?.deviceId?
 			.map (state) ->
 				fromJS state
-			.takeUntil Observable.fromEvent socket, "disconnected"
+			.takeUntil Observable.fromEvent socket, "close"
 
 	topic: "devices/+/state"

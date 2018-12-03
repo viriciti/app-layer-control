@@ -2,10 +2,10 @@ log   = (require "../lib/Logger") "Actions"
 _     = require "underscore"
 async = require "async"
 
-module.exports = (db, mqttSocket, broadcastAction, store) ->
-	configurationsActions   = (require "./configurationsActions")   db, mqttSocket, store
-	registryImagesActions   = (require "./registryImagesActions")   db, mqttSocket, store
-	groupsActions           = (require "./groupsActions")           db, mqttSocket
+module.exports = (db, mqttClient, broadcastAction, store) ->
+	configurationsActions   = (require "./configurationsActions")   db, mqttClient, store
+	registryImagesActions   = (require "./registryImagesActions")   db, mqttClient, store
+	groupsActions           = (require "./groupsActions")           db, mqttClient
 	deviceSourceActions     = (require "./deviceSourceActions")     db
 	allowedImagesActions    = (require "./allowedImageActions")     db
 

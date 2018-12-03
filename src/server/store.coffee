@@ -8,7 +8,6 @@ log = (require "./lib/Logger") "store"
 module.exports = (db) ->
 	{ storeRegistryImages } = (require "./actions/registryImagesActions") db
 
-	# An immutable map keyed on clientId containing a client's state <
 	cache = Map()
 
 	kick = (cb) ->
