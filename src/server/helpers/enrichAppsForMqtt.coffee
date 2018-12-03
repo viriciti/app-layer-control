@@ -39,15 +39,12 @@ module.exports = (db) ->
 
 				versions = app.versions.filter (tag) -> semver.valid tag
 
-				if /test$/.test label
-					versionToInstall = semver.maxSatisfying versions, config.version
+				if applications[config.applicationName]
+					versionToInstall = applications[config.applicationName]
 				else
-					if applications[config.applicationName]
-						versionToInstall = applications[config.applicationName]
-					else
-						versionToInstall = semver.maxSatisfying versions, config.version
+					versionToInstall = semver.maxSatisfying versions, config.version
 
-				debug "Version enriched: #{config.applicationName}@#{versionToInstall}"
+				debug "(#{label}) Version enriched: #{config.applicationName}@#{versionToInstall}"
 				containerName = config.containerName
 
 				enrichedConfig               = _(config.toObject()).omit ["_id", "__v", "version"]

@@ -21,9 +21,9 @@ export default (initialState = Map({})) => {
 	let composeEnhancers = compose
 
 	if (process.env.NODE_ENV !== 'production') {
-		const composeWithDevToolsExtension = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ maxAge: 15 })
+		const composeWithDevToolsExtension = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
 		if (typeof composeWithDevToolsExtension === 'function') {
-			composeEnhancers = composeWithDevToolsExtension
+			composeEnhancers = composeWithDevToolsExtension({ maxAge: 15 })
 		}
 	}
 
