@@ -1,21 +1,21 @@
-async           = require "async"
-compress        = require "compression"
-config          = require "config"
-constantCase    = require "constant-case"
-cookieParser    = require "cookie-parser"
-cors            = require "cors"
-debug           = (require "debug") "app:main"
-express         = require "express"
-http            = require "http"
-path            = require "path"
-socketio        = require "socket.io"
-{ Map, fromJS } = require "immutable"
-{ Observable }  = require "rxjs"
-{ each, size, noop }  = require "underscore"
-mqtt            = require "mqtt"
-RPC             = require "mqtt-json-rpc"
-randomstring    = require "randomstring"
-semver          = require "semver"
+async                = require "async"
+compress             = require "compression"
+config               = require "config"
+constantCase         = require "constant-case"
+cookieParser         = require "cookie-parser"
+cors                 = require "cors"
+debug                = (require "debug") "app:main"
+express              = require "express"
+http                 = require "http"
+path                 = require "path"
+socketio             = require "socket.io"
+{ Map, fromJS }      = require "immutable"
+{ Observable }       = require "rxjs"
+{ each, size, noop } = require "underscore"
+mqtt                 = require "mqtt"
+RPC                  = require "mqtt-json-rpc"
+randomstring         = require "randomstring"
+semver               = require "semver"
 
 {
 	DevicesLogs
@@ -239,12 +239,12 @@ initMqtt = ->
 						return unless nsStateUpdates.length
 
 						newNsStates = nsStateUpdates.reduce (updates, nsStateUpdate) ->
-							{ deviceId, key, val } = nsStateUpdate
+							{ deviceId, key, value } = nsStateUpdate
 							debug "devicesNsState is updating #{deviceId}"
 
 							newState = fromJS
 								deviceId:          deviceId
-								"#{key}":          val
+								"#{key}":          value
 								lastSeenTimestamp: Date.now()
 
 							deviceStates      = deviceStates.mergeIn [ deviceId ], newState
@@ -312,13 +312,11 @@ initSocketIO = ->
 		store.kick (error, state) ->
 			return log.error error if error
 
-			state = state.set "devicesState", deviceStates
-
 			mapActionToValue =
 				configurations:        state.get "configurations"
 				groups:                state.get "groups"
 				registryImages:        state.get "registryImages"
-				devicesState:          state.get "devicesState"
+				devicesState:          state.get "devicesState", deviceStates
 				deviceSources:         state.get "deviceSources"
 				allowedImages:         state.get "allowedImages"
 
