@@ -2,11 +2,9 @@ createTopicListener = require "../helpers/createTopicListener"
 
 module.exports =
 	observable: (socket) ->
-		createTopicListener socket, /devices\/(.+)\/status/
-			.filter ({ topic }) ->
-				not not topic.split("/")[1]
-			.map ({ topic, message }) ->
-				deviceId = topic.split("/")[1]
+		createTopicListener socket, "devices/+id/status"
+			.map ({ match, message }) ->
+				deviceId = match.id
 				status   = message.toString()
 
 				{ deviceId, status }
