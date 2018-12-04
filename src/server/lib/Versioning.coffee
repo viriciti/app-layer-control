@@ -224,7 +224,7 @@ class Versioning
 			password: @docker.password
 
 		authToken = "#{auth.username}:#{auth.password}"
-		b64       = Buffer.alloc(authToken.length, authToken).toString "base64"
+		b64       = Buffer.from(authToken).toString "base64"
 
 		"Authorization": "Basic #{b64}"
 
