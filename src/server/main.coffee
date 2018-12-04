@@ -353,7 +353,7 @@ _onActionDevice = (action, cb) ->
 	appVersion = deviceStates.getIn [action.dest, "systemInfo", "dmVersion"] unless appVersion
 
 	# device-mqtt has been removed since 1.16.0
-	if semver.gt appVersion, "1.15.0"
+	if appVersion and semver.gt appVersion, "1.15.0"
 		rpc
 			.call "actions/#{action.dest}/#{action.action}"
 			.then          -> cb null, messageTable[action.action] or "Done"
@@ -432,16 +432,15 @@ unless process.env.NODE_ENV is "production"
 
 	# Middlewares for webpack
 	debug "Enabling webpack dev and HMR middlewares..."
-	app.use(webpackMiddleware compiler,
+	app.use webpackMiddleware compiler,
 		hot: true
 		stats:
 			colors: true
 			chunks: false
 			chunksModules: false
 		historyApiFallback: true
-	)
 
-	app.use(webpackHotMiddleware compiler, { path: "/__webpack_hmr" })
+	app.use webpackHotMiddleware compiler, { path: "/__webpack_hmr" }
 
 	app.use "*", (req, res, next) ->
 		filename = path.join compiler.outputPath, "index.html"
@@ -453,7 +452,7 @@ unless process.env.NODE_ENV is "production"
 			res.end()
 
 else
-	app.use(express.static(path.resolve __dirname, "../client"))
+	app.use express.static path.resolve __dirname, "../client"
 	app.get "*", (req, res) ->
 		res.sendFile(path.resolve __dirname, "../client/index.html")
 

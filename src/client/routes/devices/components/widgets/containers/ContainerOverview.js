@@ -79,11 +79,11 @@ class ContainerOverview extends PureComponent {
 					</p>
 				)
 			} else {
-				render(logs.get('data'))
+				return render(logs.get('data'))
 			}
 		} else {
 			if (logs) {
-				render(logs)
+				return render(logs)
 			}
 		}
 	}

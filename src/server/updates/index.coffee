@@ -7,7 +7,7 @@ updateGroups = ({ db, store }, cb) ->
 	store.getGroups (error, groups) ->
 		return cb error if error
 
-		if groups.every((applications) -> Map.isMap applications)
+		if groups.every (applications) -> Map.isMap applications
 			log.warn "→ No need to update groups"
 			return cb()
 		else
