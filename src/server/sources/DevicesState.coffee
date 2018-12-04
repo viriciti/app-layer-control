@@ -7,11 +7,11 @@ createTopicListener = require "../helpers/createTopicListener"
 module.exports =
 	observable: (socket) ->
 		createTopicListener socket, /devices\/.+\/state/
-			.map (raw) ->
+			.map ({ message }) ->
 				try
-					JSON.parse raw
+					JSON.parse message
 				catch
-					debug "Unprocessable state passed: #{raw or '(empty)'}"
+					debug "Unprocessable state passed: #{message or '(empty)'}"
 					{}
 			.filter (data) ->
 				data?.deviceId?

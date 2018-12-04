@@ -1,18 +1,16 @@
 { Observable } = require "rxjs"
 
-enhancedFromEvent$ = require "../lib/enhancedFromEvent"
-
-topic = "devices/*/nsState/*"
+createTopicListener = require "../helpers/createTopicListener"
 
 module.exports =
 	observable: (socket) ->
-		enhancedFromEvent$ socket, topic
-			.map ({ message, namespaces }) ->
-				val:      JSON.parse message
-				deviceId: namespaces[1]
-				key:      namespaces[3]
+		createTopicListener socket, /devices\/.+\/nsState\/.+/
+			.map ({ topic, message }) ->
+				deviceId: topic.split("/")[1]
+				key:      topic.split("/")[3]
+				value:    JSON.parse message.toString()
 			.filter ({ deviceId }) ->
-				deviceId and deviceId isnt "undefined"
+				deviceId
 			.takeUntil Observable.fromEvent socket, "disconnected"
 
 	topic: "devices/+/nsState/+"

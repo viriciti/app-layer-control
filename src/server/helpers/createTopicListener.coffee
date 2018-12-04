@@ -1,14 +1,15 @@
 { Observable } = require "rxjs"
 
-module.exports = (socket, listenForTopic) ->
+module.exports = (socket, matcher) ->
 	Observable.create (observer) ->
 		onMessage = (topic, message) ->
-			return unless topic.match listenForTopic
+			return unless topic.match matcher
 
-			observer.next message
+			observer.next { topic, message }
 
 		onClose = ->
 			socket.removeListener "message", onMessage
+			observer.complete()
 
 		socket
 			.on "message", onMessage
