@@ -14,7 +14,6 @@ socketio             = require "socket.io"
 { each, size, noop } = require "underscore"
 mqtt                 = require "mqtt"
 RPC                  = require "mqtt-json-rpc"
-randomstring         = require "randomstring"
 semver               = require "semver"
 
 {
@@ -29,6 +28,7 @@ populateMqttWithGroups  = require "./helpers/populateMqttWithGroups"
 getVersionsNotMatching  = require "./lib/getVersionsNotMatching"
 getContainersNotRunning = require "./lib/getContainersNotRunning"
 runUpdates              = require "./updates"
+sendMessageToMqtt       = require "./updates/sendMessageToMqtt"
 { cacheUpdate }         = require "./observables"
 
 log = (require "./lib/Logger") "main"
@@ -45,11 +45,12 @@ app.use cors()
 app.use compress()
 app.use cookieParser()
 
-rpc             = null
-mqttClient      = null
-store           = (require "./store") db
-deviceStates    = Map()
-getDeviceStates = -> deviceStates
+rpc               = null
+mqttClient        = null
+legacy_sendToMqtt = null
+store             = (require "./store") db
+deviceStates      = Map()
+getDeviceStates   = -> deviceStates
 
 main = ->
 	initMqtt()
@@ -106,9 +107,10 @@ initMqtt = ->
 			clientId: config.devicemqtt.clientId
 		)
 
-	client         = mqttClient = mqtt.connect options
-	client.publish = noop if config.readOnly
-	rpc            = new RPC client
+	client            = mqttClient = mqtt.connect options
+	client.publish    = noop if config.readOnly
+	legacy_sendToMqtt = sendMessageToMqtt mqttClient
+	rpc               = new RPC client
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
@@ -378,31 +380,6 @@ _onActionDevices = (action, cb) ->
 _onActionDeviceGet = (action, cb) ->
 	legacy_sendToMqtt action, cb
 
-legacy_sendToMqtt = (action, cb) ->
-	actionId       = randomstring.generate()
-	origin         = config.devicemqtt.clientId
-	publishTopic   = "commands/#{action.dest}/#{actionId}"
-	subscribeTopic = "commands/#{config.devicemqtt.clientId}/#{actionId}/response"
-	message        = JSON.stringify
-		origin:  origin
-		action:  action.action
-		payload: action.payload
-
-	mqttClient.on "message", (topic, payload) ->
-		return unless topic is subscribeTopic
-
-		mqttClient.unsubscribe subscribeTopic
-
-		payload              = JSON.parse payload.toString()
-		{ statusCode, data } = payload
-
-		if statusCode is "OK"
-			cb null, { data }
-		else
-			cb { data }
-
-	mqttClient.subscribe subscribeTopic
-	mqttClient.publish   publishTopic, message
 
 _onActionDb = ({ action, payload, meta }, cb) ->
 	{ execute }  = (require "./actions") db, mqttClient, _broadcastAction, store

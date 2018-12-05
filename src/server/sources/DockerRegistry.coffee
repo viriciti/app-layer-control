@@ -20,9 +20,9 @@ module.exports = (config, db) ->
 			changed = not isEqual prev, next
 
 			if changed
-				debug "Registry did not change"
-			else
 				log.info "Registry changed"
+			else
+				debug "Registry did not change"
 
 			changed
 
