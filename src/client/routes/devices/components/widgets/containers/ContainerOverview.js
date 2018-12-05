@@ -33,7 +33,8 @@ class ContainerOverview extends PureComponent {
 		this.props.getContainerLogs({
 			dest:    this.props.deviceId,
 			payload: {
-				id: this.props.selectedContainer.get('name'),
+				id:        this.props.selectedContainer.get('name'),
+				numOfLogs: 100,
 			},
 		})
 	}

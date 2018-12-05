@@ -106,7 +106,7 @@ export default function ({ dispatch }) {
 			}
 
 			if (error) {
-				return notify('error', error.message)
+				return notify('error', error.message || error.data)
 			}
 
 			if (actionToDispatch.action === 'getContainerLogs') {
