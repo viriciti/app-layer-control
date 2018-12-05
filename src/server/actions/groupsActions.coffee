@@ -56,15 +56,11 @@ module.exports = (db, mqttSocket) ->
 					debug "Read only mode, not sending enriched groups to MQTT"
 					return cb()
 
-				mqttSocket.customPublish
-					topic:   "global/collections/groups"
-					message: JSON.stringify enrichedGroups
-					opts:
-						qos:    0
-						retain: true
-				, cb
+				topic   = "global/collections/groups"
+				message = JSON.stringify enrichedGroups
+				options = retain: true
 
-
+				mqttSocket.publish topic, message, options, cb
 		], cb
 
 	return {

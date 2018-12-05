@@ -1,6 +1,4 @@
-async  = require "async"
-config = require "config"
-path   = require "path"
+async = require "async"
 
 module.exports = (db, mqttSocket) ->
 	addAllowedImage = ({ payload }, cb) ->

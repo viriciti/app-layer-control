@@ -133,8 +133,8 @@ module.exports =
 				width: "150px"
 			entryInTable: true
 
-		dmVersion:
-			headerName:   "DM Version"
+		appVersion:
+			headerName:   "App Version"
 			defaultValue: ""
 			columnIndex:  60
 			sortable:     true

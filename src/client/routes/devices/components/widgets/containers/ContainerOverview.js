@@ -2,6 +2,7 @@ import React, { PureComponent, Fragment } from 'react'
 import JSONPretty from 'react-json-pretty'
 import { connect } from 'react-redux'
 import Convert from 'ansi-to-html'
+import { Map } from 'immutable'
 
 import { removeContainer, restartContainer, getContainerLogs } from 'routes/devices/modules/actions/index'
 
@@ -54,8 +55,7 @@ class ContainerOverview extends PureComponent {
 	renderContainerLogs () {
 		const { selectedContainer, devices, deviceId } = this.props
 		const logs = devices.getIn([deviceId, 'containerLogs', selectedContainer.get('name')])
-
-		if (logs) {
+		const render = data => {
 			return (
 				<div
 					style={{
@@ -65,59 +65,76 @@ class ContainerOverview extends PureComponent {
 						overflow:        'scroll',
 					}}
 				>
-					{logs.map((l, i) => {
+					{data.map((l, i) => {
 						return <div key={`container-log-${i}`} dangerouslySetInnerHTML={{ __html: convert.toHtml(l) }} />
 					})}
 				</div>
 			)
 		}
-	}
 
-	renderActionButtons () {
-		return (
-			<ul className="btn-group float-right">
-				<button
-					className="btn btn-light btn-sm"
-					type="button"
-					onClick={this.onRequestContainerLogs}
-					title="Request container logs"
-				>
-					Logs
-				</button>
-				<button
-					className="btn btn-light btn-sm"
-					type="button"
-					onClick={this.onRestartButtonClick}
-					title="Restart this app"
-				>
-					Restart
-				</button>
-				<button
-					className="btn btn-danger btn--icon btn-sm"
-					type="button"
-					onClick={this.onDeleteButtonClick}
-					title="Delete this app"
-				>
-					<span className="fas fa-trash" />
-				</button>
-			</ul>
-		)
+		if (Map.isMap(logs)) {
+			if (logs.get('status').toLowerCase() === 'error') {
+				return (
+					<p className="text-danger">
+						<span className="fas fa-exclamation-triangle" /> {logs.get('data')}
+					</p>
+				)
+			} else {
+				return render(logs.get('data'))
+			}
+		} else {
+			if (logs) {
+				return render(logs)
+			}
+		}
 	}
 
 	render () {
 		return (
 			<Fragment>
 				<div className="row">
-					<div className="col-6">
+					<div className="col-9">
 						<h5>{this.props.selectedContainer.get('name')}</h5>
 					</div>
-					<div className="col-6">{this.renderActionButtons()}</div>
+					<div className="col-3">
+						<button
+							className="btn btn-light btn-sm float-right"
+							type="button"
+							onClick={this.onRequestContainerLogs}
+							title="Request container logs"
+						>
+							Logs
+						</button>
+					</div>
 				</div>
 				<div className="row">
 					<div className="col-12">{this.renderContainerLogs()}</div>
 				</div>
 				<div className="row">
 					<div className="col-12">{this.renderContainerInfo()}</div>
+				</div>
+				<div className="row">
+					<div className="col-3 offset-9">
+						<ul className="btn-group float-right">
+							<button
+								className="btn btn-light btn-sm"
+								type="button"
+								onClick={this.onRestartButtonClick}
+								title="Restart this app"
+							>
+								Restart
+							</button>
+
+							<button
+								className="btn btn-danger btn--icon btn-sm"
+								type="button"
+								onClick={this.onDeleteButtonClick}
+								title="Delete this app"
+							>
+								<span className="fas fa-trash" />
+							</button>
+						</ul>
+					</div>
 				</div>
 			</Fragment>
 		)
