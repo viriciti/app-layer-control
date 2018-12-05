@@ -1,10 +1,9 @@
 import React, { Fragment } from 'react'
-import ReduxToastr from 'react-redux-toastr'
+import { ToastContainer } from 'react-toastify'
 
-import Header from './header'
-import Sidebar from './sidebar'
-
-import 'styles/vendor/react-redux-toastr.min.css'
+import Header from './Header'
+import Sidebar from './Sidebar'
+import Footer from './Footer'
 
 const CoreLayout = ({ children }) => {
 	return (
@@ -17,17 +16,19 @@ const CoreLayout = ({ children }) => {
 				<div className="row">
 					<div className="col-12">
 						{children}
-						<ReduxToastr
-							timeOut={5000}
+
+						<ToastContainer
+							timeout={5000}
 							newestOnTop
 							preventDuplicates={false}
-							position="top-right"
+							position="bottom-right"
 							transitionIn="bounceIn"
 							transitionOut="bounceOut"
-							progressBar={false}
 						/>
 					</div>
 				</div>
+
+				<Footer />
 			</div>
 		</Fragment>
 	)

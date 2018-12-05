@@ -44,11 +44,6 @@ export const RESET_PAGINATION = 'RESET_PAGINATION'
 export function addFilter (payload) {
 	return {
 		type: ADD_FILTER,
-		/*
-		 * payload = {
-		 *   columnName: "String"
-		 * }
-		 */
 		payload,
 	}
 }
@@ -56,12 +51,6 @@ export function addFilter (payload) {
 export function setFilter (payload) {
 	return {
 		type: SET_FILTER,
-		/*
-		 * payload = {
-		 *   value: "String",
-		 *   key:   "String"
-		 * }
-		 */
 		payload,
 	}
 }
@@ -137,6 +126,7 @@ export function refreshState (payload) {
 		type: DEVICE_NAMESPACE + REFRESH_STATE,
 		payload,
 		meta: {
+			async:    'isRefreshingState',
 			debounce: {
 				time: 500,
 			},
@@ -155,6 +145,9 @@ export function storeGroups (payload) {
 	return {
 		type: DEVICE_NAMESPACE + STORE_GROUPS,
 		payload,
+		meta: {
+			async: 'isStoringGroups',
+		},
 	}
 }
 

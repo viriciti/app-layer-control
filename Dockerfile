@@ -1,19 +1,25 @@
-FROM node:8
+FROM node:8-slim
+
+RUN apt-get update && \
+    apt-get install -y libpng-dev
 
 # Create app directory
 RUN mkdir -p /app
 WORKDIR /app
 
-# Install app dependencies
-COPY node_modules /app/node_modules
-COPY dist/server  /app/server
-COPY dist/client  /app/client
-COPY config/      /app/config
+# Configure environment
+ENV NODE_CONFIG_DIR=/app/dist/config
 
-ARG DOCKER_REGISTY_TOKEN=xxx
+# Install dependencies
+COPY package.json /app
+RUN npm install
 
-ENV DOCKER_REGISTY_TOKEN=${DOCKER_REGISTY_TOKEN}
+# Compile app
+COPY src/ /app/src
+COPY config/ /app/config
+COPY webpack.config.js .babelrc /app/
+RUN npm run deploy
 
 EXPOSE 3000
 
-CMD ["node", "/app/server/main.js"]
+CMD ["node", "/app/dist/server/main.js"]

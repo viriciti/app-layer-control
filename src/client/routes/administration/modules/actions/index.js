@@ -7,12 +7,9 @@ export const STORE_CONFIGURATION = 'STORE_CONFIGURATION'
 export const REMOVE_CONFIGURATION = 'REMOVE_CONFIGURATION'
 export const APPLICATIONS = 'APPLICATIONS'
 
-export const REMOVE_UNAVAILABLE_REGISTRY_IMAGE = 'REMOVE_UNAVAILABLE_REGISTRY_IMAGE'
-export const STORE_ENABLED_REGISTRY_IMAGES = 'STORE_ENABLED_REGISTRY_IMAGES'
-export const ENABLED_REGISTRY_IMAGES = 'ENABLED_REGISTRY_IMAGES'
 export const REFRESH_REGISTRY_IMAGES = 'REFRESH_REGISTRY_IMAGES'
-export const ADD_ALLOWED_IMAGE = 'ADD_ALLOWED_IMAGE'
-export const REMOVE_ALLOWED_IMAGE = 'REMOVE_ALLOWED_IMAGE'
+export const ADD_REGISTRY_IMAGE = 'ADD_REGISTRY_IMAGE'
+export const REMOVE_REGISTRY_IMAGE = 'REMOVE_REGISTRY_IMAGE'
 
 export const CREATE_GROUP = 'CREATE_GROUP'
 export const GROUPS = 'GROUPS'
@@ -47,36 +44,28 @@ export function removeConfiguration (payload) {
 	}
 }
 
-export function storeEnabledRegistryImages (payload) {
-	return {
-		type: DB_NAMESPACE + STORE_ENABLED_REGISTRY_IMAGES,
-		payload,
-	}
-}
-
 export function refreshRegistryImages () {
 	return {
 		type: DB_NAMESPACE + REFRESH_REGISTRY_IMAGES,
+		meta: {
+			async: 'isFetchingVersions',
+		},
 	}
 }
 
-export function removeUnavailableRegistryImage (payload) {
+export function addRegistryImage (payload) {
 	return {
-		type: DB_NAMESPACE + REMOVE_UNAVAILABLE_REGISTRY_IMAGE,
+		type: DB_NAMESPACE + ADD_REGISTRY_IMAGE,
 		payload,
+		meta: {
+			async: 'isAddingImage',
+		},
 	}
 }
 
-export function addAllowedImage (payload) {
+export function removeRegistryImage (payload) {
 	return {
-		type: DB_NAMESPACE + ADD_ALLOWED_IMAGE,
-		payload,
-	}
-}
-
-export function removeAllowedImage (payload) {
-	return {
-		type: DB_NAMESPACE + REMOVE_ALLOWED_IMAGE,
+		type: DB_NAMESPACE + REMOVE_REGISTRY_IMAGE,
 		payload,
 	}
 }

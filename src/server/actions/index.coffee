@@ -2,11 +2,11 @@ log   = (require "../lib/Logger") "Actions"
 _     = require "underscore"
 async = require "async"
 
-module.exports = (db, mqttSocket, broadcastAction, store) ->
-	configurationsActions   = (require "./configurationsActions")   db, mqttSocket
-	registryImagesActions   = (require "./registryImagesActions")   db, mqttSocket
-	groupsActions           = (require "./groupsActions")           db, mqttSocket
-	deviceSourceActions     = (require "./deviceSourceActions")      db
+module.exports = (db, mqttClient, broadcastAction, store) ->
+	configurationsActions   = (require "./configurationsActions")   db, mqttClient, store
+	registryImagesActions   = (require "./registryImagesActions")   db, mqttClient, store
+	groupsActions           = (require "./groupsActions")           db, mqttClient
+	deviceSourceActions     = (require "./deviceSourceActions")     db
 	allowedImagesActions    = (require "./allowedImageActions")     db
 
 	actionsMap = _.extend {},
@@ -37,18 +37,15 @@ module.exports = (db, mqttSocket, broadcastAction, store) ->
 
 			else if registryImagesActions[action]
 				async.parallel
-					enabledRegistryImages: store.getEnabledRegistryImages
 					registryImages:        store.getRegistryImages
 					allowedImages:         store.getAllowedImages
-				, (error, { enabledRegistryImages, registryImages, allowedImages } = {}) ->
+				, (error, { registryImages, allowedImages } = {}) ->
 					return log.error error.message if error
 
-					store.cacheEnabledRegistryImages enabledRegistryImages
-					store.cacheRegistryImages        registryImages
+					store.cacheRegistryImages registryImages
 
-					broadcastAction "enabledRegistryImages", enabledRegistryImages.toJS()
-					broadcastAction "registryImages",        registryImages.toJS()
-					broadcastAction "allowedImages",         allowedImages.toJS()
+					broadcastAction "registryImages", registryImages.toJS()
+					broadcastAction "allowedImages",  allowedImages.toJS()
 
 			else if groupsActions[action]
 				store.getGroups (error, groups) ->

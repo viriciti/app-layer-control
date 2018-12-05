@@ -1,0 +1,20 @@
+version: "3"
+services:
+  vernemqtt:
+    container_name: vernemqtt
+    environment:
+      DOCKER_VERNEMQ_ALLOW_ANONYMOUS: "on"
+    image: erlio/docker-vernemq
+    ports: ["1883:1883"]
+    restart: always
+
+  mongodb:
+    container_name: mongodb
+    command: ["mongod", --storageEngine, wiredTiger]
+    image: mongo:3.6
+    ports: ["27017:27017"]
+    restart: always
+    volumes:
+      - data:/data/db
+volumes:
+  data:

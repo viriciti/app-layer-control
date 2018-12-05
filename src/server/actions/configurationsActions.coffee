@@ -2,7 +2,16 @@ debug = (require "debug") "app:actions:configuration"
 
 populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
 
-module.exports = (db, mqttSocket) ->
+isDependentOn = (groups, name) ->
+	groups
+		.valueSeq()
+		.flatMap (application) ->
+			application
+				.keySeq()
+				.toArray()
+		.includes name
+
+module.exports = (db, mqttSocket, store) ->
 	createConfiguration = ({ payload }, cb) ->
 		{ key, value } = payload
 
@@ -22,9 +31,13 @@ module.exports = (db, mqttSocket) ->
 
 
 	removeConfiguration = ({ payload: configName }, cb) ->
-		db.Configuration.findOneAndRemove { applicationName: configName }, (error) ->
-			return cb error if error
-			cb null, "Configuration #{configName} removed correctly!"
+		store.getGroups (error, groups) ->
+			return cb error                                                       if error
+			return cb new Error "One or more groups depend on this configuration" if isDependentOn groups, configName
+
+			db.Configuration.findOneAndRemove { applicationName: configName }, (error) ->
+				return cb error if error
+				cb null, "Configuration #{configName} removed correctly!"
 
 
 	return {

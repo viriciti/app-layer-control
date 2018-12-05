@@ -32,16 +32,8 @@ module.exports =
 	responseTimeout: 5000
 
 	versioning:
-		git:
-			host: "git.viriciti.com"
-
-		docker:
-			host: "docker.viriciti.com"
-			username: "device-user"
-			password: process.env.DOCKER_REGISTY_TOKEN
-
-		checkingTimeout: 600000
-		numOfVersionsToShow: 10
+		maxTokenAttempts:    3
+		checkingTimeout:     600000
 
 	defaultColumns:
 		onlineStatus:
@@ -162,8 +154,8 @@ module.exports =
 				width: "150px"
 			entryInTable: true
 
-		dmVersion:
-			headerName:   "DM Version"
+		appVersion:
+			headerName:   "App Version"
 			defaultValue: ""
 			columnIndex:  70
 			sortable:     true

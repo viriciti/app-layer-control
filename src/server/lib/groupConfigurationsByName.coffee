@@ -7,9 +7,11 @@ module.exports = (store) ->
 	configurations = store.getCache "configurations"
 
 	groups.map (containers) ->
-		containers.reduce (memo, container) ->
-			configuration = configurations.get container
-			containerName = configuration.get "containerName"
+		containers
+			.keySeq()
+			.reduce (memo, container) ->
+				configuration = configurations.get container
+				containerName = configuration.get "containerName"
 
-			memo.set containerName, configuration
-		, Map()
+				memo.set containerName, configuration
+			, Map()

@@ -1,6 +1,5 @@
 async  = require "async"
 config = require "config"
-_      = require "underscore"
 
 debug = (require "debug") "app:actions:groupsActions"
 
@@ -8,10 +7,7 @@ module.exports = (db, mqttSocket) ->
 	{ enrich } = (require "../helpers/enrichAppsForMqtt") db
 
 	createGroup = ({ payload }, cb) ->
-		{ label, applications } = payload
-
-		if label is "default" and not applications.length
-			return cb new Error "Can not have a default group with 0 applications"
+		{ label } = payload
 
 		async.series [
 			(cb) ->
@@ -19,7 +15,7 @@ module.exports = (db, mqttSocket) ->
 
 				db.Group.findOne { label: "default" }, (error, group) ->
 					return cb error if error
-					return cb new Error "Can't add new group if the 'default' group does not exist" unless group
+					return cb new Error "Group 'default' must exist prior to other groups" unless group
 
 					cb()
 			(cb) ->
@@ -60,13 +56,11 @@ module.exports = (db, mqttSocket) ->
 					debug "Read only mode, not sending enriched groups to MQTT"
 					return cb()
 
-				mqttSocket.customPublish
-					topic:   "global/collections/groups"
-					message: JSON.stringify enrichedGroups
-					opts:
-						qos:    0
-						retain: true
-				, cb
+				topic   = "global/collections/groups"
+				message = JSON.stringify enrichedGroups
+				options = retain: true
+
+				mqttSocket.publish topic, message, options, cb
 		], cb
 
 	return {

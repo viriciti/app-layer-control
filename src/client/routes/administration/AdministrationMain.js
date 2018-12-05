@@ -1,9 +1,8 @@
 import React from 'react'
 
-import ConfigurationInfoMain from './components/configuration/ConfigurationInfoMain'
-import GroupsTable from './components/GroupsTable'
-import AllowedImages from './components/AllowedImages'
-import RegistryImagesOverview from './components/RegistryImagesOverview'
+import ConfigurationInfoMain from 'routes/administration/components/configuration/ConfigurationInfoMain'
+import GroupsTable from 'routes/administration/components/GroupsTable'
+import RegistryImagesOverview from 'routes/administration/components/RegistryImagesOverview'
 
 const AdministrationMain = () => {
 	return (
@@ -24,11 +23,8 @@ const AdministrationMain = () => {
 				</div>
 			</div>
 			<div className="row">
-				<div className="col-lg-9">
+				<div className="col-12">
 					<RegistryImagesOverview />
-				</div>
-				<div className="col-3">
-					<AllowedImages />
 				</div>
 			</div>
 		</div>

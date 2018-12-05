@@ -1,35 +1,33 @@
 import { combineReducers } from 'redux-immutable'
-import { reducer as toastrReducer } from 'react-redux-toastr'
 import { reducer as formReducer } from 'redux-form'
 
-import devicesReducer from '../routes/devices/modules/reducers/devicesReducer'
-import filtersReducer from '../routes/devices/modules/reducers/filters'
-import devicesLogsReducer from '../routes/devices/modules/reducers/devicesLogsReducer'
-import multiSelectReducer from '../routes/devices/modules/reducers/multiSelectReducer'
-import groupsReducer from '../routes/administration/modules/reducers/groupsReducer'
+import devicesReducer from 'routes/devices/modules/reducers/devicesReducer'
+import filtersReducer from 'routes/devices/modules/reducers/filters'
+import devicesLogsReducer from 'routes/devices/modules/reducers/devicesLogsReducer'
+import multiSelectReducer from 'routes/devices/modules/reducers/multiSelectReducer'
+import groupsReducer from 'routes/administration/modules/reducers/groupsReducer'
 import registryImagesReducer from './globalReducers/registryImages'
-import configurationsReducer from '../routes/administration/modules/reducers/configurationsReducer'
-import enabledRegistryImagesReducer from '../routes/administration/modules/reducers/enabledRegistryImagesReducer'
-import paginateReducer from '../routes/devices/modules/reducers/paginateReducer'
+import configurationsReducer from 'routes/administration/modules/reducers/configurationsReducer'
+import paginateReducer from 'routes/devices/modules/reducers/paginateReducer'
 import deviceSourcesReducer from './globalReducers/deviceSources'
 import allowedImagesReducer from './globalReducers/allowedImages'
+import userInterfaceReducer from './globalReducers/userInterface'
 
 export const makeRootReducer = asyncReducers => {
 	return combineReducers({
 		...asyncReducers,
-		devices:               devicesReducer,
-		filters:               filtersReducer,
-		devicesLogs:           devicesLogsReducer,
-		toastr:                toastrReducer,
-		form:                  formReducer,
-		groups:                groupsReducer,
-		configurations:        configurationsReducer,
-		registryImages:        registryImagesReducer,
-		enabledRegistryImages: enabledRegistryImagesReducer,
-		multiSelect:           multiSelectReducer,
-		paginate:              paginateReducer,
-		deviceSources:         deviceSourcesReducer,
-		allowedImages:         allowedImagesReducer,
+		devices:        devicesReducer,
+		filters:        filtersReducer,
+		devicesLogs:    devicesLogsReducer,
+		form:           formReducer,
+		groups:         groupsReducer,
+		configurations: configurationsReducer,
+		registryImages: registryImagesReducer,
+		multiSelect:    multiSelectReducer,
+		paginate:       paginateReducer,
+		deviceSources:  deviceSourcesReducer,
+		allowedImages:  allowedImagesReducer,
+		userInterface:  userInterfaceReducer,
 	})
 }
 

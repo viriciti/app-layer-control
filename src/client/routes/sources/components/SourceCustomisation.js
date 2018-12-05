@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import classNames from 'classnames'
 
 import SourceCustomisationModal from './SourceCustomisationModal'
-import { editColumn, addColumn, removeColumn } from '../modules/actions'
+import { editColumn, addColumn, removeColumn } from 'routes/sources/modules/actions'
 
 const StateIcon = ({ value }) => {
 	if (value) {
@@ -103,7 +103,7 @@ class SourceCustomisation extends PureComponent {
 	}
 
 	render () {
-		const defaultToggleClassName = 'btn btn-sm'
+		const defaultToggleClassName = 'btn btn-sm btn--no-underline'
 
 		return (
 			<div className="card mb-3">

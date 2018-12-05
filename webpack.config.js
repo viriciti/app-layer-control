@@ -1,14 +1,15 @@
+const ConfigWebpackPlugin = require('config-webpack')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
-const webpack = require('webpack')
 const path = require('path')
+const webpack = require('webpack')
 
+const pkg = require('./package')
 const __DEV__ = process.env.NODE_ENV !== 'production'
 console.log(`Compiling in ${process.env.NODE_ENV || 'development'} mode`)
 
 const VENDOR_LIBS = [
-	'decamelize',
 	'camel-case',
 	'react',
 	'react-dom',
@@ -19,7 +20,7 @@ const VENDOR_LIBS = [
 	'redux-thunk',
 	'immutable',
 	'react-json-pretty',
-	'react-redux-toastr',
+	'react-toastify',
 	'react-select',
 	'redux-form',
 	'redux-immutable',
@@ -190,6 +191,7 @@ const webpackConfig = {
 		new webpack.DefinePlugin({
 			// Used to define windows variables
 			'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+			'process.env.VERSION':  JSON.stringify(pkg.version),
 		}),
 
 		new webpack.optimize.UglifyJsPlugin({
@@ -212,6 +214,8 @@ const webpackConfig = {
 				join_vars:    true,
 			},
 		}),
+
+		new ConfigWebpackPlugin(),
 
 		extractSass,
 		// new (require('webpack-bundle-analyzer').BundleAnalyzerPlugin)()

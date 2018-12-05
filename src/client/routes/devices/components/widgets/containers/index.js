@@ -1,7 +1,8 @@
-import React, { Component } from 'react'
+import React, { Component, Fragment } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
 import { connect } from 'react-redux'
+import { partial } from 'underscore'
 
 import ContainerOverview from './ContainerOverview'
 
@@ -16,7 +17,7 @@ class DeviceContainers extends Component {
 		)
 	}
 
-	onContainerSelected (selectedContainer) {
+	onContainerSelected = selectedContainer => {
 		if (selectedContainer.equals(this.state.selectedContainer)) {
 			this.setState({ selectedContainer: null })
 		} else {
@@ -47,6 +48,30 @@ class DeviceContainers extends Component {
 		return `${container.get('name')} - ${container.getIn(['labels', 'group'], 'manual')}`
 	}
 
+	renderFrontEndButton ({ frontEndPort, deviceIp }) {
+		const className = 'btn btn-secondary btn--reset-icon float-right'
+		const child = (
+			<Fragment>
+				Go to
+				<span className="fas fa-paper-plane pl-2" />
+			</Fragment>
+		)
+
+		if (deviceIp) {
+			return (
+				<a className={className} href={`http://${deviceIp}:${frontEndPort}`} rel="noopener noreferrer" target="_blank">
+					{child}
+				</a>
+			)
+		} else {
+			return (
+				<button className={className} title="Apps with a front end can only be served over VPN" disabled>
+					{child}
+				</button>
+			)
+		}
+	}
+
 	renderContainers = () => {
 		const { selectedDevice, containers, configurations } = this.props
 		const statusToTitle = {
@@ -75,26 +100,14 @@ class DeviceContainers extends Component {
 								<li className="mb-2" key={`${container.get('Id')}`}>
 									<button
 										title={statusToTitle[container.getIn(['state', 'status'])]}
-										onClick={() => {
-											return this.onContainerSelected(container)
-										}}
+										onClick={partial(this.onContainerSelected, container)}
 										className={classNames('btn', 'btn--select', { active: isActive })}
 									>
 										{this.renderContainerIcon(container.getIn(['state', 'status']))}
 										{this.renderContainerHeader(container)}
 									</button>
-									{frontEndPort ? (
-										<a
-											href={`http://${deviceIp}:${frontEndPort}`}
-											target="_blank"
-											className="btn btn-secondary btn--reset-icon float-right"
-										>
-											Go to
-											<span className="fas fa-paper-plane pl-2" />
-										</a>
-									) : (
-										<span />
-									)}
+
+									{frontEndPort ? this.renderFrontEndButton({ frontEndPort, deviceIp }) : null}
 								</li>
 							)
 						})}
@@ -106,14 +119,10 @@ class DeviceContainers extends Component {
 	renderContainerOverview () {
 		if (this.state.selectedContainer) {
 			return (
-				<div>
-					<h5>{this.state.selectedContainer.get('name')}</h5>
-
-					<ContainerOverview
-						selectedContainer={this.state.selectedContainer}
-						deviceId={this.props.selectedDevice.get('deviceId')}
-					/>
-				</div>
+				<ContainerOverview
+					selectedContainer={this.state.selectedContainer}
+					deviceId={this.props.selectedDevice.get('deviceId')}
+				/>
 			)
 		} else {
 			return <span className="card-message">No application selected</span>

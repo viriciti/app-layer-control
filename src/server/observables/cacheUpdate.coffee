@@ -5,5 +5,6 @@ module.exports = (store) ->
 		.interval 1000
 		.map ->
 			store.getCache()
-		.distinctUntilChanged()
+		.distinctUntilChanged (prev, next) ->
+			next.equals prev
 		.debounceTime 500

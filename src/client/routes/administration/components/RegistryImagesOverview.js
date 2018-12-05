@@ -1,102 +1,56 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
-import { isEmpty, omit, size } from 'underscore'
-import classNames from 'classnames'
+import { Map } from 'immutable'
+import { partial } from 'underscore'
 
-import { storeEnabledRegistryImages, refreshRegistryImages, removeUnavailableRegistryImage } from '../modules/actions'
-import extractImageFromUrl from '../modules/extractImageFromUrl'
+import AsyncButton from 'components/common/AsyncButton'
+import RegistryImageForm from './RegistryImageForm'
+import { refreshRegistryImages, addRegistryImage, removeRegistryImage } from 'routes/administration/modules/actions'
+
+const RegistryImage = ({ name, image, onRemoveImage }) => {
+	return (
+		<tr>
+			<td>{name}</td>
+			{image.get('access') ? (
+				<td title={image.get('versions').toArray()}>{image.get('versions').size} available versions</td>
+			) : (
+				<td className="text-muted">
+					<span className="fas fa-user-lock fa-fw mr-2" />
+					No access to this image or image was not found in the repository.
+				</td>
+			)}
+
+			<td className="text-right">
+				<button className="btn btn--text btn--icon" onClick={onRemoveImage} title={`Remove image ${name}`}>
+					<span className="fas fa-trash" />
+				</button>
+			</td>
+		</tr>
+	)
+}
 
 class RegistryImagesOverview extends PureComponent {
-	state = {
-		selectedImages: {},
-	}
+	withRegistryUrl = repository => {
+		const configuredHost = CONFIG.versioning.docker.host
+		const registryUrl = configuredHost.endsWith('/') ? configuredHost : configuredHost.concat('/')
 
-	componentDidUpdate (prevProps) {
-		if (isEmpty(this.state.selectedImages) && prevProps.enabledRegistryImages !== this.props.enabledRegistryImages) {
-			this.setState({ selectedImages: this.props.enabledRegistryImages.toJS() })
-		}
-	}
-
-	onPublish = () => {
-		if (isEmpty(this.state.selectedImages)) {
-			return alert('No versions selected!')
-		}
-
-		if (!confirm(`Sending ${size(this.state.selectedImages)} enabled images. Are you sure?`)) {
-			return
-		}
-
-		this.props.storeEnabledRegistryImages(this.state.selectedImages)
+		return `${registryUrl}${repository}`
 	}
 
 	onRefresh = () => {
 		this.props.refreshRegistryImages()
 	}
 
-	onVersionSelected = ({ name, version }) => {
-		this.setState(prevState => {
-			const { selectedImages } = prevState
-
-			if (selectedImages[name] === version) {
-				return { selectedImages: omit(selectedImages, name) }
-			} else {
-				return { selectedImages: { [name]: version } }
-			}
-		})
-	}
-
 	onRemoveImage = ({ name, image }) => {
-		if (confirm(`Would you like to remove ${name} from the (allowed) images?`)) {
-			this.props.removeUnavailableRegistryImage({ name, image })
+		if (confirm(`Remove registry image ${name}?`)) {
+			this.props.removeRegistryImage({ name, image })
 		}
 	}
 
-	renderImages () {
-		const renderVersions = (name, versions) => {
-			return versions.map(version => {
-				const isVersionPersisted = this.props.enabledRegistryImages.get(name) === version
-				const isVersionSelected = this.state.selectedImages[name] === version
-
-				return (
-					<span
-						className={classNames('label', 'font-weight-normal', 'd-inline-block', 'm-0', 'mr-2', {
-							'label--primary': isVersionPersisted,
-							'label--info':    isVersionSelected && !isVersionPersisted,
-						})}
-						key={version}
-						onClick={() => {
-							return this.onVersionSelected({ name, version })
-						}}
-					>
-						{version}
-					</span>
-				)
-			})
+	onAddImage = ({ name }) => {
+		if (confirm(`Add registry image ${name}?`)) {
+			this.props.addRegistryImage({ name })
 		}
-
-		const renderNotExisting = name => {
-			return (
-				<p className="text-muted">
-					<span className="fas fa-search fa-fw mr-2" /> Image not found in the repository.
-					<button
-						className="btn btn--text btn--icon float-right"
-						title={`Remove ${name} from (allowed) registry images`}
-						onClick={this.onRemoveImage.bind(null, { image: name, name: extractImageFromUrl(name) })}
-					>
-						<span className="fas fa-trash" />
-					</button>
-				</p>
-			)
-		}
-
-		return this.props.registryImages.entrySeq().map(([name, image]) => {
-			return (
-				<tr key={name}>
-					<td>{name}</td>
-					<td>{image.get('exists') ? renderVersions(name, image.get('versions')) : renderNotExisting(name)}</td>
-				</tr>
-			)
-		})
 	}
 
 	render () {
@@ -105,25 +59,49 @@ class RegistryImagesOverview extends PureComponent {
 				<div className="card-header">
 					Registry Images
 					<div className="btn-group btn-group--toggle float-right">
-						<button className="btn btn-sm btn-primary" onClick={this.onRefresh}>
-							<span className="fas fa-download" /> Fetch versions
-						</button>
-
-						<button className="btn btn-sm btn-light" onClick={this.onPublish}>
-							<span className="fas fa-cloud-upload-alt" /> Publish
-						</button>
+						<AsyncButton
+							className="btn btn-sm btn-light btn--no-underline"
+							onClick={this.onRefresh}
+							busy={this.props.isFetchingVersions}
+							busyText="Fetching ..."
+						>
+							<Fragment>
+								<span className="fas fa-download" /> Fetch versions
+							</Fragment>
+						</AsyncButton>
 					</div>
 				</div>
+
 				<div className="card-body spacing-base">
-					<table className="table">
-						<thead className="thead-light">
-							<tr>
-								<th>Image</th>
-								<th>Versions</th>
-							</tr>
-						</thead>
-						<tbody>{this.renderImages()}</tbody>
-					</table>
+					<RegistryImageForm imageNames={this.props.allowedImages} onSubmit={this.onAddImage} />
+
+					{this.props.allowedImages.size ? (
+						<div className="table-responsive">
+							<table className="table">
+								<thead className="thead-light">
+									<tr>
+										<th style={{ width: '30%' }}>Image</th>
+										<th>Versions</th>
+										<th />
+									</tr>
+								</thead>
+								<tbody>
+									{this.props.allowedImages.sort().map(name => {
+										return (
+											<RegistryImage
+												key={name}
+												name={this.withRegistryUrl(name)}
+												image={this.props.registryImages.get(this.withRegistryUrl(name), Map())}
+												onRemoveImage={partial(this.onRemoveImage, { name, image: this.withRegistryUrl(name) })}
+											/>
+										)
+									})}
+								</tbody>
+							</table>
+						</div>
+					) : (
+						<div className="card-message">No registry images available, try to fetch versions first</div>
+					)}
 				</div>
 			</div>
 		)
@@ -133,9 +111,10 @@ class RegistryImagesOverview extends PureComponent {
 export default connect(
 	state => {
 		return {
-			enabledRegistryImages: state.get('enabledRegistryImages'),
-			registryImages:        state.get('registryImages'),
+			allowedImages:      state.get('allowedImages'),
+			registryImages:     state.get('registryImages'),
+			isFetchingVersions: state.getIn(['userInterface', 'isFetchingVersions']),
 		}
 	},
-	{ storeEnabledRegistryImages, refreshRegistryImages, removeUnavailableRegistryImage }
+	{ refreshRegistryImages, addRegistryImage, removeRegistryImage }
 )(RegistryImagesOverview)

@@ -1,9 +1,10 @@
-.DS_STORE
 *.log
-node_modules
-dist
-coverage
-.idea/
-config/local.*
-Dockerfile.local
+.DS_STORE
 .env
+.idea/
+Dockerfile.local
+config/local.*
+coverage
+dist
+node_modules
+package-lock.json

@@ -1,66 +1,73 @@
-async                                   = require "async"
-config                                  = require "config"
-{ map, chain, reduce, pick, mapObject } = require "underscore"
-semver                                  = require "semver"
+async                    = require "async"
+config                   = require "config"
+{ pluck, first, values } = require "underscore"
 
-Versioning = require "../lib/Versioning"
+getRegistryImages  = require "../lib/getRegistryImages"
+prependRegistryUrl = require "../helpers/prependRegistryUrl"
 
-versioning = new Versioning config.versioning
+isRegistryImageDependentOn = (image, configurations) ->
+	configurations
+		.map (configuration) ->
+			configuration.get "fromImage"
+		.valueSeq()
+		.toArray()
+		.includes image
 
-module.exports = (db, mqttSocket) ->
-	populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
-
-	removeUnavailableRegistryImage = ({ payload }, cb) ->
-		{ name, image } = payload
+module.exports = (db, mqttSocket, store) ->
+	addRegistryImage = ({ payload }, cb) ->
+		{ name } = payload
 
 		async.parallel [
 			(cb) ->
-				db.AllowedImage.findOneAndRemove { name }, cb
+				db.AllowedImage.create { name }, cb
 			(cb) ->
-				db.RegistryImages.findOneAndRemove name: image, cb
-		], (error) ->
-			return cb error if error
-			cb null, "Registry image #{name} removed"
+				async.waterfall [
+					(next) ->
+						getRegistryImages [name], next
+					(images, next) ->
+						{ versions, access } = first values images
+
+						db.RegistryImages.create
+							name:     prependRegistryUrl name
+							versions: versions
+							access:   access
+						, next
+				], cb
+		], cb
+
+	removeRegistryImage = ({ payload }, cb) ->
+		{ name, image } = payload
+
+		store.getConfigurations (error, configurations) ->
+			return cb error                                                                if error
+			return cb new Error "One or more configurations depend on this registry image" if isRegistryImageDependentOn image, configurations
+
+			async.parallel [
+				(cb) ->
+					db.AllowedImage.findOneAndRemove { name }, cb
+				(cb) ->
+					db.RegistryImages.findOneAndRemove name: image, cb
+			], cb
 
 	storeRegistryImages = ({ payload: images }, cb) ->
-		async.mapValues images, ({ versions, exists }, name, cb) ->
-			db.RegistryImages.findOneAndUpdate { name },
-				{ name, versions, exists },
-				{ upsert: true, new: true },
-				cb
+		async.mapValues images, ({ versions, access, exists }, name, cb) ->
+			async.series [
+				(next) ->
+					db.RegistryImages.findOneAndRemove { name }, next
+				(next) ->
+					db.RegistryImages.findOneAndUpdate { name },
+						{ name, versions, access, exists },
+						{ upsert: true, new: true },
+						next
+			], cb
 		, cb
 
-	storeEnabledRegistryImages = ({ payload: images }, cb) ->
-		async.mapValues images
-			, (version, name, next) ->
-				db.RegistryImages.findOneAndUpdate { name },
-					{ enabledVersion: version },
-					next
-			, (error) ->
-				return cb error if error
-				populateMqttWithGroups db, mqttSocket, cb
-
-	refreshRegistryImages = ({ payload: images }, cb) ->
+	refreshRegistryImages = ({ payload }, cb) ->
 		async.waterfall [
 			(next) ->
 				db.AllowedImage.find {}, next
 			(images, next) ->
-				images = map images, (i) -> i.name
-
-				versioning.getImages images, (error, result) ->
-					return next error if error
-
-					next null, reduce result, (memo, { versions, exists }, imageName) ->
-						versions = chain versions
-							.without "latest", "1"
-							.filter semver.valid
-							.sort semver.compare
-							.last config.versioning.numOfVersionsToShow
-							.value()
-
-						memo["#{config.versioning.docker.host}/#{imageName}"] = { versions, exists }
-						memo
-					, {}
+				getRegistryImages pluck(images, "name"), next
 			(images, next) ->
 				storeRegistryImages payload: images, next
 		], cb
@@ -68,6 +75,6 @@ module.exports = (db, mqttSocket) ->
 	return {
 		storeRegistryImages
 		refreshRegistryImages
-		storeEnabledRegistryImages
-		removeUnavailableRegistryImage
+		addRegistryImage
+		removeRegistryImage
 	}

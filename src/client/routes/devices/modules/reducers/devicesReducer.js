@@ -3,11 +3,10 @@ import { Map, fromJS } from 'immutable'
 import {
 	DEVICE_STATE,
 	DEVICES_BATCH_STATE,
-	DEVICES_BATCH_APP_STATE,
 	DEVICES_STATE,
 	CONTAINER_LOGS,
 	SELECT_DEVICE,
-} from '../actions'
+} from 'routes/devices/modules/actions'
 
 // ------------------------------------
 // Action Handlers
@@ -30,7 +29,15 @@ const ACTION_HANDLERS = {
 	},
 
 	[DEVICES_BATCH_STATE]: (devices, action) => {
-		return devices.mergeDeep(fromJS(action.data))
+		return devices.reduce((updatedDevices, device) => {
+			const deviceId = device.get('deviceId')
+
+			if (action.data[deviceId]) {
+				return updatedDevices.mergeIn([deviceId], fromJS(action.data[deviceId]))
+			} else {
+				return updatedDevices
+			}
+		}, devices)
 	},
 
 	[DEVICES_BATCH_APP_STATE]: (devices, action) => {

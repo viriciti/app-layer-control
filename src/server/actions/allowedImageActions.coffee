@@ -1,3 +1,5 @@
+async = require "async"
+
 module.exports = (db, mqttSocket) ->
 	addAllowedImage = ({ payload }, cb) ->
 		{ name } = payload
@@ -7,9 +9,14 @@ module.exports = (db, mqttSocket) ->
 
 	removeAllowedImage = ({ payload }, cb) ->
 		{ name } = payload
-		db.AllowedImage.findOneAndRemove { name }, (error) ->
+
+		async.parallel [
+			(next) ->
+				db.AllowedImage.findOneAndRemove { name }, next
+			(next) ->
+				db.RegistryImages.findOneAndRemove name: $regex: "#{name}$", next
+		], (error) ->
 			return cb error if error
 			cb null, "AllowedImage #{name} removed"
 
 	{ addAllowedImage, removeAllowedImage }
-

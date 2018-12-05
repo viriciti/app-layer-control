@@ -4,11 +4,11 @@ import { Field, FieldArray, reduxForm } from 'redux-form/immutable'
 import { reduce } from 'underscore'
 import { Map, List } from 'immutable'
 
-import Modal from '../../../../components/common/Modal'
-import { createConfiguration } from '../../modules/actions'
-import validate from '../../modules/validateForm'
+import Modal from 'components/common/Modal'
+import { createConfiguration } from 'routes/administration/modules/actions'
+import validate from 'routes/administration/modules/validateForm'
 
-import { TextInput, VersionInput, SelectInput, DoubleTextInput, SliderInput } from '../../commons'
+import { TextInput, VersionInput, SelectInput, DoubleTextInput, SliderInput } from 'routes/administration/commons'
 
 const initialFormValues = {
 	detached:      true,
@@ -165,7 +165,13 @@ class ConfigurationsForm extends PureComponent {
 			>
 				<form className="form-horizontal" onSubmit={this.props.handleSubmit(this.onSubmit.bind(this))}>
 					<fieldset>
-						<Field name="applicationName" label="Application name" component={TextInput} required />
+						<Field
+							name="applicationName"
+							label="Application name"
+							component={TextInput}
+							readOnly={this.props.isEditing}
+							required
+						/>
 						<Field name="containerName" label="Container name" component={TextInput} required />
 
 						<Field name="fromImage" label="Image" component={SelectInput} options={this.renderImagesNames()} required />

@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect'
 import { List } from 'immutable'
 
-import extractImageFromUrl from '../extractImageFromUrl'
+import extractImageFromUrl from 'routes/administration/modules/extractImageFromUrl'
 
 const getRegistryImages = state => {
 	return state.get('registryImages')
@@ -15,4 +15,7 @@ const getRegistryImagesNames = registryImages => {
 	}
 }
 
-export default createSelector(getRegistryImages, getRegistryImagesNames)
+export default createSelector(
+	getRegistryImages,
+	getRegistryImagesNames
+)

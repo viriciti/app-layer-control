@@ -1,9 +1,21 @@
 .loader {
 	@extend .mx-auto;
+	@extend .my-3;
 
-	background-size: cover;
-	background-image: url("/assets/loaders/loader.gif");
+	background-image: url("/assets/loaders/loader.gif"), url("/assets/loaders/loader.svg");
 	background-repeat: no-repeat;
+	background-size: cover;
 	height: 2rem;
 	width: 2rem;
+
+	.btn & {
+		@extend .my-0;
+		@extend .mr-1;
+
+		display: inline-block;
+		height: 0.75rem;
+		position: relative;
+		top: 1px;
+		width: 0.75rem;
+	}
 }

@@ -1,5 +1,5 @@
 import { Iterable } from 'immutable'
-import { every, isEmpty } from 'lodash'
+import { every, isEmpty } from 'underscore'
 
 function getHeaderName (source) {
 	if (Iterable.isIterable(source)) {

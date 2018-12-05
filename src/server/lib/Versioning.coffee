@@ -2,6 +2,7 @@ _       = require "underscore"
 async   = require "async"
 config  = require "config"
 debug   = (require "debug") "app:Versioning"
+log     = (require "./Logger") "Versioning"
 request = require "request"
 semver  = require "semver"
 url     = require "url"
@@ -21,29 +22,43 @@ class Versioning
 		@tokenAttempts[image] or= 0
 		@tokenAttempts[image] +=  1
 
-		request
-			url:     @getGitURL image
-			headers: @getGitHeaders()
-		, (error, response, body) =>
-			return cb error if error
+		async.retry
+			times:    10
+			interval: 2000
+		, (cb) =>
+			request
+				url:     @getGitURL image
+				headers: @getGitHeaders()
+			, (error, response, body) =>
+				return cb error if error
 
-			debug "[renewToken] Renewed token for '#{image}', body", body.toString()
+				debug "[renewToken] Renewed token for '#{image}', body", body.toString()
 
-			try
-				json = JSON.parse body.toString()
-			catch error
-				debug "Failed parsing body: #{error.message}. Json: \n", body.toString()
-				return cb error
+				try
+					json = JSON.parse body.toString()
+				catch error
+					debug "Failed parsing body: #{error.message}. Json: \n", body.toString()
+					return cb error
 
-			unless json?.token
-				debug "Wrong token object", json
-				return cb new Error "Wrong token object"
+				if json?.errors
+					message = json
+						.errors
+						.map  (error) -> "[#{image}] #{error.message}"
+						.join ", "
 
-			token = @tokens[image] = json.token
+					log.warn message
+					return cb new Error message
 
-			cb null,
-				image: image
-				token: token
+				unless json?.token
+					debug "Wrong token object", json
+					return cb new Error "Wrong token object"
+
+				token = @tokens[image] = json.token
+
+				cb null,
+					image: image
+					token: token
+		, cb
 
 	getToken: (image, cb) =>
 		if @tokens[image]?
@@ -68,8 +83,8 @@ class Versioning
 				debug "[getImage] Serving #{name} from cache, time left: #{cacheTimeDiff - Date.now()}ms"
 				return cb null,
 					"#{name}":
-						versions:   @cached[name].versions
-						exists: true
+						versions: @cached[name].versions
+						access:   true
 			else
 				debug "[getImage] '#{name}' in cache expired, invalidating"
 				delete @cached[name]
@@ -84,8 +99,8 @@ class Versioning
 				debug "[getImage] Too many failed attempts to renew token. '#{name}' most likely does not exist in the repository"
 				return cb null,
 					"#{name}":
-						versions:   []
-						exists: false
+						versions: []
+						access:   false
 
 			request
 				url:     @getDockerURL token.image
@@ -110,16 +125,15 @@ class Versioning
 						versions:  json.tags
 						cacheTime: Date.now()
 
-
 					debug "[getImage] Returning",
 						"#{name}":
-							versions: json.tags
-							exists:   true
+							versions: json.tags or []
+							access:   true
 
 					return cb null,
 						"#{name}":
-							versions: json.tags
-							exists:   true
+							versions: json.tags or []
+							access:   true
 
 				debug "[getImage] Unauthorized access to image '#{token.image}', renewing token and trying again!"
 
@@ -209,7 +223,8 @@ class Versioning
 			username: @docker.username
 			password: @docker.password
 
-		b64 = new Buffer("#{auth.username}:#{auth.password}").toString "base64"
+		authToken = "#{auth.username}:#{auth.password}"
+		b64       = Buffer.from(authToken).toString "base64"
 
 		"Authorization": "Basic #{b64}"
 
