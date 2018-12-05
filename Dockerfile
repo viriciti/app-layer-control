@@ -1,7 +1,4 @@
-FROM node:8-slim
-
-RUN apt-get update && \
-    apt-get install -y libpng-dev
+FROM node:8
 
 # Create app directory
 RUN mkdir -p /app
