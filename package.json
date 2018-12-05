@@ -4,6 +4,7 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "mocha",
+		"test:watch": "NODE_ENV=test mocha --watch-extensions coffee --watch",
 		"start": "NODE_ENV=development && nodemon src/server/main.coffee",
 		"develop": "NODE_ENV=development && nodemon src/server/main.coffee",
 		"deploy": "npm run deploy-frontend && npm run deploy-backend",
@@ -49,6 +50,7 @@
 		"leaked-handles": "^5.2.0",
 		"less": "^2.7.3",
 		"mocha": "^5.2.0",
+		"mosca": "^2.8.3",
 		"node-sass": "^4.9.3",
 		"nodemon": "^1.18.4",
 		"react-hot-loader": "^3.1.3",

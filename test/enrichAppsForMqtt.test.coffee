@@ -1,12 +1,11 @@
 assert         = require "assert"
-mongoose       = require "mongoose"
 { pluck }      = require "underscore"
 naturalCompare = require "natural-compare-lite"
 
 createTestDatabase = require "./utils/createTestDatabase"
+dropTestDatabase   = require "./utils/dropTestDatabase"
 createStore        = require "../src/server/store"
 enrichAppsForMqtt  = require "../src/server/helpers/enrichAppsForMqtt"
-# label, applications, cb
 
 describe ".enrichAppsForMqtt", ->
 	store  = null
@@ -18,10 +17,7 @@ describe ".enrichAppsForMqtt", ->
 		{ enrich } = enrichAppsForMqtt db
 
 	after ->
-		mongoose
-			.connection
-			.db
-			.dropDatabase()
+		dropTestDatabase()
 
 	it "should throw if no label is specified", ->
 		assert.throws ->

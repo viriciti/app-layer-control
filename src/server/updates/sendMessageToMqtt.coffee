@@ -42,7 +42,6 @@ module.exports = (client) ->
 			action:  action.action
 			payload: action.payload
 
-
 		client.on "message", onMessage
 
 		client.subscribe subscribeTopic
