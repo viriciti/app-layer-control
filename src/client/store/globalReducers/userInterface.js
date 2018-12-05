@@ -47,7 +47,11 @@ const ACTION_HANDLERS = {
 	},
 }
 
-const initialState = Map({ isFetchingVersions: false, isRefreshingState: List(), isStoringGroups: List() })
+const initialState = Map({
+	isFetchingVersions: false,
+	isRefreshingState:  List(),
+	isStoringGroups:    List(),
+})
 
 export default function registryImagesReducer (state = initialState, action) {
 	const handler = ACTION_HANDLERS[action.type]

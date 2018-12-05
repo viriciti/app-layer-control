@@ -113,7 +113,7 @@ class ContainerOverview extends PureComponent {
 					<div className="col-12">{this.renderContainerInfo()}</div>
 				</div>
 				<div className="row">
-					<div className="col-3 float-right">
+					<div className="col-3 offset-9">
 						<ul className="btn-group float-right">
 							<button
 								className="btn btn-light btn-sm"

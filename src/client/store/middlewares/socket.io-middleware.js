@@ -96,7 +96,15 @@ export default function ({ dispatch }) {
 			dest,
 		}
 
+		if (action.meta && action.meta.async) {
+			dispatch(updateDeviceAsyncState(action.meta.async, [dest], true))
+		}
+
 		socket.emit('action:device:get', actionToDispatch, (error, result) => {
+			if (action.meta && action.meta.async) {
+				dispatch(updateDeviceAsyncState(action.meta.async, [dest], false))
+			}
+
 			if (error) {
 				return notify('error', error.message)
 			}
