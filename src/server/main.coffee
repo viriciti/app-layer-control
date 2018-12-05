@@ -357,7 +357,7 @@ _onActionDevice = (action, cb) ->
 	# device-mqtt has been removed since 1.16.0
 	if appVersion and semver.gt appVersion, "1.15.0"
 		rpc
-			.call "actions/#{action.dest}/#{action.action}"
+			.call "actions/#{action.dest}/#{action.action}", action.payload
 			.then          -> cb null, messageTable[action.action] or "Done"
 			.catch (error) -> cb message: error.message
 	else
