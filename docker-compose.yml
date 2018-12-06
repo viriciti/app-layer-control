@@ -1,9 +1,10 @@
 version: "3"
 services:
-  vernemqtt:
-    container_name: vernemqtt
+  vernemq:
+    container_name: vernemq
     environment:
       DOCKER_VERNEMQ_ALLOW_ANONYMOUS: "on"
+      DOCKER_VERNEMQ_MAX_ONLINE_MESSAGES: 10000
     image: erlio/docker-vernemq
     ports: ["1883:1883"]
     restart: always
