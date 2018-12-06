@@ -357,18 +357,21 @@ _onActionDevice = (action, cb) ->
 	appVersion = deviceStates.getIn [action.dest, "systemInfo", "appVersion"]
 	appVersion = deviceStates.getIn [action.dest, "systemInfo", "dmVersion"] unless appVersion
 
+	message = messageTable[action.action]
+	log.warn "No message configured for action '#{action.action}'" unless message?.trim?().length
+	message or= "Done"
+
 	# device-mqtt has been removed since 1.16.0
 	if appVersion and semver.gt appVersion, "1.15.0"
-		rpc
-			.call "actions/#{action.dest}/#{action.action}", action.payload
-			.then          -> cb null, messageTable[action.action] or "Done"
-			.catch (error) -> cb message: error.message
+		try
+			await rpc.call "actions/#{action.dest}/#{action.action}", action.payload
+			cb null, message
+		catch error
+			cb message: error.message
 	else
 		legacy_sendToMqtt action, (error) ->
-			if error
-				cb message: error.message
-			else
-				cb null, messageTable[action.action] or "Done"
+			return cb message: error.message if error
+			cb null, message
 
 _onActionDevices = (action, cb) ->
 	{ payload, dest } = action
