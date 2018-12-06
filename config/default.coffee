@@ -8,12 +8,13 @@ module.exports =
 	server:
 		port: 3000
 
-	devicemqtt:
-		host: "localhost"
-		port: 1883
+	mqtt:
+		readOnly: true
+		clientId: "app-layer-control-#{os.hostname()}"
+		host:     "localhost"
+		port:     1883
 		connectionOptions:
 			keepalive: 300
-		clientId: "app-layer-control-#{os.hostname()}"
 
 	db:
 		hosts: [

@@ -52,6 +52,8 @@ store             = (require "./store") db
 deviceStates      = Map()
 getDeviceStates   = -> deviceStates
 
+log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
+
 main = ->
 	initMqtt()
 	initSocketIO()
@@ -102,13 +104,13 @@ initMqtt = ->
 	options =
 		Object.assign(
 			{},
-			config.devicemqtt
-			config.devicemqtt.connectionOptions
-			clientId: config.devicemqtt.clientId
+			config.mqtt
+			config.mqtt.connectionOptions
+			clientId: config.mqtt.clientId
 		)
 
 	client            = mqttClient = mqtt.connect options
-	client.publish    = noop if config.readOnly
+	client.publish    = noop if config.mqtt.readOnly
 	legacy_sendToMqtt = sendMessageToMqtt mqttClient
 	rpc               = new RPC client
 
@@ -294,7 +296,8 @@ initMqtt = ->
 					log.info "Subscribed to MQTT"
 					log.info "Topics: #{granted.map(({ topic }) -> topic).join ", "}"
 
-	onError = ->
+	onError = (error) ->
+		log.error error.message
 
 	onClose = ->
 		log.info "Connecting to the MQTT broker closed"
