@@ -4,6 +4,8 @@
 .idea/
 Dockerfile.local
 config/local.*
+config/local-*.*
+config/local-*-*.*
 coverage
 dist
 node_modules

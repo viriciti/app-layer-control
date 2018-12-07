@@ -34,9 +34,9 @@ module.exports = (client) ->
 
 		timeoutInterval = null
 		actionId        = randomstring.generate()
-		origin          = config.devicemqtt.clientId
+		origin          = config.mqtt.clientId
 		publishTopic    = "commands/#{action.dest}/#{actionId}"
-		subscribeTopic  = "commands/#{config.devicemqtt.clientId}/#{actionId}/response"
+		subscribeTopic  = "commands/#{origin}/#{actionId}/response"
 		message         = JSON.stringify
 			origin:  origin
 			action:  action.action
