@@ -3,7 +3,9 @@ os = require "os"
 module.exports =
 	readOnly: true
 
-	batchStateInterval: 2500
+	batchState:
+		nsStateInterval: 500
+		defaultInterval: 3000
 
 	server:
 		port: 3000

@@ -149,7 +149,7 @@ initMqtt = ->
 
 					observable
 						.takeUntil Observable.fromEvent mqttClient, "disconnected"
-						.bufferTime config.batchStateInterval
+						.bufferTime config.batchState.defaultInterval
 						.subscribe (externalOutputs) ->
 							return unless externalOutputs.length
 
@@ -195,7 +195,7 @@ initMqtt = ->
 						_broadcastAction "devicesBatchState", deviceUpdates
 
 				devicesState$
-					.bufferTime config.batchStateInterval
+					.bufferTime config.batchState.defaultInterval
 					.subscribe (stateUpdates) ->
 						return unless stateUpdates.length
 
@@ -233,12 +233,8 @@ initMqtt = ->
 
 						_broadcastAction "devicesBatchState", newStates
 
-				# Triggers on every nsState topic event
-				# The nsState topic contains split state top level key
-				# It looks like this /devices/<serial>/nsState/<top-level-key>
-				# It will contain an object of a part of some device' state
 				devicesNsState$
-					.bufferTime config.batchStateInterval
+					.bufferTime config.batchState.nsStateInterval
 					.subscribe (nsStateUpdates) ->
 						return unless nsStateUpdates.length
 
@@ -256,12 +252,13 @@ initMqtt = ->
 							updates
 						, {}
 
+						console.log "blabla", newNsStates
 						debug "Sending #{size newNsStates} namespace state updates"
 
 						_broadcastAction "devicesBatchState", newNsStates
 
 				devicesStatus$
-					.bufferTime config.batchStateInterval
+					.bufferTime config.batchState.defaultInterval
 					.subscribe (statusUpdates) ->
 						return unless statusUpdates.length
 
