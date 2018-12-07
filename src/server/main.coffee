@@ -252,7 +252,6 @@ initMqtt = ->
 							updates
 						, {}
 
-						console.log "blabla", newNsStates
 						debug "Sending #{size newNsStates} namespace state updates"
 
 						_broadcastAction "devicesBatchState", newNsStates
