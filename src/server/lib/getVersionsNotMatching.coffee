@@ -9,7 +9,7 @@ replaceVersionWithConfiguration = ({ images, groups, configurations }) ->
 			configuration = configurations.get application
 			fromImage     = configuration.get "fromImage"
 
-			if name.endsWith("test") or not version
+			unless version
 				versions = images
 					.getIn  [fromImage, "versions"]
 					.filter (tag) -> semver.valid tag

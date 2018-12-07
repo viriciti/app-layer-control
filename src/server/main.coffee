@@ -52,6 +52,8 @@ store             = (require "./store") db
 deviceStates      = Map()
 getDeviceStates   = -> deviceStates
 
+log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
+
 main = ->
 	initMqtt()
 	initSocketIO()
@@ -102,13 +104,13 @@ initMqtt = ->
 	options =
 		Object.assign(
 			{},
-			config.devicemqtt
-			config.devicemqtt.connectionOptions
-			clientId: config.devicemqtt.clientId
+			config.mqtt
+			config.mqtt.connectionOptions
+			clientId: config.mqtt.clientId
 		)
 
 	client            = mqttClient = mqtt.connect options
-	client.publish    = noop if config.readOnly
+	client.publish    = noop if config.mqtt.readOnly
 	legacy_sendToMqtt = sendMessageToMqtt mqttClient
 	rpc               = new RPC client
 
@@ -147,7 +149,7 @@ initMqtt = ->
 
 					observable
 						.takeUntil Observable.fromEvent mqttClient, "disconnected"
-						.bufferTime config.batchStateInterval
+						.bufferTime config.batchState.defaultInterval
 						.subscribe (externalOutputs) ->
 							return unless externalOutputs.length
 
@@ -193,7 +195,7 @@ initMqtt = ->
 						_broadcastAction "devicesBatchState", deviceUpdates
 
 				devicesState$
-					.bufferTime config.batchStateInterval
+					.bufferTime config.batchState.defaultInterval
 					.subscribe (stateUpdates) ->
 						return unless stateUpdates.length
 
@@ -231,49 +233,8 @@ initMqtt = ->
 
 						_broadcastAction "devicesBatchState", newStates
 
-				devicesAppState$
-					.bufferTime config.batchStateInterval
-					.subscribe (appStates) ->
-						return unless appStates.length
-
-						newAppStates = appStates
-							.map (appState) ->
-								{ action, deviceId, data, name } = appState
-
-								currentContainers = deviceStates.getIn [deviceId, "containers"]
-								newContainers     = currentContainers
-								containerIndex    = currentContainers.findIndex (container) -> name is container.get "name"
-								containerExists   = containerIndex isnt -1
-
-								if action is "create"
-									newContainers = newContainers.push fromJS data
-								else if action is "destroy" and containerExists
-									newContainers = newContainers.delete containerIndex
-								else if containerExists
-									newContainers = newContainers.update containerIndex, (container) ->
-										container.merge fromJS data
-
-								deviceStates = deviceStates.setIn [deviceId, "containers"], newContainers
-
-								deviceId:             deviceId
-								containers:           newContainers
-								containersNotRunning: getContainersNotRunning newContainers
-							.reduce (devices, { deviceId, containers, containersNotRunning }) ->
-								devices[deviceId] =
-									lastSeenTimestamp:    Date.now()
-									containers:           containers
-									containersNotRunning: containersNotRunningToString containersNotRunning
-								devices
-							, {}
-
-						_broadcastAction "devicesBatchAppState", newAppStates
-
-				# Triggers on every nsState topic event
-				# The nsState topic contains split state top level key
-				# It looks like this /devices/<serial>/nsState/<top-level-key>
-				# It will contain an object of a part of some device' state
 				devicesNsState$
-					.bufferTime config.batchStateInterval
+					.bufferTime config.batchState.nsStateInterval
 					.subscribe (nsStateUpdates) ->
 						return unless nsStateUpdates.length
 
@@ -296,7 +257,7 @@ initMqtt = ->
 						_broadcastAction "devicesBatchState", newNsStates
 
 				devicesStatus$
-					.bufferTime config.batchStateInterval
+					.bufferTime config.batchState.defaultInterval
 					.subscribe (statusUpdates) ->
 						return unless statusUpdates.length
 
@@ -331,7 +292,8 @@ initMqtt = ->
 					log.info "Subscribed to MQTT"
 					log.info "Topics: #{granted.map(({ topic }) -> topic).join ", "}"
 
-	onError = ->
+	onError = (error) ->
+		log.error error.message
 
 	onClose = ->
 		log.info "Connecting to the MQTT broker closed"
@@ -391,18 +353,21 @@ _onActionDevice = (action, cb) ->
 	appVersion = deviceStates.getIn [action.dest, "systemInfo", "appVersion"]
 	appVersion = deviceStates.getIn [action.dest, "systemInfo", "dmVersion"] unless appVersion
 
+	message = messageTable[action.action]
+	log.warn "No message configured for action '#{action.action}'" unless message?.trim?().length
+	message or= "Done"
+
 	# device-mqtt has been removed since 1.16.0
 	if appVersion and semver.gt appVersion, "1.15.0"
-		rpc
-			.call "actions/#{action.dest}/#{action.action}"
-			.then          -> cb null, messageTable[action.action] or "Done"
-			.catch (error) -> cb message: error.message
+		try
+			await rpc.call "actions/#{action.dest}/#{action.action}", action.payload
+			cb null, message
+		catch error
+			cb message: error.message
 	else
 		legacy_sendToMqtt action, (error) ->
-			if error
-				cb message: error.message
-			else
-				cb null, messageTable[action.action] or "Done"
+			return cb message: error.message if error
+			cb null, message
 
 _onActionDevices = (action, cb) ->
 	{ payload, dest } = action
