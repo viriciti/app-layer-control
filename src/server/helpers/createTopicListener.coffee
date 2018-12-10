@@ -8,7 +8,7 @@ module.exports = (socket, matcher) ->
 
 			observer.next
 				topic:   topic
-				message: message
+				message: message.toString()
 				match:   MQTTPattern.exec matcher, topic
 
 		onClose = ->
