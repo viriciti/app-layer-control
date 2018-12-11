@@ -17,3 +17,12 @@ module.exports =
 			{ host: "ndb-006", port: 27022 }
 		]
 		options: replicaSet: "uberdb0"
+
+	versioning:
+		git:
+			host: "git.viriciti.com"
+
+		docker:
+			host:     "docker.viriciti.com"
+			username: "device-user"
+			password: process.env.DOCKER_REGISTY_TOKEN
