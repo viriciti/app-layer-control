@@ -1,28 +1,44 @@
 { Observable } = require "rxjs"
-{ Map }        = require "immutable"
 async          = require "async"
 ApiClient      = require "@tn-group/api-client"
 config         = require "config"
 _              = require "underscore"
-log            =  require("../../lib/Logger") "external:vid"
+log            =  require("../../lib/Logger") "externals:vid"
 
 apiClient = new ApiClient config.portalApi
 
-HOUR        = 60 * 60 * 1000
-BACK_OFF_MS = 100
+HOUR             = 60 * 60 * 1000
+BACK_OFF_MS      = 100
+AMOUNT_PER_BATCH = 50
+
+batchifyRequest = (source) ->
+	return batchifyRequest [source] unless _.isArray source
+
+	batchesAmount = Math.ceil source.length / AMOUNT_PER_BATCH
+	batches       = []
+
+	_.times batchesAmount, (batchNumber) ->
+		fromIndex = AMOUNT_PER_BATCH * batchNumber
+		toIndex   = AMOUNT_PER_BATCH * (batchNumber + 1)
+		batches.push source.slice fromIndex, toIndex
+
+	batches
 
 getDevices = (storedDevices = [], cb) ->
 	return setImmediate cb, null, [] unless storedDevices.length
 
-	request =
-		uri:     "devices"
-		qs:
-			fields: [ "_id", "serial" ]
-			where:  serial: storedDevices
-		headers: "Cache": false
+	async.map batchifyRequest(storedDevices), (devices, next) ->
+		request =
+			uri: "devices"
+			qs:
+				fields: [ "_id", "serial" ]
+				where:  serial: devices
+			headers: "Cache": false
 
-	apiClient.get request, (error, body, response) ->
-		cb error, body
+		apiClient.get request, next
+	, (error, devices) ->
+		return cb error if error
+		cb null, _.flatten devices
 
 getVid = (device, cb) ->
 	request =
