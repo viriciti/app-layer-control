@@ -1,10 +1,10 @@
 module.exports =
-	readOnly: false
 
-	devicemqtt:
+	mqtt:
+		clientId: "app-layer-control"
 		host: "vernemq"
 		port: 1883
-		clientId: "app-layer-control"
+		readOnly: false
 
 	portalApi:
 		api:
@@ -17,7 +17,3 @@ module.exports =
 			{ host: "ndb-006", port: 27022 }
 		]
 		options: replicaSet: "uberdb0"
-
-	consul:
-		host: "consul"
-		env:  "production"

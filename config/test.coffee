@@ -1,3 +1,3 @@
 module.exports =
-	devicemqtt:
+	mqtt:
 		clientId: "app-layer-control-test"
