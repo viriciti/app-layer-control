@@ -11,12 +11,13 @@ module.exports =
 		port: 3000
 
 	mqtt:
-		readOnly: true
 		clientId: "app-layer-control-#{os.hostname()}"
-		host:     "localhost"
-		port:     1883
 		connectionOptions:
 			keepalive: 300
+		host:            "localhost"
+		port:            1883
+		readOnly:        true
+		responseTimeout: 5000
 
 	db:
 		hosts: [
@@ -24,8 +25,6 @@ module.exports =
 			port: 27017
 		]
 		name: "app-layer-control"
-
-	responseTimeout: 5000
 
 	versioning:
 		maxTokenAttempts:    3

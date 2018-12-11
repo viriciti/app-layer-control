@@ -112,7 +112,7 @@ initMqtt = ->
 	client            = mqttClient = mqtt.connect options
 	client.publish    = noop if config.mqtt.readOnly
 	legacy_sendToMqtt = sendMessageToMqtt mqttClient
-	rpc               = new RPC client
+	rpc               = new RPC client, timeout: config.mqtt.responseTimeout
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
@@ -381,7 +381,6 @@ _onActionDevices = (action, cb) ->
 
 _onActionDeviceGet = (action, cb) ->
 	legacy_sendToMqtt action, cb
-
 
 _onActionDb = ({ action, payload, meta }, cb) ->
 	{ execute }  = (require "./actions") db, mqttClient, _broadcastAction, store
