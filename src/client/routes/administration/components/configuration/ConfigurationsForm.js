@@ -91,16 +91,22 @@ class ConfigurationsForm extends PureComponent {
 			? 'A new configuration will be created. Are you sure?'
 			: 'The configuration will be updated. Are you sure?'
 
+		const removeTrailingSlash = value => {
+			return value.replace(/(.+)\/$/, '$1')
+		}
+
 		if (!confirm(message)) {
 			return
 		}
 
+		// normalize environment
 		if (newConfiguration.environment) {
 			newConfiguration.environment = newConfiguration.environment.map(env => {
 				return [env.Name, env.Value].join('=')
 			})
 		}
 
+		// normalize ports
 		if (newConfiguration.ports) {
 			newConfiguration.ports = reduce(
 				newConfiguration.ports,
@@ -118,9 +124,10 @@ class ConfigurationsForm extends PureComponent {
 			)
 		}
 
+		// normalize mounts
 		if (newConfiguration.mounts) {
 			newConfiguration.mounts = newConfiguration.mounts.map(mount => {
-				return [mount.HostPath, mount.ContainerPath].join(':')
+				return [removeTrailingSlash(mount.HostPath), removeTrailingSlash(mount.ContainerPath)].join(':')
 			})
 		}
 
@@ -272,7 +279,7 @@ export default connect(
 	{ createConfiguration }
 )(
 	reduxForm({
-		form:          'configurations',
+		form: 'configurations',
 		validate,
 		initialValues: initialFormValues,
 	})(ConfigurationsForm)

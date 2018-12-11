@@ -4,7 +4,7 @@ module.exports =
 	observable: (socket) ->
 		createTopicListener socket, "devices/+id/logs"
 			.filter ({ message }) ->
-				message?.toString().trim().length
+				message?.trim().length
 			.map ({ match, message }) ->
 				deviceId: match.id
 				logs:     JSON.parse message

@@ -8,7 +8,7 @@ module.exports =
 			.map ({ topic, message, match }) ->
 				deviceId: match.id
 				key:      match.key
-				value:    JSON.parse message.toString()
+				value:    JSON.parse message
 			.filter ({ deviceId }) ->
 				deviceId
 			.takeUntil Observable.fromEvent socket, "disconnected"
