@@ -296,7 +296,7 @@ initMqtt = ->
 		log.error error.message
 
 	onClose = ->
-		log.info "Connecting to the MQTT broker closed"
+		log.info "Connection to the MQTT broker closed"
 
 	client
 		.on "connect", onConnect

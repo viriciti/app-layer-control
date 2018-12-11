@@ -1,8 +1,6 @@
 os = require "os"
 
 module.exports =
-	readOnly: true
-
 	batchState:
 		nsStateInterval: 500
 		defaultInterval: 3000
