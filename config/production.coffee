@@ -8,7 +8,10 @@ module.exports =
 
 	portalApi:
 		api:
-			host: "portal"
+			host:       "portal"
+			port:       8080
+			apiVersion: "v2"
+		serviceName: "app-layer-control"
 
 	db:
 		hosts: [
