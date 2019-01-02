@@ -48,4 +48,4 @@ module.exports = (client) ->
 		client.publish   publishTopic, message, (error) ->
 			return cb message: error.message if error
 
-			timeout = setTimeout onTimeout, config.responseTimeout
+			timeout = setTimeout onTimeout, config.mqtt.responseTimeout
