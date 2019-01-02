@@ -4,11 +4,12 @@ config       = require "config"
 module.exports = (client) ->
 	(action, cb) ->
 		# ensure interval and listeners are cleaned up correctly
+		timeout  = null
 		callback = cb
 		cb       = (error, result) ->
-			clearInterval timeoutInterval
-			timeoutInterval = null
-			error           = message: error.message if error instanceof Error
+			clearTimeout timeout
+			timeout = null
+			error   = message: error.message if error instanceof Error
 
 			client.unsubscribe subscribeTopic
 			client.removeListener "message", onMessage
@@ -27,12 +28,11 @@ module.exports = (client) ->
 				cb { data }
 
 		onTimeout = ->
-			clearInterval timeoutInterval
-			timeoutInterval = null
+			clearTimeout timeout
+			timeout = null
 
 			cb message: "Socket timed out"
 
-		timeoutInterval = null
 		actionId        = randomstring.generate()
 		origin          = config.mqtt.clientId
 		publishTopic    = "commands/#{action.dest}/#{actionId}"
@@ -48,4 +48,4 @@ module.exports = (client) ->
 		client.publish   publishTopic, message, (error) ->
 			return cb message: error.message if error
 
-			timeoutInterval = setInterval onTimeout, config.responseTimeout
+			timeout = setTimeout onTimeout, config.responseTimeout
