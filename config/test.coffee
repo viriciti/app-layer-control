@@ -1,3 +1,4 @@
 module.exports =
-	devicemqtt:
-		clientId: "app-layer-control-test"
+	mqtt:
+		clientId:        "app-layer-control-test"
+		responseTimeout: 500

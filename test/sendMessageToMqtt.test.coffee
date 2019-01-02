@@ -10,7 +10,7 @@ sendMessageToMqtt = require "../src/server/updates/sendMessageToMqtt"
 
 randomPort  = random 50000, 60000
 mqttUrl     = "mqtt://localhost:#{randomPort}"
-mqttOptions = clientId: config.devicemqtt.clientId
+mqttOptions = clientId: config.mqtt.clientId
 
 describe.only ".sendMessageToMqtt", ->
 	server      = null
@@ -145,3 +145,49 @@ describe.only ".sendMessageToMqtt", ->
 			b:   "hoi"
 			def: "initely"
 		, noop
+
+	it "should timeout after a while", (done) ->
+		sendMessage
+			action: "hello"
+			dest:   os.hostname()
+			payload:
+				timeout: true
+		, (error) ->
+			assert.ok    error
+			assert.equal error.message, "Socket timed out"
+			done()
+
+	it "should discard response after timeout", (done) ->
+		topicPattern = "commands/+/+actionId"
+
+		server.on "published", (packet) ->
+			{ topic } = packet
+			return if topic.startsWith "$SYS"
+			return if topic.endsWith   "/response"
+
+			{ actionId } = MQTTPattern.exec topicPattern, topic
+			response     = status: "OK"
+			publishOn    = ["commands", mqttOptions.clientId]
+
+			publishOn.push actionId
+			publishOn.push "response"
+			publishOn = publishOn.join "/"
+
+			setTimeout ->
+				server.publish
+					topic:   publishOn
+					payload: response
+			, 750
+
+			setTimeout ->
+				done()
+			, 1250
+
+		sendMessage
+			action: "hello"
+			dest:   os.hostname()
+			payload:
+				timeout: "test"
+		, (error) ->
+			assert.ok    error
+			assert.equal error.message, "Socket timed out"
