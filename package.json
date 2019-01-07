@@ -57,6 +57,7 @@
 		"express": "^4.16.1",
 		"grunt": "^0.4.5",
 		"immutable": "^3.8.2",
+		"lodash": "^4.17.11",
 		"moment": "^2.21.0",
 		"mongodb-uri": "^0.9.7",
 		"mongoose": "^4.13.3",

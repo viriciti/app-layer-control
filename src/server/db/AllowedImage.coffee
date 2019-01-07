@@ -1,8 +1,6 @@
 module.exports = (mongoose) ->
-	AllowedImage = mongoose.model "allowedImage",
+	mongoose.model "AllowedImage",
 		name:
 			type:     String
 			required: true
 			unique:   true
-
-	AllowedImage

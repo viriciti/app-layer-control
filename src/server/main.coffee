@@ -11,7 +11,7 @@ path                 = require "path"
 socketio             = require "socket.io"
 { Map, fromJS }      = require "immutable"
 { Observable }       = require "rxjs"
-{ each, size, noop } = require "underscore"
+{ each, size, noop, pluck } = require "underscore"
 mqtt                 = require "mqtt"
 RPC                  = require "mqtt-json-rpc"
 semver               = require "semver"
@@ -23,16 +23,17 @@ semver               = require "semver"
 	DevicesStatus
 	DockerRegistry
 	externals
-}                       = require "./sources"
-populateMqttWithGroups  = require "./helpers/populateMqttWithGroups"
-getVersionsNotMatching  = require "./lib/getVersionsNotMatching"
-getContainersNotRunning = require "./lib/getContainersNotRunning"
-runUpdates              = require "./updates"
-sendMessageToMqtt       = require "./updates/sendMessageToMqtt"
-{ cacheUpdate }         = require "./observables"
+}                            = require "./sources"
+Database                     = require "./db"
+populateMqttWithGroups       = require "./helpers/populateMqttWithGroups"
+populateMqttWithDeviceGroups = require "./helpers/populateMqttWithDeviceGroups"
+getVersionsNotMatching       = require "./lib/getVersionsNotMatching"
+getContainersNotRunning      = require "./lib/getContainersNotRunning"
+runUpdates                   = require "./updates"
+sendMessageToMqtt            = require "./updates/sendMessageToMqtt"
+{ cacheUpdate }              = require "./observables"
 
-log      = (require "./lib/Logger") "main"
-Database = require "./db"
+log = (require "./lib/Logger") "main"
 
 # Server initialization
 app     = express()
@@ -51,6 +52,12 @@ getDeviceStates   = -> deviceStates
 log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
 
 main = ->
+	db.Group.find {}, (error, groups) ->
+		a          = new db.DeviceGroup
+		a.deviceId = "youssrikrap"
+		a.groups   = groups
+		a.save()
+
 	initMqtt()
 	initSocketIO()
 
@@ -109,7 +116,10 @@ initMqtt = ->
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
 
-		populateMqttWithGroups db, mqttClient, (error) ->
+		async.parallel [
+			(cb) -> populateMqttWithGroups db, mqttClient, cb
+			(cb) -> populateMqttWithDeviceGroups db, mqttClient, cb
+		], (error) ->
 			return log.error if error
 
 			async.parallel

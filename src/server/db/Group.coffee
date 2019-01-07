@@ -1,6 +1,6 @@
-module.exports = (mongoose) ->
-	Group = mongoose.model "group",
+mongoose = require "mongoose"
+
+module.exports = ->
+	mongoose.model "Group",
 		label:        String
 		applications: Object
-
-	Group
