@@ -1,5 +1,5 @@
 { Observable }     = require "rxjs"
-{ isEqual, pluck } = require "underscore"
+{ isEqual, pluck } = require 'underscore'
 
 getRegistryImages = require "../lib/getRegistryImages"
 

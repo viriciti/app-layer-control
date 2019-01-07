@@ -1,4 +1,4 @@
-import _ from 'underscore'
+import _ from 'lodash'
 import { List, Map } from 'immutable'
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'

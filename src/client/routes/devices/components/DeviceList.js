@@ -1,4 +1,4 @@
-import { isEqual, find } from 'underscore'
+import { isEqual, find } from 'lodash'
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import { Map, List } from 'immutable'

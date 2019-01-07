@@ -1,4 +1,4 @@
-import _ from "underscore";
+import _ from 'underscore';
 import { Map, List, fromJS } from "immutable";
 
 import { ADD_FILTER, SET_FILTER, CLEAR_FILTERS, APPLY_FILTERS } from "/routes/devices/modules/actions";

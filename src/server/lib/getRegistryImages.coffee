@@ -1,4 +1,4 @@
-{ chain, reduce } = require "underscore"
+{ chain, reduce } = require 'underscore'
 semver            = require "semver"
 config            = require "config"
 

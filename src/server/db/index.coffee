@@ -1,7 +1,7 @@
 config      = require "config"
 mongodbURI  = require "mongodb-uri"
 mongoose    = require "mongoose"
-{ forEach } = require "underscore"
+{ forEach } = require 'underscore'
 
 models     =
 	AllowedImage:   (require "./AllowedImage")   mongoose

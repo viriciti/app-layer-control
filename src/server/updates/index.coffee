@@ -1,7 +1,7 @@
 async         = require "async"
 { Map }       = require "immutable"
 log           = (require "../lib/Logger") "updates"
-{ isBoolean } = require "underscore"
+{ isBoolean } = require 'underscore'
 
 updateGroups = ({ db, store }, cb) ->
 	store.getGroups (error, groups) ->

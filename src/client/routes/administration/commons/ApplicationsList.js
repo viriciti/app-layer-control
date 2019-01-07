@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react'
 import classNames from 'classnames'
-import { noop, omit, has } from 'underscore'
+import { noop, omit, has } from 'lodash'
 import naturalCompare from 'natural-compare-lite'
 
 const ApplicationVersion = ({ version, onExpandSelectVersion, isCurrentVersion }) => {

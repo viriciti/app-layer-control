@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import { Field, FieldArray, reduxForm } from 'redux-form/immutable'
-import { reduce } from 'underscore'
+import { reduce } from 'lodash'
 import { Map, List } from 'immutable'
 
 import Modal from '/components/common/Modal'

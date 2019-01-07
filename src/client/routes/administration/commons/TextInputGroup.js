@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react'
 import classNames from 'classnames'
-import { noop } from 'underscore'
+import { noop } from 'lodash'
 import { connect } from 'react-redux'
 
 import AsyncButton from '/components/common/AsyncButton'

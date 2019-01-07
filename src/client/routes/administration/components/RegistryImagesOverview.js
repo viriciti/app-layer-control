@@ -1,7 +1,7 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 import { Map } from 'immutable'
-import { partial } from 'underscore'
+import { partial } from 'lodash'
 
 import AsyncButton from '/components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'

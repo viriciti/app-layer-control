@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
-import { without, isEmpty } from 'underscore'
+import { without, isEmpty } from 'lodash'
 
 import { storeGroups } from '/routes/devices/modules/actions'
 import AsyncButton from '/components/common/AsyncButton'
