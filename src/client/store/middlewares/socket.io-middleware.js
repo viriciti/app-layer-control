@@ -6,7 +6,7 @@ import { updateAsyncState, updateDeviceAsyncState } from '/store/globalReducers/
 
 const socket = io(window.location.origin)
 
-export default function ({ dispatch }) {
+export default function({ dispatch }) {
 	const notify = (type, ...message) => {
 		toast(message.join(' '), { type })
 	}
@@ -17,7 +17,7 @@ export default function ({ dispatch }) {
 		const actionToDispatch = {
 			action: camelCase(action.type.split('/')[1]),
 			payload,
-			dest,
+			dest
 		}
 
 		socket.emit('action:devices', actionToDispatch, error => {
@@ -33,9 +33,9 @@ export default function ({ dispatch }) {
 
 	const _handleActionsToDb = (action, next) => {
 		const actionToDispatch = {
-			action:  camelCase(action.type.split('/')[1]),
+			action: camelCase(action.type.split('/')[1]),
 			payload: action.payload,
-			meta:    action.meta,
+			meta: action.meta
 		}
 
 		if (action.meta && action.meta.async) {
@@ -65,7 +65,7 @@ export default function ({ dispatch }) {
 		const actionToDispatch = {
 			action: camelCase(action.type.split('/')[1]),
 			payload,
-			dest,
+			dest
 		}
 
 		if (action.meta && action.meta.async) {
@@ -93,7 +93,7 @@ export default function ({ dispatch }) {
 		const actionToDispatch = {
 			action: camelCase(action.type.split('/')[1]),
 			payload,
-			dest,
+			dest
 		}
 
 		if (action.meta && action.meta.async) {
@@ -113,10 +113,10 @@ export default function ({ dispatch }) {
 				dispatch({
 					type: 'CONTAINER_LOGS',
 					data: {
-						logs:        result.data,
-						device:      actionToDispatch.dest,
-						containerId: actionToDispatch.payload.id,
-					},
+						logs: result.data,
+						device: actionToDispatch.dest,
+						containerId: actionToDispatch.payload.id
+					}
 				})
 			}
 		})

@@ -53,12 +53,6 @@ getDeviceStates   = -> deviceStates
 log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
 
 main = ->
-	db.Group.find {}, (error, groups) ->
-		a          = new db.DeviceGroup
-		a.deviceId = "youssrikrap"
-		a.groups   = groups
-		a.save()
-
 	initMqtt()
 	initSocketIO()
 
@@ -391,6 +385,7 @@ _onActionDeviceGet = (action, cb) ->
 _onActionDb = ({ action, payload, meta }, cb) ->
 	{ execute }  = (require "./actions") db, mqttClient, _broadcastAction, store
 	messageTable =
+		storeGroups:         "Groups updated for #{payload.dest}"
 		createConfiguration: "Application updated"
 		removeConfiguration: "Application removed"
 		createGroup:         "Group updated"
@@ -405,7 +400,7 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 		debug "Received result for action: #{action} - #{result}"
 		cb null, messageTable[action] or "Done"
 
-# Webpack section
+# parcel
 Bundler = require "parcel-bundler"
 bundler = new Bundler path.resolve __dirname, "..", "client", "index.html"
 
