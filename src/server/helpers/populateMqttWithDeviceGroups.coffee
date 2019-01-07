@@ -7,7 +7,7 @@ module.exports = (db, mqttSocket, cb) ->
 		.lean()
 	), "deviceId"
 
-	await Promise.all devices.map ({ deviceId, groups }) ->
+	Promise.all devices.map ({ deviceId, groups }) ->
 		new Promise (resolve, reject) ->
 			topic  = "devices/#{deviceId}/groups"
 			groups = JSON.stringify groups.map ({ label }) -> label
@@ -16,3 +16,5 @@ module.exports = (db, mqttSocket, cb) ->
 			mqttSocket.publish topic, groups, options, (error) ->
 				return reject error if error
 				resolve()
+		.then  cb
+		.catch cb

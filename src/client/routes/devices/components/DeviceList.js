@@ -23,24 +23,24 @@ import {
 	multiStoreGroups,
 	multiRemoveGroups,
 	paginateTo,
-	resetPagination,
+	resetPagination
 } from '/routes/devices/modules/actions'
 
 class DeviceList extends PureComponent {
 	defaultFilters = {
-		device:        '',
-		groups:        '',
+		device: '',
+		groups: '',
 		groupsExclude: false,
-		version:       '',
-		error:         '',
+		version: '',
+		error: ''
 	}
 
-	constructor () {
+	constructor() {
 		super()
 
 		this.state = {
 			selectedVersion: '',
-			sortBy:          { field: 'deviceId', asc: true },
+			sortBy: { field: 'deviceId', asc: true }
 		}
 	}
 
@@ -55,8 +55,8 @@ class DeviceList extends PureComponent {
 
 			if (confirm(`Add group '${value}' to ${addToDevices.size} device(s)?`)) {
 				this.props.multiStoreGroups({
-					dest:    addToDevices,
-					payload: [value],
+					dest: addToDevices,
+					payload: [value]
 				})
 				this.props.clearMultiSelect()
 			}
@@ -65,8 +65,8 @@ class DeviceList extends PureComponent {
 
 			if (confirm(`Remove group '${value}' from ${removeFromDevices.size} device(s)?`)) {
 				this.props.multiRemoveGroups({
-					dest:    removeFromDevices,
-					payload: value,
+					dest: removeFromDevices,
+					payload: value
 				})
 				this.props.clearMultiSelect()
 			}
@@ -193,22 +193,22 @@ class DeviceList extends PureComponent {
 			.map(name => {
 				return {
 					value: name,
-					label: name,
+					label: name
 				}
 			})
 		const options = [
 			{
-				value:       'add',
-				label:       'Add Group',
+				value: 'add',
+				label: 'Add Group',
 				placeholder: 'Select a group',
-				options:     groupsOptions,
+				options: groupsOptions
 			},
 			{
-				value:       'remove',
-				label:       'Remove Group',
+				value: 'remove',
+				label: 'Remove Group',
 				placeholder: 'Select a group',
-				options:     groupsOptions,
-			},
+				options: groupsOptions
+			}
 		]
 
 		return (
@@ -258,7 +258,7 @@ class DeviceList extends PureComponent {
 		)
 	}
 
-	render () {
+	render() {
 		const { selectedDevice } = this.props
 
 		return (
@@ -329,16 +329,16 @@ class DeviceList extends PureComponent {
 export default connect(
 	state => {
 		return {
-			devices:              state.get('devices'),
-			groups:               state.get('groups'),
+			devices: state.get('devices'),
+			groups: state.get('groups'),
 			multiSelectedDevices: state.getIn(['multiSelect', 'selected']),
-			multiSelectedAction:  state.getIn(['multiSelect', 'action']),
-			deviceSources:        state.get('deviceSources'),
-			configurations:       state.get('configurations'),
+			multiSelectedAction: state.getIn(['multiSelect', 'action']),
+			deviceSources: state.get('deviceSources'),
+			configurations: state.get('configurations'),
 
 			selectedDevice: selectedDeviceSelector(state),
-			filteredItems:  filterSelector(state),
-			serials:        selectorDevicesSerial(state),
+			filteredItems: filterSelector(state),
+			serials: selectorDevicesSerial(state)
 		}
 	},
 	{
@@ -351,6 +351,6 @@ export default connect(
 		multiStoreGroups,
 		multiRemoveGroups,
 		paginateTo,
-		resetPagination,
+		resetPagination
 	}
 )(DeviceList)

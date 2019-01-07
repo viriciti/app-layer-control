@@ -21,6 +21,7 @@ semver               = require "semver"
 	DevicesNsState
 	DevicesState
 	DevicesStatus
+	DeviceGroups
 	DockerRegistry
 	externals
 }                            = require "./sources"
@@ -139,6 +140,7 @@ initMqtt = ->
 				devicesNsState$ = DevicesNsState.observable mqttClient
 				devicesState$   = DevicesState.observable   mqttClient
 				devicesStatus$  = DevicesStatus.observable  mqttClient
+				deviceGroups$   = DeviceGroups.observable   mqttClient
 				cacheUpdate$    = cacheUpdate               store
 
 				each externals, (source) ->
@@ -236,6 +238,7 @@ initMqtt = ->
 						_broadcastAction "devicesBatchState", newStates
 
 				devicesNsState$
+					.merge deviceGroups$
 					.bufferTime config.batchState.nsStateInterval
 					.subscribe (nsStateUpdates) ->
 						return unless nsStateUpdates.length
@@ -288,6 +291,7 @@ initMqtt = ->
 					DevicesLogs.topic
 					DevicesNsState.topic
 					DevicesStatus.topic
+					DeviceGroups.topic
 				], (error, granted) ->
 					throw new Error "Error subscribing topics: #{error.message}" if error
 
