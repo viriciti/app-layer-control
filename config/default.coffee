@@ -27,8 +27,8 @@ module.exports =
 		name: "app-layer-control"
 
 	versioning:
-		maxTokenAttempts:    3
-		checkingTimeout:     600000
+		maxTokenAttempts: 3
+		checkingTimeout:  600000
 
 	defaultColumns:
 		onlineStatus:

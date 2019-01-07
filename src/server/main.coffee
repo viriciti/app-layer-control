@@ -58,10 +58,6 @@ main = ->
 	initMqtt()
 	initSocketIO()
 
-	# HACK Wait for a while when populating local store with mqtt data. Currently all data is being proxied through
-	# immediately causing massive load on connected clients
-	# setTimeout initSocketIO, config.deferSocketConnectsAtStart
-
 	store.ensureDefaultDeviceSources ->
 		log.info "Saved default table columns"
 
