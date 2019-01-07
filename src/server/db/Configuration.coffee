@@ -17,4 +17,4 @@ module.exports = (mongoose) ->
 		version:         String
 		webAppPort:      Number
 
-	return Configuration
+	Configuration

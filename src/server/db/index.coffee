@@ -16,8 +16,9 @@ module.exports = (config) ->
 
 		log.info "Connected to MongoDB"
 
-	Configuration:  (require "./ConfigurationModel")  mongoose
-	Group:          (require "./GroupModel")          mongoose
-	RegistryImages: (require "./RegistryImagesModel") mongoose
-	DeviceSource:   (require "./DeviceSource")        mongoose
-	AllowedImage:   (require "./AllowedImageModel")   mongoose
+	AllowedImage:   (require "./AllowedImage")   mongoose
+	Configuration:  (require "./Configuration")  mongoose
+	DeviceGroup:    (require "./DeviceGroup")    mongoose
+	DeviceSource:   (require "./DeviceSource")   mongoose
+	Group:          (require "./Group")          mongoose
+	RegistryImages: (require "./RegistryImages") mongoose

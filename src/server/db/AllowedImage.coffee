@@ -6,4 +6,3 @@ module.exports = (mongoose) ->
 			unique:   true
 
 	AllowedImage
-
