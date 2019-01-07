@@ -3,7 +3,7 @@ import classNames from 'classnames'
 import { noop } from 'underscore'
 import { connect } from 'react-redux'
 
-import AsyncButton from 'components/common/AsyncButton'
+import AsyncButton from '/components/common/AsyncButton'
 
 const TextInputGroup = ({ async, helpText, input, type, placeholder, readOnly, submit, meta: { touched, error } }) => {
 	return (

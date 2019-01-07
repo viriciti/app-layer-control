@@ -1,24 +1,30 @@
-mongoose   = require "mongoose"
-mongodbUri = require "mongodb-uri"
-log        = (require "../lib/Logger") "db"
+config      = require "config"
+mongodbURI  = require "mongodb-uri"
+mongoose    = require "mongoose"
+{ forEach } = require "underscore"
 
-module.exports = (config) ->
-	{ hosts, name, options } = config
-	mongoose.Promise         = global.Promise
-	url                      = mongodbUri.format
-		hosts:    hosts
-		database: name
-		options:  options or null
-
-	mongoose.connect url, useMongoClient: true, (error) ->
-		throw new Error "No connection could be made to MongoDB"         if error?.message?.includes "ECONNREFUSED"
-		return log.error "Error connecting to MongoDB: #{error.message}" if error
-
-		log.info "Connected to MongoDB"
-
+models     =
 	AllowedImage:   (require "./AllowedImage")   mongoose
 	Configuration:  (require "./Configuration")  mongoose
 	DeviceGroup:    (require "./DeviceGroup")    mongoose
 	DeviceSource:   (require "./DeviceSource")   mongoose
 	Group:          (require "./Group")          mongoose
 	RegistryImages: (require "./RegistryImages") mongoose
+
+class Database
+	connect: ->
+		mongoose.Promise = global.Promise
+		url              = mongodbURI.format
+			hosts:    config.db.hosts
+			database: config.db.name
+			options:  config.db.options or undefined
+
+		mongoose
+			.connect url, useMongoClient: true
+			.then =>
+				forEach models, (model, name) =>
+					throw new Error "Name collission: #{name}" if @[name]
+
+					@[name] = model
+
+module.exports = Database

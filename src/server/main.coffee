@@ -1,10 +1,10 @@
 async                = require "async"
-compress             = require "compression"
+compression          = require "compression"
 config               = require "config"
 constantCase         = require "constant-case"
 cookieParser         = require "cookie-parser"
 cors                 = require "cors"
-debug                = (require "debug") "app:main"
+debug                = (require "debug") "app: main"
 express              = require "express"
 http                 = require "http"
 path                 = require "path"
@@ -31,19 +31,15 @@ runUpdates              = require "./updates"
 sendMessageToMqtt       = require "./updates/sendMessageToMqtt"
 { cacheUpdate }         = require "./observables"
 
-log = (require "./lib/Logger") "main"
-db  = (require "./db") config.db
+log      = (require "./lib/Logger") "main"
+Database = require "./db"
 
 # Server initialization
 app     = express()
 server  = http.createServer app
 io      = socketio server
 sockets = {}
-
-# Apply gzip compression and cors
-app.use cors()
-app.use compress()
-app.use cookieParser()
+db      = new Database
 
 rpc               = null
 mqttClient        = null
@@ -396,47 +392,19 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 		cb null, messageTable[action] or "Done"
 
 # Webpack section
-unless process.env.NODE_ENV is "production"
-	webpackHotMiddleware = require "webpack-hot-middleware"
-	webpackMiddleware    = require "webpack-dev-middleware"
-	webpackConfig        = require "../../webpack.config.js"
-	webpack              = require "webpack"
+Bundler = require "parcel-bundler"
+bundler = new Bundler path.resolve __dirname, "..", "client", "index.html"
 
-	compiler = webpack webpackConfig
-
-	# Middlewares for webpack
-	debug "Enabling webpack dev and HMR middlewares..."
-	app.use webpackMiddleware compiler,
-		hot: true
-		stats:
-			colors: true
-			chunks: false
-			chunksModules: false
-		historyApiFallback: true
-
-	app.use webpackHotMiddleware compiler, { path: "/__webpack_hmr" }
-
-	app.use "*", (req, res, next) ->
-		filename = path.join compiler.outputPath, "index.html"
-		compiler.outputFileSystem.readFile filename, (err, result) ->
-			if err
-				return next err
-			res.set "content-type", "text/html"
-			res.send result
-			res.end()
-
-else
-	app.use express.static path.resolve __dirname, "../client"
-	app.get "*", (req, res) ->
-		res.sendFile(path.resolve __dirname, "../client/index.html")
-
-# Run backwards compatible updates first
-runUpdates
-	db:    db
-	store: store
-, ->
-	port = config.server.port
-	server.listen process.env.PORT or port, ->
-		log.info "Server listening on :#{port}"
+bundler.once "bundled", (bundle) ->
+	await db.connect()
+	await runUpdates { db, store }
 
 	main()
+
+	server.listen process.env.PORT or config.server.port, ->
+		log.info "Server listening on :#{@address().port}"
+
+app.use cors()
+app.use compression()
+app.use cookieParser()
+app.use bundler.middleware()

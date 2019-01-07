@@ -3,9 +3,9 @@ import { connect } from 'react-redux'
 import { getFormValues, reduxForm, Field } from 'redux-form/immutable'
 import { without, omit } from 'underscore'
 
-import Modal from 'components/common/Modal'
-import { TextInput, ToggleInput, TextInputWithPreview, ToggleEntry } from 'routes/sources/commons'
-import validate from 'routes/sources/modules/validateForm'
+import Modal from '/components/common/Modal'
+import { TextInput, ToggleInput, TextInputWithPreview, ToggleEntry } from '/routes/sources/commons'
+import validate from '/routes/sources/modules/validateForm'
 
 const initialFormValues = {
 	entry: [],

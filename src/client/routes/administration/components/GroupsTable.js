@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import { Map } from 'immutable'
 
 import GroupsForm from './GroupsForm'
-import { removeGroup, sendGroupToAllDevices, removeGroupFromAllDevices } from 'routes/administration/modules/actions'
-import selectorDevicesDeviceId from 'routes/administration/modules/selectors/getDevicesSerial'
+import { removeGroup, sendGroupToAllDevices, removeGroupFromAllDevices } from '/routes/administration/modules/actions'
+import selectorDevicesDeviceId from '/routes/administration/modules/selectors/getDevicesSerial'
 
 class GroupsTable extends PureComponent {
 	state = {

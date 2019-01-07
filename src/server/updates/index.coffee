@@ -70,14 +70,16 @@ updateExists = ({ db, store }, cb) ->
 			], next
 		, cb
 
-module.exports = ({ db, store }, cb) ->
-	async.parallel [
-		(next) ->
-			updateGroups { db, store }, next
-		(next) ->
-			updateExists { db, store }, next
-	], (error) ->
-		return log.error "Failed to apply one or more updates: #{error.message}" if error
+module.exports = ({ db, store }) ->
+	# :)
+	new Promise (resolve, reject) ->
+		async.parallel [
+			(next) ->
+				updateGroups { db, store }, next
+			(next) ->
+				updateExists { db, store }, next
+		], (error) ->
+			return reject new Error "Failed to apply one or more updates: #{error.message}" if error
 
-		log.info "→ Done"
-		cb()
+			log.info "→ Done"
+			resolve()

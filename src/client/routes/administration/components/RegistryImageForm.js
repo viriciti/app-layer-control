@@ -1,8 +1,8 @@
 import React, { PureComponent } from 'react'
 import { reduxForm, Field } from 'redux-form/immutable'
 
-import TextInputGroup from 'routes/administration/commons/TextInputGroup'
-import validate from 'routes/administration/modules/validateImageForm'
+import TextInputGroup from '/routes/administration/commons/TextInputGroup'
+import validate from '/routes/administration/modules/validateImageForm'
 
 class RegistryImageForm extends PureComponent {
 	onSubmit = values => {

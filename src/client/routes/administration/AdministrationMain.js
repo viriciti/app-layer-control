@@ -1,8 +1,8 @@
 import React from 'react'
 
-import ConfigurationInfoMain from 'routes/administration/components/configuration/ConfigurationInfoMain'
-import GroupsTable from 'routes/administration/components/GroupsTable'
-import RegistryImagesOverview from 'routes/administration/components/RegistryImagesOverview'
+import ConfigurationInfoMain from '/routes/administration/components/configuration/ConfigurationInfoMain'
+import GroupsTable from '/routes/administration/components/GroupsTable'
+import RegistryImagesOverview from '/routes/administration/components/RegistryImagesOverview'
 
 const AdministrationMain = () => {
 	return (

@@ -27,7 +27,7 @@ The component responsible for displaying the navigation expects the logo to exis
 
 ### Loader
 
-Apart from the logo, the styling expects a loader to exist at `client/assets/loader/loader.svg` or `client/assets/loader/loader.gif`.
+Apart from the logo, the styling expects a loader to exist at `client/assets/loader/loader.svg`.
 
 ### Favicon
 

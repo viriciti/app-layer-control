@@ -3,9 +3,9 @@ import { connect } from 'react-redux'
 import { Map } from 'immutable'
 import { partial } from 'underscore'
 
-import AsyncButton from 'components/common/AsyncButton'
+import AsyncButton from '/components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'
-import { refreshRegistryImages, addRegistryImage, removeRegistryImage } from 'routes/administration/modules/actions'
+import { refreshRegistryImages, addRegistryImage, removeRegistryImage } from '/routes/administration/modules/actions'
 
 const RegistryImage = ({ name, image, onRemoveImage }) => {
 	return (

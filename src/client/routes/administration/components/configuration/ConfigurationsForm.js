@@ -4,11 +4,11 @@ import { Field, FieldArray, reduxForm } from 'redux-form/immutable'
 import { reduce } from 'underscore'
 import { Map, List } from 'immutable'
 
-import Modal from 'components/common/Modal'
-import { createConfiguration } from 'routes/administration/modules/actions'
-import validate from 'routes/administration/modules/validateForm'
+import Modal from '/components/common/Modal'
+import { createConfiguration } from '/routes/administration/modules/actions'
+import validate from '/routes/administration/modules/validateForm'
 
-import { TextInput, VersionInput, SelectInput, DoubleTextInput, SliderInput } from 'routes/administration/commons'
+import { TextInput, VersionInput, SelectInput, DoubleTextInput, SliderInput } from '/routes/administration/commons'
 
 const initialFormValues = {
 	detached:      true,

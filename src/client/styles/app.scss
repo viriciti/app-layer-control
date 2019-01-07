@@ -1,8 +1,8 @@
 @import "base/_variables";
 
-@import "~bootstrap/scss/bootstrap";
-@import "~react-select/dist/react-select.css";
-@import "~react-toastify/dist/ReactToastify.css";
+@import "../../../node_modules/bootstrap/scss/bootstrap";
+// @import "../../../node_modules/react-select/dist/react-select.css";
+// @import "../../../node_modules/react-toastify/dist/ReactToastify.css";
 @import "vendor/fontawesome/fontawesome";
 
 @import "base/_mixins";
