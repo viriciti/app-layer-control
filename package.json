@@ -46,7 +46,6 @@
 		"camel-case": "^3.0.0",
 		"classnames": "^2.2.6",
 		"clipboard-polyfill": "^2.4.7",
-		"coffee-script": "^1.12.7",
 		"coffeescript": "^2.3.1",
 		"components": "^0.1.0",
 		"compression": "^1.7.2",

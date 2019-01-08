@@ -33,6 +33,7 @@ getContainersNotRunning      = require "./lib/getContainersNotRunning"
 runUpdates                   = require "./updates"
 sendMessageToMqtt            = require "./updates/sendMessageToMqtt"
 { cacheUpdate }              = require "./observables"
+apiRouter                    = require "./api"
 
 log = (require "./lib/Logger") "main"
 
@@ -416,4 +417,5 @@ bundler.once "bundled", (bundle) ->
 app.use cors()
 app.use compression()
 app.use cookieParser()
+app.use "/api", apiRouter
 app.use bundler.middleware()

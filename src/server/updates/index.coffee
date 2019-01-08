@@ -115,7 +115,7 @@ updateDeviceGroups = ({ db, store, mqttClient }, cb) ->
 				message              = JSON.stringify groups
 				options              = retain: true
 
-				updates++
+				updates += 1
 				client.publish topic, message, options
 
 			done true
