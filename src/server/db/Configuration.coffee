@@ -1,7 +1,7 @@
 { Schema } = require "mongoose"
 
 module.exports = (mongoose) ->
-	Configuration = mongoose.model "configuration",
+	mongoose.model "Configuration",
 		applicationName: String
 		containerName:   String
 		detached:        Boolean
@@ -16,5 +16,3 @@ module.exports = (mongoose) ->
 		restartPolicy:   String
 		version:         String
 		webAppPort:      Number
-
-	return Configuration

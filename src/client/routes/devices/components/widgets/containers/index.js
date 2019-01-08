@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
 import { connect } from 'react-redux'
-import { partial } from 'underscore'
+import { partial } from 'lodash'
 
 import ContainerOverview from './ContainerOverview'
 

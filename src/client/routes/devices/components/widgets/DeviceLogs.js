@@ -3,7 +3,7 @@ import moment from 'moment'
 import { List } from 'immutable'
 import { connect } from 'react-redux'
 
-import { cleanLogs } from 'routes/devices/modules/actions'
+import { cleanLogs } from '/routes/devices/modules/actions'
 
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'
 

@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import _ from 'underscore'
+import _ from 'lodash'
 import moment from 'moment'
 
 const FORMAT = 'YYYY-MM-DD HH:mm:ss'

@@ -1,6 +1,5 @@
 async                    = require "async"
-config                   = require "config"
-{ pluck, first, values } = require "underscore"
+{ pluck, first, values } = require 'underscore'
 
 getRegistryImages  = require "../lib/getRegistryImages"
 prependRegistryUrl = require "../helpers/prependRegistryUrl"
