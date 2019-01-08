@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Fragment } from 'react'
-import { noop } from 'underscore'
+import { noop } from 'lodash'
 
 function AsyncButton ({ busy, busyText, children, onClick, ...buttonProps }) {
 	return (

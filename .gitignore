@@ -1,6 +1,7 @@
 *.log
 .DS_STORE
 .env
+.cache
 .idea/
 Dockerfile.local
 config/local.*

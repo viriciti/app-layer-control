@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect'
-import { isEmpty } from 'underscore'
+import { isEmpty } from 'lodash'
 import { Iterable, Map } from 'immutable'
 
 const getFilters = state => {

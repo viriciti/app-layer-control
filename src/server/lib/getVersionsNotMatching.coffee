@@ -1,7 +1,7 @@
 semver                                 = require "semver"
 { Map, List, fromJS }                  = require "immutable"
 { createGroupsMixin, getAppsToChange } = require "@viriciti/app-layer-logic"
-{ last }                               = require "underscore"
+{ last }                               = require 'underscore'
 
 replaceVersionWithConfiguration = ({ images, groups, configurations }) ->
 	groups.map (applications, name) ->

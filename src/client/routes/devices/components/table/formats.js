@@ -3,7 +3,7 @@ import moment from 'moment'
 import { List } from 'immutable'
 import classNames from 'classnames'
 
-import LastSeenInterval from 'components/common/LastSeenInterval'
+import LastSeenInterval from '/components/common/LastSeenInterval'
 
 const formats = {
 	default: (value, title) => {

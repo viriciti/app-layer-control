@@ -2,10 +2,10 @@ import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
 
-import Modal from 'components/common/Modal'
-import { refreshState, selectDevice } from 'routes/devices/modules/actions'
-import getSelectedDevice from 'routes/devices/modules/selectors/getSelectedDevice'
-import AsyncButton from 'components/common/AsyncButton'
+import Modal from '/components/common/Modal'
+import { refreshState, selectDevice } from '/routes/devices/modules/actions'
+import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
+import AsyncButton from '/components/common/AsyncButton'
 
 import { SystemInfo, DeviceLogs, DeviceContainers, DeviceImages, DeviceGroups, Queue, FinishedQueue } from './widgets'
 

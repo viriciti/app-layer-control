@@ -2,7 +2,7 @@ import React, { Fragment } from 'react'
 import JSONPretty from 'react-json-pretty'
 import { connect } from 'react-redux'
 
-import { removeImage } from 'routes/devices/modules/actions/index'
+import { removeImage } from '/routes/devices/modules/actions/index'
 
 const ImageOverview = ({ selectedImage, selectedDevice, removeImage }) => {
 	const onRemoveImage = () => {

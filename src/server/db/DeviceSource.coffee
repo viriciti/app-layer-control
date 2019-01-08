@@ -1,5 +1,5 @@
 module.exports = (mongoose) ->
-	DeviceSource = mongoose.model "deviceSource",
+	mongoose.model "DeviceSource",
 		editable:
 			type:    Boolean
 			default: true
@@ -51,5 +51,3 @@ module.exports = (mongoose) ->
 		entryInDetail:
 			type:    Boolean
 			default: false
-
-	DeviceSource

@@ -1,6 +1,6 @@
 import React from 'react'
 import classNames from 'classnames'
-import { map, isString } from 'underscore'
+import { map, isString } from 'lodash'
 
 const VersionInput = ({ input, label, options, meta: { touched, error, disabled } }) => {
 	const renderOptions = () => {

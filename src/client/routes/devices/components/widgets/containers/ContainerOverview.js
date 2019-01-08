@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import Convert from 'ansi-to-html'
 import { Map } from 'immutable'
 
-import { removeContainer, restartContainer, getContainerLogs } from 'routes/devices/modules/actions/index'
+import { removeContainer, restartContainer, getContainerLogs } from '/routes/devices/modules/actions/index'
 
 const convert = new Convert()
 
