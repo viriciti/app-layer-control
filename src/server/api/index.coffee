@@ -4,8 +4,6 @@ config     = require "config"
 router = Router()
 
 router.get "/versioning", (req, res) ->
-	console.log req.params.key
-
 	res
 		.status 200
 		.send host: config.versioning.docker.host
