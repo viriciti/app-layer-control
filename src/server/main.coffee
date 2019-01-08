@@ -1,17 +1,17 @@
 async                = require "async"
-compress             = require "compression"
+compression          = require "compression"
 config               = require "config"
 constantCase         = require "constant-case"
 cookieParser         = require "cookie-parser"
 cors                 = require "cors"
-debug                = (require "debug") "app:main"
+debug                = (require "debug") "app: main"
 express              = require "express"
 http                 = require "http"
 path                 = require "path"
 socketio             = require "socket.io"
 { Map, fromJS }      = require "immutable"
 { Observable }       = require "rxjs"
-{ each, size, noop } = require "underscore"
+{ each, size, noop } = require "lodash"
 mqtt                 = require "mqtt"
 RPC                  = require "mqtt-json-rpc"
 semver               = require "semver"
@@ -21,29 +21,28 @@ semver               = require "semver"
 	DevicesNsState
 	DevicesState
 	DevicesStatus
+	DeviceGroups
 	DockerRegistry
 	externals
-}                       = require "./sources"
-populateMqttWithGroups  = require "./helpers/populateMqttWithGroups"
-getVersionsNotMatching  = require "./lib/getVersionsNotMatching"
-getContainersNotRunning = require "./lib/getContainersNotRunning"
-runUpdates              = require "./updates"
-sendMessageToMqtt       = require "./updates/sendMessageToMqtt"
-{ cacheUpdate }         = require "./observables"
+}                            = require "./sources"
+Database                     = require "./db"
+populateMqttWithGroups       = require "./helpers/populateMqttWithGroups"
+populateMqttWithDeviceGroups = require "./helpers/populateMqttWithDeviceGroups"
+getVersionsNotMatching       = require "./lib/getVersionsNotMatching"
+getContainersNotRunning      = require "./lib/getContainersNotRunning"
+runUpdates                   = require "./updates"
+sendMessageToMqtt            = require "./updates/sendMessageToMqtt"
+{ cacheUpdate }              = require "./observables"
+apiRouter                    = require "./api"
 
 log = (require "./lib/Logger") "main"
-db  = (require "./db") config.db
 
 # Server initialization
 app     = express()
 server  = http.createServer app
 io      = socketio server
 sockets = {}
-
-# Apply gzip compression and cors
-app.use cors()
-app.use compress()
-app.use cookieParser()
+db      = new Database
 
 rpc               = null
 mqttClient        = null
@@ -57,10 +56,6 @@ log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
 main = ->
 	initMqtt()
 	initSocketIO()
-
-	# HACK Wait for a while when populating local store with mqtt data. Currently all data is being proxied through
-	# immediately causing massive load on connected clients
-	# setTimeout initSocketIO, config.deferSocketConnectsAtStart
 
 	store.ensureDefaultDeviceSources ->
 		log.info "Saved default table columns"
@@ -117,7 +112,10 @@ initMqtt = ->
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
 
-		populateMqttWithGroups db, mqttClient, (error) ->
+		async.parallel [
+			(cb) -> populateMqttWithGroups db, mqttClient, cb
+			(cb) -> populateMqttWithDeviceGroups db, mqttClient, cb
+		], (error) ->
 			return log.error if error
 
 			async.parallel
@@ -137,6 +135,7 @@ initMqtt = ->
 				devicesNsState$ = DevicesNsState.observable mqttClient
 				devicesState$   = DevicesState.observable   mqttClient
 				devicesStatus$  = DevicesStatus.observable  mqttClient
+				deviceGroups$   = DeviceGroups.observable   mqttClient
 				cacheUpdate$    = cacheUpdate               store
 
 				each externals, (source) ->
@@ -234,6 +233,7 @@ initMqtt = ->
 						_broadcastAction "devicesBatchState", newStates
 
 				devicesNsState$
+					.merge deviceGroups$
 					.bufferTime config.batchState.nsStateInterval
 					.subscribe (nsStateUpdates) ->
 						return unless nsStateUpdates.length
@@ -286,6 +286,7 @@ initMqtt = ->
 					DevicesLogs.topic
 					DevicesNsState.topic
 					DevicesStatus.topic
+					DeviceGroups.topic
 				], (error, granted) ->
 					throw new Error "Error subscribing topics: #{error.message}" if error
 
@@ -385,6 +386,7 @@ _onActionDeviceGet = (action, cb) ->
 _onActionDb = ({ action, payload, meta }, cb) ->
 	{ execute }  = (require "./actions") db, mqttClient, _broadcastAction, store
 	messageTable =
+		storeGroups:         "Groups updated for #{payload?.dest}"
 		createConfiguration: "Application updated"
 		removeConfiguration: "Application removed"
 		createGroup:         "Group updated"
@@ -399,48 +401,21 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 		debug "Received result for action: #{action} - #{result}"
 		cb null, messageTable[action] or "Done"
 
-# Webpack section
-unless process.env.NODE_ENV is "production"
-	webpackHotMiddleware = require "webpack-hot-middleware"
-	webpackMiddleware    = require "webpack-dev-middleware"
-	webpackConfig        = require "../../webpack.config.js"
-	webpack              = require "webpack"
+# parcel
+Bundler = require "parcel-bundler"
+bundler = new Bundler path.resolve __dirname, "..", "client", "index.html"
 
-	compiler = webpack webpackConfig
-
-	# Middlewares for webpack
-	debug "Enabling webpack dev and HMR middlewares..."
-	app.use webpackMiddleware compiler,
-		hot: true
-		stats:
-			colors: true
-			chunks: false
-			chunksModules: false
-		historyApiFallback: true
-
-	app.use webpackHotMiddleware compiler, { path: "/__webpack_hmr" }
-
-	app.use "*", (req, res, next) ->
-		filename = path.join compiler.outputPath, "index.html"
-		compiler.outputFileSystem.readFile filename, (err, result) ->
-			if err
-				return next err
-			res.set "content-type", "text/html"
-			res.send result
-			res.end()
-
-else
-	app.use express.static path.resolve __dirname, "../client"
-	app.get "*", (req, res) ->
-		res.sendFile(path.resolve __dirname, "../client/index.html")
-
-# Run backwards compatible updates first
-runUpdates
-	db:    db
-	store: store
-, ->
-	port = config.server.port
-	server.listen process.env.PORT or port, ->
-		log.info "Server listening on :#{port}"
+bundler.once "bundled", (bundle) ->
+	await db.connect()
+	await runUpdates { db, store }
 
 	main()
+
+	server.listen process.env.PORT or config.server.port, ->
+		log.info "Server listening on :#{@address().port}"
+
+app.use cors()
+app.use compression()
+app.use cookieParser()
+app.use "/api", apiRouter
+app.use bundler.middleware()

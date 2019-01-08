@@ -1,4 +1,4 @@
-_                     = require "underscore"
+_                     = require 'underscore'
 async                 = require "async"
 config                = require "config"
 { Map, List, fromJS } = require "immutable"

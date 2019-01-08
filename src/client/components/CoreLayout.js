@@ -1,9 +1,9 @@
 import React, { Fragment } from 'react'
 import { ToastContainer } from 'react-toastify'
 
-import Header from './Header'
-import Sidebar from './Sidebar'
-import Footer from './Footer'
+import Header from '/components/Header'
+import Sidebar from '/components/Sidebar'
+import Footer from '/components/Footer'
 
 const CoreLayout = ({ children }) => {
 	return (

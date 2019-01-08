@@ -1,5 +1,5 @@
 import { Map, List } from 'immutable'
-import { isArray, reject } from 'underscore'
+import { isArray, reject } from 'lodash'
 
 import { UPDATE_ASYNC_STATE, UPDATE_DEVICE_ASYNC_STATE } from './actions'
 

@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import ReactPaginate from 'react-paginate'
 
 import { calculatePages } from './'
-import { paginateTo, setItemsPerPage } from 'routes/devices/modules/actions'
+import { paginateTo, setItemsPerPage } from '/routes/devices/modules/actions'
 
 const itemsPerPageOptions = [10, 20, 50]
 

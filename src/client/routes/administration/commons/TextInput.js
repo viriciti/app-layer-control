@@ -1,6 +1,6 @@
 import React from 'react'
 import classNames from 'classnames'
-import { noop } from 'underscore'
+import { noop } from 'lodash'
 
 const TextInput = ({ helpText, input, label, type, placeholder, readOnly, meta: { touched, error } }) => {
 	return (

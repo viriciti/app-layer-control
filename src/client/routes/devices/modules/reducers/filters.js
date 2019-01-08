@@ -1,9 +1,9 @@
 import _ from 'underscore'
 import { Map, List, fromJS } from 'immutable'
 
-import { ADD_FILTER, SET_FILTER, CLEAR_FILTERS, APPLY_FILTERS } from 'routes/devices/modules/actions'
+import { ADD_FILTER, SET_FILTER, CLEAR_FILTERS, APPLY_FILTERS } from '/routes/devices/modules/actions'
 
-import { DEVICE_SOURCES } from 'store/globalReducers/actions'
+import { DEVICE_SOURCES } from '/store/globalReducers/actions'
 
 const ACTION_HANDLERS = {
 	[DEVICE_SOURCES]: (filters = Map(), action) => {
@@ -57,14 +57,14 @@ const ACTION_HANDLERS = {
 	// Clear all the filters
 	[CLEAR_FILTERS]: (filters = Map()) => {
 		let columns = filters.get('columns', Map())
-		columns = columns.map((filter, column) => {
+		columns = columns.map(filter => {
 			return filter.set('value', '')
 		})
 		return filters.set('columns', columns)
-	},
+	}
 }
 
-export default function (filters = Map(), action) {
+export default function(filters = Map(), action) {
 	const handler = ACTION_HANDLERS[action.type]
 	return handler ? handler(filters, action) : filters
 }

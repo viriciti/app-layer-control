@@ -3,7 +3,7 @@ config       = require "config"
 
 module.exports = (client) ->
 	(action, cb) ->
-		# ensure interval and listeners are cleaned up correctly
+		# ensure timeout and listeners are cleaned up correctly
 		timeout  = null
 		callback = cb
 		cb       = (error, result) ->
