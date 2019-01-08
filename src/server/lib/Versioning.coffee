@@ -1,4 +1,3 @@
-_       = require 'underscore'
 async   = require "async"
 config  = require "config"
 debug   = (require "debug") "app:Versioning"
@@ -180,8 +179,6 @@ class Versioning
 
 		@getImages names, (error, images) ->
 			return cb error if error
-
-			debug "[getVersions] Result get images", _.object (_.keys images), _.map (_.values images), (arr) -> JSON.stringify arr
 
 			versions = {}
 			for name, tags of images

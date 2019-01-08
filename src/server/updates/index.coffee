@@ -1,7 +1,10 @@
-async         = require "async"
-{ Map }       = require "immutable"
-log           = (require "../lib/Logger") "updates"
-{ isBoolean } = require 'underscore'
+async                   = require "async"
+log                     = (require "../lib/Logger") "updates"
+mqtt                    = require "mqtt"
+{ Map }                 = require "immutable"
+{ isBoolean, throttle } = require "lodash"
+config                  = require "config"
+MQTTPattern             = require "mqtt-pattern"
 
 updateGroups = ({ db, store }, cb) ->
 	store.getGroups (error, groups) ->
@@ -70,6 +73,59 @@ updateExists = ({ db, store }, cb) ->
 			], next
 		, cb
 
+updateDeviceGroups = ({ db, store, mqttClient }, cb) ->
+	done = throttle (unsubscribeOnly) ->
+		if unsubscribeOnly
+			log.info "→ Groups updated for #{updates} device(s)"
+
+			client.unsubscribe "devices/+/groups"
+			client.unsubscribe "devices/+/state"
+			cb()
+		else
+			client.unsubscribe "devices/+/groups"
+			client.subscribe   "devices/+/state"
+	, 3000, leading: false
+
+	skipUpdateFor = []
+	updates       = 0
+	client        = mqtt.connect Object.assign {},
+		config.mqtt
+		config.mqtt.connectionOptions
+		clientId: "updater/#{config.mqtt.clientId}"
+
+	client.on "packetreceive", (packet) ->
+		return unless packet.topic
+
+		groupsPattern = "devices/+id/groups"
+		statePattern  = "devices/+id/state"
+
+		if MQTTPattern.matches groupsPattern, packet.topic
+			{ id } = MQTTPattern.exec groupsPattern, packet.topic
+			skipUpdateFor.push id
+
+			done false
+		else if MQTTPattern.matches statePattern, packet.topic
+			{ id } = MQTTPattern.exec statePattern, packet.topic
+
+			unless id in skipUpdateFor
+				log.info "Updating groups for #{id}"
+
+				{ deviceId, groups } = JSON.parse packet.payload.toString()
+				topic                = "devices/#{deviceId}/groups"
+				message              = JSON.stringify groups
+				options              = retain: true
+
+				updates++
+				client.publish topic, message, options
+
+			done true
+
+	setTimeout ->
+		done false unless skipUpdateFor.length
+	, 3000
+
+	client.subscribe "devices/+/groups"
+
 module.exports = ({ db, store }) ->
 	# :)
 	new Promise (resolve, reject) ->
@@ -78,6 +134,8 @@ module.exports = ({ db, store }) ->
 				updateGroups { db, store }, next
 			(next) ->
 				updateExists { db, store }, next
+			(next) ->
+				updateDeviceGroups { db, store }, next
 		], (error) ->
 			return reject new Error "Failed to apply one or more updates: #{error.message}" if error
 
