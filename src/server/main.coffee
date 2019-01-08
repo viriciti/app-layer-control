@@ -386,7 +386,7 @@ _onActionDeviceGet = (action, cb) ->
 _onActionDb = ({ action, payload, meta }, cb) ->
 	{ execute }  = (require "./actions") db, mqttClient, _broadcastAction, store
 	messageTable =
-		storeGroups:         "Groups updated for #{payload.dest}"
+		storeGroups:         "Groups updated for #{payload?.dest}"
 		createConfiguration: "Application updated"
 		removeConfiguration: "Application removed"
 		createGroup:         "Group updated"

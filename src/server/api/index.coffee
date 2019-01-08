@@ -8,8 +8,7 @@ router.get "/versioning", (req, res) ->
 
 	res
 		.status 200
-		.send JSON.stringify
-			host: config.versioning.docker.host
+		.send host: config.versioning.docker.host
 		.end()
 
 module.exports = router
