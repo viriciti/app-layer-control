@@ -12,7 +12,7 @@ module.exports = (db, mqttSocket) ->
 			query   = deviceId: deviceId
 			topic   = "devices/#{deviceId}/groups"
 			options = retain: true
-			groups  = groups: JSON.stringify (await db
+			groups  = JSON.stringify (await db
 				.DeviceGroup
 				.findOne query
 				.select "groups"
@@ -57,12 +57,25 @@ module.exports = (db, mqttSocket) ->
 		cb()
 
 	removeGroup = ({ payload: label }, cb) ->
-		db.Group.findOneAndRemove { label }, (error) ->
-			return cb error if error
+		devices = await db
+			.DeviceGroup
+			.where groups: label
+			.lean()
 
-			publishGroups (error) ->
-				return cb error if error
-				cb null, "Group #{label} removed correctly"
+		await Promise.all devices.map (device) ->
+			query  = deviceId: device.deviceId
+			update = groups: without device.groups, label
+
+			Promise.all [
+				db.DeviceGroup.findOneAndUpdate query, update
+				publishGroupsForDevice device.deviceId
+			]
+
+		await db.Group.findOneAndRemove { label }
+
+		publishGroups (error) ->
+			return cb error if error
+			cb null, "Group #{label} removed correctly"
 
 	publishGroups = (cb) ->
 		async.waterfall [
@@ -94,7 +107,7 @@ module.exports = (db, mqttSocket) ->
 		{ payload, dest } = payload
 		query             = deviceId: dest
 
-		current       = await db.DeviceGroup.findOne(query).lean()
+		current       = await db.DeviceGroup.findOne(query).select("groups").lean()
 		currentGroups = current?.groups or ["default"]
 		update        = groups: uniq compact [currentGroups..., payload...]
 

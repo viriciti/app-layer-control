@@ -3,7 +3,6 @@
 module.exports = (db, mqttSocket, cb) ->
 	devices = uniqBy (await db.DeviceGroup
 		.find {}
-		.populate "groups", "label -_id"
 		.lean()
 	), "deviceId"
 
