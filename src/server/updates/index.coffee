@@ -1,10 +1,10 @@
-async                   = require "async"
-log                     = (require "../lib/Logger") "updates"
-mqtt                    = require "mqtt"
-{ Map }                 = require "immutable"
-{ isBoolean, throttle } = require "lodash"
-config                  = require "config"
-MQTTPattern             = require "mqtt-pattern"
+async                           = require "async"
+log                             = (require "../lib/Logger") "updates"
+mqtt                            = require "mqtt"
+{ Map }                         = require "immutable"
+{ isBoolean, throttle, random } = require "lodash"
+config                          = require "config"
+MQTTPattern                     = require "mqtt-pattern"
 
 updateGroups = ({ db, store }, cb) ->
 	store.getGroups (error, groups) ->
@@ -91,7 +91,7 @@ updateDeviceGroups = ({ db, store, mqttClient }, cb) ->
 	client        = mqtt.connect Object.assign {},
 		config.mqtt
 		config.mqtt.connectionOptions
-		clientId: "updater/#{config.mqtt.clientId}"
+		clientId: "#{config.mqtt.clientId}#{random 1, 999999}"
 
 	client.on "packetreceive", (packet) ->
 		return unless packet.topic
@@ -100,11 +100,14 @@ updateDeviceGroups = ({ db, store, mqttClient }, cb) ->
 		statePattern  = "devices/+id/state"
 
 		if MQTTPattern.matches groupsPattern, packet.topic
+			# check for which devices we can skip updates for
 			{ id } = MQTTPattern.exec groupsPattern, packet.topic
 			skipUpdateFor.push id
 
 			done false
 		else if MQTTPattern.matches statePattern, packet.topic
+			# publish the groups on a different topic
+			# using the groups as they are known on MQTT
 			{ id } = MQTTPattern.exec statePattern, packet.topic
 
 			unless id in skipUpdateFor
@@ -122,6 +125,10 @@ updateDeviceGroups = ({ db, store, mqttClient }, cb) ->
 
 	setTimeout ->
 		done false unless skipUpdateFor.length
+
+		setTimeout ->
+			done true unless updates
+		, 3000
 	, 3000
 
 	client.subscribe "devices/+/groups"

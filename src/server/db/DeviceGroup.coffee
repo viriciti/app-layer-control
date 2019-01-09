@@ -1,5 +1,3 @@
-{ Schema } = require "mongoose"
-
 module.exports = (mongoose) ->
 	mongoose.model "DeviceGroup",
 		deviceId:
@@ -7,7 +5,6 @@ module.exports = (mongoose) ->
 			required: true
 			unique:   true
 		groups: [
-			type:     Schema.Types.ObjectId
-			ref:      "Group"
+			type:     String
 			required: true
 		]
