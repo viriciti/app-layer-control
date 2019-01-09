@@ -1,6 +1,7 @@
 async                      = require "async"
 config                     = require "config"
 { compact, uniq, without } = require "lodash"
+{ promisify }              = require "util"
 
 debug = (require "debug") "app:actions:groupsActions"
 
@@ -8,20 +9,17 @@ module.exports = (db, mqttSocket) ->
 	{ enrich } = (require "../helpers/enrichAppsForMqtt") db
 
 	publishGroupsForDevice = (deviceId) ->
-		new Promise (resolve, reject) ->
-			query   = deviceId: deviceId
-			topic   = "devices/#{deviceId}/groups"
-			options = retain: true
-			groups  = JSON.stringify (await db
-				.DeviceGroup
-				.findOne query
-				.select "groups"
-				.lean()
-			).groups
+		query   = deviceId: deviceId
+		topic   = "devices/#{deviceId}/groups"
+		options = retain: true
+		groups  = JSON.stringify (await db
+			.DeviceGroup
+			.findOne query
+			.select "groups"
+			.lean()
+		).groups
 
-			mqttSocket.publish topic, groups, options, (error) ->
-				return reject error if error
-				resolve()
+		promisify (mqttSocket.publish.bind mqttSocket) topic, groups, options
 
 	createGroup = ({ payload }, cb) ->
 		{ label } = payload
