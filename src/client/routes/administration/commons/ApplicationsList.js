@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import { noop, omit, has } from 'lodash'
 import naturalCompare from 'natural-compare-lite'
+import semver from 'semver'
 
 const ApplicationVersion = ({ version, onExpandSelectVersion, isCurrentVersion }) => {
 	return (
@@ -37,7 +38,7 @@ const Application = ({ label }) => {
 const AvailableApplication = ({ label, version, onToggle, onExpand, isSelected, isExpanded }) => {
 	return (
 		<li>
-			<div className={classNames('btn-flex', 'my-1', { 'btn-group': isSelected })}>
+			<div className={classNames('btn-flex', 'my-1')}>
 				<button
 					type="button"
 					onClick={onToggle}
@@ -157,16 +158,27 @@ class ApplicationsList extends PureComponent {
 						<div className="col-6">
 							{this.state.expandApplicationName ? (
 								<ul className="list-unstyled">
-									{this.props.versionsPerApplication.get(this.state.expandApplicationName).map(version => {
-										return (
-											<ApplicationVersion
-												key={`${this.state.expandApplicationName}${version}`}
-												version={version}
-												onExpandSelectVersion={this.onExpandSelectVersion.bind(null, version)}
-												isCurrentVersion={this.props.input.value[this.state.expandApplicationName] === version}
-											/>
-										)
-									})}
+									{this.props.versionsPerApplication
+										.get(this.state.expandApplicationName)
+										.sort((left, right) => {
+											if (!semver.valid(left)) {
+												return 1
+											} else if (!semver.valid(right)) {
+												return -1
+											} else {
+												return semver.gt(left, right) ? -1 : 1
+											}
+										})
+										.map(version => {
+											return (
+												<ApplicationVersion
+													key={`${this.state.expandApplicationName}${version}`}
+													version={version}
+													onExpandSelectVersion={this.onExpandSelectVersion.bind(null, version)}
+													isCurrentVersion={this.props.input.value[this.state.expandApplicationName] === version}
+												/>
+											)
+										})}
 
 									{this.props.input.value[this.state.expandApplicationName] ? (
 										<li>
