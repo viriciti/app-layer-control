@@ -175,7 +175,7 @@ initMqtt = ->
 					.subscribe ->
 						log.info "Cache has been updated... Validating outdated software for devices"
 
-						deviceUpdates         = deviceStates
+						deviceUpdates = deviceStates
 							.reduce (updates, device) ->
 								versionsNotMatching = getVersionsNotMatching
 									store:             store

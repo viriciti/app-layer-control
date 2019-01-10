@@ -118,7 +118,12 @@ updateDeviceGroups = ({ db, store, mqttClient }, cb) ->
 				message              = JSON.stringify groups
 				options              = retain: true
 
+				query  = deviceId: deviceId
+				update = groups: groups
+
 				updates += 1
+
+				await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
 				client.publish topic, message, options
 
 			done true

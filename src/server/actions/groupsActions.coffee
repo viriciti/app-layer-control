@@ -57,7 +57,7 @@ module.exports = (db, mqttSocket) ->
 	removeGroup = ({ payload: label }, cb) ->
 		devices = await db
 			.DeviceGroup
-			.where groups: label
+			.find groups: label
 			.lean()
 
 		await Promise.all devices.map (device) ->

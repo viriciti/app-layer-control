@@ -94,7 +94,7 @@ class DeviceContainers extends Component {
 							const selectedContainer = this.state.selectedContainer && this.state.selectedContainer.get('name')
 							const isActive = container.get('name') === selectedContainer
 							const frontEndPort = configurations.getIn([container.get('name'), 'frontEndPort'])
-							const deviceIp = selectedDevice.getIn(['systemInfo', 'tun0IP'])
+							const deviceIp = selectedDevice.getIn(['systemInfo', 'tun0'])
 
 							return (
 								<li className="mb-2" key={`${container.get('Id')}`}>

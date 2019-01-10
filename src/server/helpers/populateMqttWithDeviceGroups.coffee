@@ -1,4 +1,4 @@
-{ uniqBy, map } = require "lodash"
+{ uniqBy } = require "lodash"
 
 module.exports = (db, mqttSocket, cb) ->
 	devices = uniqBy (await db.DeviceGroup
@@ -9,7 +9,7 @@ module.exports = (db, mqttSocket, cb) ->
 	await Promise.all devices.map ({ deviceId, groups }) ->
 		new Promise (resolve, reject) ->
 			topic   = "devices/#{deviceId}/groups"
-			groups  = JSON.stringify map groups, "label"
+			groups  = JSON.stringify groups
 			options = retain: true
 
 			mqttSocket.publish topic, groups, options, (error) ->
