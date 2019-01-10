@@ -86,8 +86,8 @@ module.exports =
 			filterFormat:
 				type:    "checkboxes"
 				options: [
-					{ value: "versionsNotMatching",  label: "Outdated software" }
 					{ value: "containersNotRunning", label: "Container is down" }
+					{ value: "versionsNotMatching",  label: "Outdated software" }
 				]
 			editable:     false
 			headerStyle:
@@ -142,7 +142,7 @@ module.exports =
 			sortable:     true
 			filterable:   false
 			copyable:     false
-			getIn:        "systemInfo.dmVersion"
+			getIn:        "systemInfo.appVersion"
 			editable:     false
 			headerStyle:
 				minWidth: "100px"
