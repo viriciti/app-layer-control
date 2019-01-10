@@ -1,20 +1,20 @@
-async                = require "async"
-compression          = require "compression"
-config               = require "config"
-constantCase         = require "constant-case"
-cookieParser         = require "cookie-parser"
-cors                 = require "cors"
-debug                = (require "debug") "app: main"
-express              = require "express"
-http                 = require "http"
-path                 = require "path"
-socketio             = require "socket.io"
-{ Map, fromJS }      = require "immutable"
-{ Observable }       = require "rxjs"
-{ each, size, noop } = require "lodash"
-mqtt                 = require "mqtt"
-RPC                  = require "mqtt-json-rpc"
-semver               = require "semver"
+async                 = require "async"
+compression           = require "compression"
+config                = require "config"
+constantCase          = require "constant-case"
+cookieParser          = require "cookie-parser"
+cors                  = require "cors"
+debug                 = (require "debug") "app:main"
+express               = require "express"
+http                  = require "http"
+path                  = require "path"
+socketio              = require "socket.io"
+{ Map, List, fromJS } = require "immutable"
+{ Observable }        = require "rxjs"
+{ each, size, noop }  = require "lodash"
+mqtt                  = require "mqtt"
+RPC                   = require "mqtt-json-rpc"
+semver                = require "semver"
 
 {
 	DevicesLogs
@@ -261,6 +261,7 @@ initMqtt = ->
 					.subscribe (statusUpdates) ->
 						return unless statusUpdates.length
 
+
 						newStatuses = statusUpdates.reduce (updates, statusUpdate) ->
 							{ deviceId, status } = statusUpdate
 							newState             = fromJS
@@ -278,6 +279,21 @@ initMqtt = ->
 
 				devicesLogs$.subscribe (logs) ->
 					_broadcastAction "deviceLogs", logs
+
+				# Takes care of publishing groups for devices which connect for the first time
+				devicesStatus$
+					.filter ({ deviceId, retained }) ->
+						not retained and deviceStates
+							.getIn [deviceId, "groups"], List()
+							.isEmpty()
+					.subscribe ({ deviceId }) ->
+						log.warn "No groups found for #{deviceId}, setting default groups ..."
+
+						topic   = "devices/#{deviceId}/groups"
+						message = JSON.stringify ["default"]
+						options = retain: true
+
+						client.publish topic, message, options
 
 				# After we have subscribed to all socket events. We subscribe to the mqtt topics.
 				# We do this so we do not miss any data that might come through when we are not listening for events yet.
