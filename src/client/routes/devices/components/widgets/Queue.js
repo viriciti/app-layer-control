@@ -7,7 +7,7 @@ const OngoingTask = ({ name, queuedOn }) => {
 	return (
 		<li>
 			<span className="fas fa-angle-double-right text-info p-2" />
-			{moment(queuedOn).fromNow()} <b>|</b> {sentenceCase(name)}
+			{moment(queuedOn).fromNow()} <b>-</b> {sentenceCase(name)}
 		</li>
 	)
 }
