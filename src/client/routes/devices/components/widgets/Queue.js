@@ -12,15 +12,25 @@ const OngoingTask = ({ name, queuedOn }) => {
 	)
 }
 
-const FinishedTask = ({ name, finishedAt }) => {
+const FinishedTask = ({ name, finishedAt, status, error }) => {
 	const time = moment(finishedAt)
 
-	return (
-		<li>
-			<span className="fas fa-check text-success p-2" />
-			<span title={time.format('HH:mm:ss')}>{time.fromNow()}</span> <b>-</b> {sentenceCase(name)}
-		</li>
-	)
+	if (status === 'ok') {
+		return (
+			<li>
+				<span className="fas fa-check text-success p-2" />
+				<span title={time.format('HH:mm:ss')}>{time.fromNow()}</span> <b>-</b> {sentenceCase(name)}
+			</li>
+		)
+	} else {
+		return (
+			<li>
+				<span className="fas fa-exclamation-circle text-danger p-2" />
+				<span title={time.format('HH:mm:ss')}>{time.fromNow()}</span> <b>-</b> {sentenceCase(name)}:{' '}
+				{error.get('message')}
+			</li>
+		)
+	}
 }
 
 const Queue = ({ selectedDevice }) => {
@@ -39,16 +49,19 @@ const Queue = ({ selectedDevice }) => {
 					{selectedDevice
 						.get('queue', List())
 						.sortBy(task => {
-							console.log(task.toJS())
 							return -task.get('queuedOn')
 						})
 						.map((task, index) => {
 							if (task.get('finished')) {
+								console.log(task.toJS())
+
 								return (
 									<FinishedTask
 										key={`finishedItem${deviceId}${index}`}
-										name={task.get('name')}
+										error={task.get('error')}
 										finishedAt={task.get('finishedAt')}
+										name={task.get('name')}
+										status={task.get('status')}
 									/>
 								)
 							} else {
