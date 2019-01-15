@@ -53,8 +53,6 @@ const Queue = ({ selectedDevice }) => {
 						})
 						.map((task, index) => {
 							if (task.get('finished')) {
-								console.log(task.toJS())
-
 								return (
 									<FinishedTask
 										key={`finishedItem${deviceId}${index}`}
