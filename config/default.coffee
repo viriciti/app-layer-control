@@ -69,6 +69,7 @@ module.exports =
 					{ value: "updating", label: "Updating" }
 					{ value: "idle",     label: "Idle" }
 				]
+			format: "updateState"
 			headerStyle:
 				minWidth: "200px"
 			entryInTable:  true

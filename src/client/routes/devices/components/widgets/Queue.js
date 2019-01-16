@@ -25,7 +25,10 @@ const FinishedTask = ({ name, finishedAt, status, error }) => {
 	} else {
 		return (
 			<li>
-				<span className="fas fa-exclamation-circle text-danger p-2" />
+				<span
+					className="fas fa-exclamation-circle text-danger p-2"
+					title={`(${error.get('code', 1)}) Failed to execute '${name}'`}
+				/>
 				<span title={time.format('HH:mm:ss')}>{time.fromNow()}</span> <b>-</b> {sentenceCase(name)}:{' '}
 				{error.get('message')}
 			</li>
