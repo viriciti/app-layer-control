@@ -1,7 +1,7 @@
 config      = require "config"
 mongodbURI  = require "mongodb-uri"
 mongoose    = require "mongoose"
-{ forEach } = require 'underscore'
+{ forEach } = require "lodash"
 
 models     =
 	AllowedImage:   (require "./AllowedImage")   mongoose
@@ -20,10 +20,13 @@ class Database
 			options:  config.db.options or undefined
 
 		mongoose
-			.connect url, useMongoClient: true
+			.connect url,
+				useCreateIndex:   true
+				useFindAndModify: false
+				useNewUrlParser:  true
 			.then =>
 				forEach models, (model, name) =>
-					throw new Error "Name collission: #{name}" if @[name]
+					throw new Error "Name collision: #{name}" if @[name]
 
 					@[name] = model
 

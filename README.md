@@ -15,7 +15,20 @@ It is advised to _not_ use this in production (as it is not secure), but to conf
 
 1. Clone (or fork) the project
 2. Run `npm install` to install the npm modules
-3. Run `npm start` to start developing. Server will be restarted upon changes.
+3. Run `npm start` to start developing. Server will be restarted upon changes
+
+### Configuration
+
+While the default configuration provides a starting point, several settings are omitted for security reasons.  
+These settings include the GitLab endpoint and Docker Registry endpoint.  
+To configure those, add an extra configuration file (or update the default configuration, whatever floats your boat), and make sure the following settings are configured:
+
+- `git.host`
+- `docker.host`
+- `docker.username`
+- `docker.password`
+
+**Note:** The dot represents a nested value. For example, the setting `username` is a setting within the setting `docker`.
 
 ### External sources
 

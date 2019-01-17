@@ -31,13 +31,17 @@ const RegistryImage = ({ name, image, onRemoveImage }) => {
 
 class RegistryImagesOverview extends PureComponent {
 	state = {
-		configuredHost: undefined
+		configuredHost: undefined,
 	}
 
-	componentWillMount() {
+	componentWillMount () {
 		fetch('/api/versioning')
-			.then(response => response.json())
-			.then(({ host: configuredHost }) => this.setState({ configuredHost }))
+			.then(response => {
+				return response.json()
+			})
+			.then(({ host: configuredHost }) => {
+				this.setState({ configuredHost })
+			})
 	}
 
 	withRegistryUrl = repository => {
@@ -63,7 +67,7 @@ class RegistryImagesOverview extends PureComponent {
 		}
 	}
 
-	render() {
+	render () {
 		if (!this.state.configuredHost) {
 			return null
 		} else {
@@ -125,9 +129,9 @@ class RegistryImagesOverview extends PureComponent {
 export default connect(
 	state => {
 		return {
-			allowedImages: state.get('allowedImages'),
-			registryImages: state.get('registryImages'),
-			isFetchingVersions: state.getIn(['userInterface', 'isFetchingVersions'])
+			allowedImages:      state.get('allowedImages'),
+			registryImages:     state.get('registryImages'),
+			isFetchingVersions: state.getIn(['userInterface', 'isFetchingVersions']),
 		}
 	},
 	{ refreshRegistryImages, addRegistryImage, removeRegistryImage }

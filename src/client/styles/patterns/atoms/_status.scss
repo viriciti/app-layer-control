@@ -3,11 +3,11 @@
 }
 
 .device-offline {
-	background-color: $red !important;
+	background-color: $danger !important;
 }
 
 .device-online {
-	background-color: $green !important;
+	background-color: $success !important;
 }
 
 .card-header {
