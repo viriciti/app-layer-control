@@ -1,7 +1,7 @@
 import React from 'react'
-import { List } from 'immutable'
-import sentenceCase from 'sentence-case'
 import moment from 'moment'
+import sentenceCase from 'sentence-case'
+import { List, Iterable } from 'immutable'
 
 const OngoingTask = ({ name, queuedOn }) => {
 	return (
@@ -51,6 +51,7 @@ const Queue = ({ selectedDevice }) => {
 				<ul className="list list--striped">
 					{selectedDevice
 						.get('queue', List())
+						.filter(task => { return Iterable.isIterable(task) })
 						.sortBy(task => {
 							return -task.get('queuedOn')
 						})

@@ -19,7 +19,7 @@ module.exports = (db, mqttSocket) ->
 			.lean()
 		).groups
 
-		promisify (mqttSocket.publish.bind mqttSocket) topic, groups, options
+		promisify(mqttSocket.publish.bind mqttSocket) topic, groups, options
 
 	createGroup = ({ payload }, cb) ->
 		{ label } = payload
