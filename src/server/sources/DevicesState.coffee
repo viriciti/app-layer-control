@@ -18,8 +18,6 @@ module.exports =
 
 				throw new Error "Topic ID did not match payload ID (topic: #{deviceId}, payload: #{data.deviceId})"
 			.map ({ data }) ->
-				data
-			.map (state) ->
-				fromJS state
+				fromJS data
 
 	topic: "devices/+/state"

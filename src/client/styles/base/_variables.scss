@@ -1,4 +1,4 @@
-$fa-font-path: "fonts/fontawesome";
+$fa-font-path: 'fonts/fontawesome';
 
 // Colors
 $bg: #fafbff;
@@ -10,6 +10,11 @@ $color-gray-2: #727272;
 $color-gray-3: #3f3f3f;
 $color-gray-4: #323232;
 $color-gray-5: #ccc;
+
+$danger: #dc9999;
+$info: #6bb9f0;
+$success: #7ca363;
+$warning: #ede17a;
 
 // Navbar
 $navbar-bg: $color-brand;

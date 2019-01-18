@@ -23,6 +23,24 @@ const formats = {
 		)
 	},
 
+	updateState: (state, title) => {
+		if (state.match(/error/i)) {
+			return (
+				<span className="text-danger" title={title}>
+					<span className="fas fa-exclamation-circle pr-2" /> {state}
+				</span>
+			)
+		} else if (state.match(/updating/i)) {
+			return (
+				<span className="text-info" title={title}>
+					<span className="fas fa-cloud-download-alt pr-2" /> {state}
+				</span>
+			)
+		} else {
+			return <span>{state}</span>
+		}
+	},
+
 	fromNow: lastSeen => {
 		if (lastSeen > 1e5) {
 			const title = moment(lastSeen).format('ddd MMM d - HH:mm')

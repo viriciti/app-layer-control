@@ -1,35 +1,25 @@
-async                                 = require "async"
-config                                = require "config"
-{ flattenDeep, compact, uniqBy, map } = require "lodash"
+async                      = require "async"
+config                     = require "config"
+{ compact, uniq, without } = require "lodash"
+{ promisify }              = require "util"
 
 debug = (require "debug") "app:actions:groupsActions"
 
 module.exports = (db, mqttSocket) ->
 	{ enrich } = (require "../helpers/enrichAppsForMqtt") db
 
-	getDefaultGroup = ->
-		await db
-			.Group
-			.findOne label: "default"
-			.select "_id"
-			.lean()
-
 	publishGroupsForDevice = (deviceId) ->
-		new Promise (resolve, reject) ->
-			query   = deviceId: deviceId
-			topic   = "devices/#{deviceId}/groups"
-			options = retain  : true
-			groups  = JSON.stringify map (await db
-				.DeviceGroup
-				.findOne query
-				.populate "groups", "label -_id"
-				.select "groups"
-				.lean()
-			).groups, "label"
+		query   = deviceId: deviceId
+		topic   = "devices/#{deviceId}/groups"
+		options = retain: true
+		groups  = JSON.stringify (await db
+			.DeviceGroup
+			.findOne query
+			.select "groups"
+			.lean()
+		).groups
 
-			mqttSocket.publish topic, groups, options, (error) ->
-				return reject error if error
-				resolve()
+		promisify(mqttSocket.publish.bind mqttSocket) topic, groups, options
 
 	createGroup = ({ payload }, cb) ->
 		{ label } = payload
@@ -55,37 +45,35 @@ module.exports = (db, mqttSocket) ->
 	removeDeviceGroup = ({ payload }, cb) ->
 		{ payload, dest } = payload
 		query             = deviceId: dest
-		{ _id: id }       = await db
-			.Group
-			.findOne label: payload
-			.select "_id"
-			.lean()
+		current           = await db.DeviceGroup.findOne(query).lean()
+		currentGroups     = current?.groups or ["default"]
+		newGroups         = without currentGroups, payload
 
-		groups = (await db
-			.DeviceGroup
-			.findOne query
-			.populate "groups", "_id"
-			.lean()
-		)
-			.groups
-			.filter ({ _id }) ->
-				_id.toString() isnt id.toString()
-
-		await db
-			.DeviceGroup
-			.findOneAndUpdate query, groups: groups
-
+		await db.DeviceGroup.findOneAndUpdate query, groups: newGroups
 		await publishGroupsForDevice dest
 
 		cb()
 
 	removeGroup = ({ payload: label }, cb) ->
-		db.Group.findOneAndRemove { label }, (error) ->
-			return cb error if error
+		devices = await db
+			.DeviceGroup
+			.find groups: label
+			.lean()
 
-			publishGroups (error) ->
-				return cb error if error
-				cb null, "Group #{label} removed correctly"
+		await Promise.all devices.map (device) ->
+			query  = deviceId: device.deviceId
+			update = groups: without device.groups, label
+
+			Promise.all [
+				db.DeviceGroup.findOneAndUpdate query, update
+				publishGroupsForDevice device.deviceId
+			]
+
+		await db.Group.findOneAndRemove { label }
+
+		publishGroups (error) ->
+			return cb error if error
+			cb null, "Group #{label} removed correctly"
 
 	publishGroups = (cb) ->
 		async.waterfall [
@@ -116,25 +104,12 @@ module.exports = (db, mqttSocket) ->
 	storeGroups = ({ payload }, cb) ->
 		{ payload, dest } = payload
 		query             = deviceId: dest
-		current           = await db
-			.DeviceGroup
-			.findOne query
-			.populate "groups", "_id"
-			.lean()
-		currentGroups = current?.groups or [await getDefaultGroup()]
-		groups        = await db
-			.Group
-			.find label: "$in": payload
-			.select "_id"
-			.lean()
 
-		uniqById = ({ _id: id }) -> id.toString()
-		update   = groups: uniqBy compact(flattenDeep [currentGroups..., groups...]), uniqById
+		current       = await db.DeviceGroup.findOne(query).select("groups").lean()
+		currentGroups = current?.groups or ["default"]
+		update        = groups: uniq compact [currentGroups..., payload...]
 
-		await db
-			.DeviceGroup
-			.findOneAndUpdate query, update, upsert: true
-
+		await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
 		await publishGroupsForDevice dest
 
 		cb()
