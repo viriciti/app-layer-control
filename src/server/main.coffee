@@ -417,21 +417,38 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 		debug "Received result for action: #{action} - #{result}"
 		cb null, messageTable[action] or "Done"
 
-# parcel
-Bundler = require "parcel-bundler"
-bundler = new Bundler path.resolve __dirname, "..", "client", "index.html"
+port              = process.env.PORT or config.server.port
+indexFileLocation = path.resolve __dirname, "..", "client", "index.html"
 
-bundler.once "bundled", (bundle) ->
-	await db.connect()
-	await runUpdates { db, store }
+if process.env.NODE_ENV isnt "production"
+	# parcel
+	Bundler = require "parcel-bundler"
+	bundler = new Bundler path.resolve __dirname, "..", "client", "index.html"
 
-	main()
+	app.use bundler.middleware()
 
-	server.listen process.env.PORT or config.server.port, ->
-		log.info "Server listening on :#{@address().port}"
+	bundler.once "bundled", (bundle) ->
+		await db.connect()
+		await runUpdates { db, store }
+
+		main()
+
+		server.listen port, ->
+			log.info "Server listening on :#{@address().port}"
+else
+	app.get "/", (req, res, next) ->
+		res.sendFile indexFileLocation, next
+
+	db
+		.connect()
+		.then -> runUpdates { db, store }
+		.then ->
+			main()
+
+			server.listen port, ->
+				log.info "Server listening on :#{@address().port}"
 
 app.use cors()
 app.use compression()
 app.use cookieParser()
 app.use "/api", apiRouter
-app.use bundler.middleware()
