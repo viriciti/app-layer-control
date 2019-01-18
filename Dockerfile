@@ -13,4 +13,7 @@ COPY package.json /app
 
 EXPOSE 3000
 
+ARG DOCKER_REGISTY_TOKEN=xxx
+ENV DOCKER_REGISTY_TOKEN=${DOCKER_REGISTY_TOKEN}
+
 CMD ["node", "/app/server/main.js"]
