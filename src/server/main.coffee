@@ -420,10 +420,16 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 port              = process.env.PORT or config.server.port
 indexFileLocation = path.resolve __dirname, "..", "client", "index.html"
 
+app.use express.static path.join __dirname, "..", "client"
+app.use cors()
+app.use compression()
+app.use cookieParser()
+app.use "/api", apiRouter
+
 if process.env.NODE_ENV isnt "production"
 	# parcel
 	Bundler = require "parcel-bundler"
-	bundler = new Bundler path.resolve __dirname, "..", "client", "index.html"
+	bundler = new Bundler indexFileLocation
 
 	app.use bundler.middleware()
 
@@ -437,7 +443,7 @@ if process.env.NODE_ENV isnt "production"
 			log.info "Server listening on :#{@address().port}"
 else
 	app.get "/", (req, res, next) ->
-		res.sendFile indexFileLocation, next
+		res.sendFile indexFileLocation
 
 	db
 		.connect()
@@ -447,8 +453,3 @@ else
 
 			server.listen port, ->
 				log.info "Server listening on :#{@address().port}"
-
-app.use cors()
-app.use compression()
-app.use cookieParser()
-app.use "/api", apiRouter

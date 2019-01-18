@@ -1,6 +1,7 @@
 config     = require "config"
 { Router } = require "express"
-pkg        = require "../../../package.json"
+
+getPackageVersion = require "../helpers/getPackageVersion"
 
 router = Router()
 
@@ -13,7 +14,7 @@ router.get "/versioning", (req, res) ->
 router.get "/version", (req, res) ->
 	res
 		.status 200
-		.send version: pkg.version
+		.send version: await getPackageVersion()
 		.end()
 
 module.exports = router
