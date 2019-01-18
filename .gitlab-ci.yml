@@ -29,7 +29,7 @@ release:
     - TAG=( ${CI_BUILD_TAG//[-.]/ } )
     - if [[ ${TAG[0]} =~ [0-9]+ ]] ; then MAJOR=${TAG[0]}; else MAJOR=${TAG[1]}; fi
     - docker login -u builder -p $BUILDER_TOKEN docker.viriciti.com
-    - docker build --build-arg GITLAB_ACCESS_TOKEN=${GITLAB_ACCESS_TOKEN} $CI_REGISTRY_IMAGE .
+    - docker build --build-arg GITLAB_ACCESS_TOKEN=${GITLAB_ACCESS_TOKEN} -t $CI_REGISTRY_IMAGE .
     - docker push $CI_REGISTRY_IMAGE
     - docker tag $CI_REGISTRY_IMAGE $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
