@@ -420,7 +420,6 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 port              = process.env.PORT or config.server.port
 indexFileLocation = path.resolve __dirname, "..", "client", "index.html"
 
-app.use express.static path.join __dirname, "..", "client"
 app.use cors()
 app.use compression()
 app.use cookieParser()
@@ -442,6 +441,7 @@ if process.env.NODE_ENV isnt "production"
 		server.listen port, ->
 			log.info "Server listening on :#{@address().port}"
 else
+	app.use express.static path.join __dirname, "..", "client"
 	app.use "*", (req, res, next) ->
 		res.sendFile indexFileLocation
 

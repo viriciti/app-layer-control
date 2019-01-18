@@ -33,7 +33,7 @@ const formats = {
 		} else if (state.match(/updating/i)) {
 			return (
 				<span className="text-info" title={title}>
-					<span className="fas fa-cloud-download-alt pr-2" /> {state}
+					<span className="fas fa-cloud-download-alt pr-2 pulsate" /> {state}
 				</span>
 			)
 		} else {
