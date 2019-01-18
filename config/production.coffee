@@ -28,4 +28,4 @@ module.exports =
 		docker:
 			host:     "docker.viriciti.com"
 			username: "device-user"
-			password: process.env.DOCKER_REGISTY_TOKEN
+			password: process.env.GITLAB_ACCESS_TOKEN
