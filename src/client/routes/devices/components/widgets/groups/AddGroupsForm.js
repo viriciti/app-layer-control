@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
-import { without, isEmpty } from 'lodash'
+import { without, isEmpty, defaultTo } from 'lodash'
+import semver from 'semver'
 
 import { storeGroups } from '/routes/devices/modules/actions'
 import AsyncButton from '/components/common/AsyncButton'
@@ -11,29 +12,25 @@ class AddGroupsForm extends PureComponent {
 		selectedGroups: [],
 	}
 
-	renderOptions = () => {
-		const placeholder = (
-			<option key="group-select-placeholder" value="">
-				Please select a group
-			</option>
-		)
-		if (!this.props.groups) return placeholder
+	getSupport () {
+		const dmVersion = this.props.selectedDevice.getIn(['systemInfo', 'dmVersion'])
+		const appVersion = this.props.selectedDevice.getIn(['systemInfo', 'appVersion'])
+		const version = defaultTo(dmVersion, appVersion)
+		const supportedSince = '1.18.0'
 
-		return [placeholder].concat(
-			this.props.groups
-				.keySeq()
-				.filter(group => {
-					return group !== 'default'
-				})
-				.map(group => {
-					return (
-						<option key={group} value={group}>
-							{' '}
-							{group}
-						</option>
-					)
-				})
-		)
+		if (!version) {
+			return {
+				current:        'unknown',
+				supportedSince: supportedSince,
+				supported:      false,
+			}
+		} else {
+			return {
+				current:        version,
+				supportedSince: supportedSince,
+				supported:      semver.gt(version, '1.18.0'),
+			}
+		}
 	}
 
 	onGroupSelected = e => {
@@ -56,7 +53,7 @@ class AddGroupsForm extends PureComponent {
 		e.preventDefault()
 
 		if (isEmpty(this.state.selectedGroups)) {
-			return alert('Select some groups to send!')
+			return alert('You must select which groups you want to send')
 		}
 
 		if (!confirm('Sending groups. Are you sure?')) {
@@ -89,7 +86,34 @@ class AddGroupsForm extends PureComponent {
 		})
 	}
 
+	renderOptions = () => {
+		const placeholder = (
+			<option key="group-select-placeholder" value="">
+				Please select a group
+			</option>
+		)
+		if (!this.props.groups) return placeholder
+
+		return [placeholder].concat(
+			this.props.groups
+				.keySeq()
+				.filter(group => {
+					return group !== 'default'
+				})
+				.map(group => {
+					return (
+						<option key={group} value={group}>
+							{' '}
+							{group}
+						</option>
+					)
+				})
+		)
+	}
+
 	render () {
+		const { supported, current, supportedSince } = this.getSupport()
+
 		return (
 			<div>
 				<div className="row">
@@ -107,15 +131,26 @@ class AddGroupsForm extends PureComponent {
 								</select>
 							</div>
 							<div className="form-group">{this.renderSelectedGroups()}</div>
-							<AsyncButton
-								type="submit"
-								className="btn btn-light"
-								onClick={this.onSubmit}
-								busy={this.props.isStoringGroups.includes(this.props.selectedDevice.get('deviceId'))}
-								busyText="Sending ..."
-							>
-								Send
-							</AsyncButton>
+
+							{supported ? (
+								<AsyncButton
+									type="submit"
+									className="btn btn-light"
+									onClick={this.onSubmit}
+									busy={this.props.isStoringGroups.includes(this.props.selectedDevice.get('deviceId'))}
+									busyText="Sending ..."
+								>
+									Send
+								</AsyncButton>
+							) : (
+								<p
+									className="text-danger pt-2"
+									title={`Supported since ${supportedSince}, currently running ${current}`}
+								>
+									<span className="fas fa-exclamation-circle pr-2" />
+									Updating groups for this version is not supported
+								</p>
+							)}
 						</form>
 					</div>
 				</div>
