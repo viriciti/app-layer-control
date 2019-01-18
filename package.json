@@ -5,10 +5,10 @@
 	"scripts": {
 		"test": "mocha",
 		"test:watch": "NODE_ENV=test mocha --watch-extensions coffee --watch",
-		"develop": "NODE_ENV=development && nodemon src/server/main.coffee",
-		"deploy": "npm run deploy-frontend && npm run deploy-backend",
-		"deploy-backend": "coffee --output dist/server --compile src/server && coffee --output dist/config --compile config",
-		"deploy-frontend": "export NODE_ENV=production && webpack -p",
+		"develop": "nodemon src/server/main.coffee",
+		"build": "npm run build:frontend && npm run build:backend",
+		"build:backend": "coffee --output dist/server --compile src/server && coffee --output dist/config --compile config",
+		"build:frontend": "NODE_ENV=production parcel build --out-dir dist/client src/client/index.html",
 		"start": "nodemon src/server/main.coffee"
 	},
 	"license": "GPL-3.0",
