@@ -10,10 +10,6 @@ COPY dist/server  /app/server
 COPY dist/client  /app/client
 COPY dist/config  /app/config
 
-ARG DOCKER_REGISTY_TOKEN=xxx
-
-ENV DOCKER_REGISTY_TOKEN=${DOCKER_REGISTY_TOKEN}
-
 EXPOSE 3000
 
 CMD ["node", "/app/server/main.js"]
