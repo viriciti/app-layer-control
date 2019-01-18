@@ -9,6 +9,7 @@ COPY node_modules /app/node_modules
 COPY dist/server  /app/server
 COPY dist/client  /app/client
 COPY dist/config  /app/config
+COPY package.json /app
 
 EXPOSE 3000
 
