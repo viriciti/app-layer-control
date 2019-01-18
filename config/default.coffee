@@ -66,12 +66,8 @@ module.exports =
 					{ value: "error",    label: "Error" }
 					{ value: "updating", label: "Updating" }
 					{ value: "idle",     label: "Idle" }
-<<<<<<< HEAD
-					]
-=======
 				]
 			format: "updateState"
->>>>>>> github/develop
 			headerStyle:
 				minWidth: "200px"
 			entryInTable:  true
