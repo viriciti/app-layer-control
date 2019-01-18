@@ -442,7 +442,7 @@ if process.env.NODE_ENV isnt "production"
 		server.listen port, ->
 			log.info "Server listening on :#{@address().port}"
 else
-	app.get "/", (req, res, next) ->
+	app.use "*", (req, res, next) ->
 		res.sendFile indexFileLocation
 
 	db
