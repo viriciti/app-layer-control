@@ -28,7 +28,7 @@ class AddGroupsForm extends PureComponent {
 			return {
 				current:        version,
 				supportedSince: supportedSince,
-				supported:      semver.gt(version, '1.18.0'),
+				supported:      semver.gt(version, supportedSince),
 			}
 		}
 	}
