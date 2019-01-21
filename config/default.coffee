@@ -129,7 +129,7 @@ module.exports =
 			filterable:    false
 			copyable:      true
 			getIn:         "systemInfo.tun0"
-			fallbackGetIn: "systemInfo.tun0"
+			fallbackGetIn: "systemInfo.tun0IP"
 			editable:      false
 			headerStyle:
 				minWidth: "100px"
