@@ -14,6 +14,10 @@ module.exports = (mongoose) ->
 			type:     String
 			required: true
 
+		fallbackGetIn:
+			type:    String
+			default: ""
+
 		getInTitle:
 			type:    String
 			default: ""

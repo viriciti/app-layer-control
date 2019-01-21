@@ -60,9 +60,10 @@ class DeviceListItem extends PureComponent {
 					})
 					.map((options, index) => {
 						const getIn = options.get('getIn').split('.')
+						const fallbackGetIn = options.get('fallbackGetIn', '').split('.')
 						const getInTitle = options.get('getInTitle').split('.')
 
-						const value = info.getIn(getIn, options.get('defaultValue'))
+						const value = info.getIn(getIn, info.getIn(fallbackGetIn, options.get('defaultValue')))
 						const formatter = formats(options.get('format', 'default'))
 						const span = formatter(value, info.getIn(getInTitle))
 
