@@ -3,12 +3,19 @@ import JSONPretty from 'react-json-pretty'
 import { connect } from 'react-redux'
 import Convert from 'ansi-to-html'
 import { Map } from 'immutable'
+import { first } from 'lodash'
 
 import { removeContainer, restartContainer, getContainerLogs } from '/routes/devices/modules/actions/index'
 
 const convert = new Convert()
 
 class ContainerOverview extends PureComponent {
+	protectEnvironmentVariables (variables) {
+		return variables.map(variable => {
+			return first(variable.split('='))
+		})
+	}
+
 	onRestartButtonClick = () => {
 		if (confirm('The app will be restarted. Are you sure?')) {
 			this.props.restartContainer({
@@ -40,6 +47,11 @@ class ContainerOverview extends PureComponent {
 	}
 
 	renderContainerInfo () {
+		const environmentVariables = this.props.selectedContainer.get('environment').toJS()
+		const informationToShow = Object.assign({}, this.props.selectedContainer.toJS(), {
+			environment: this.protectEnvironmentVariables(environmentVariables),
+		})
+
 		return (
 			<JSONPretty
 				id="json-pretty"
@@ -47,7 +59,7 @@ class ContainerOverview extends PureComponent {
 					overflowY: 'auto',
 					maxHeight: '20em',
 				}}
-				json={this.props.selectedContainer.toJS()}
+				json={informationToShow}
 			/>
 		)
 	}
@@ -93,18 +105,29 @@ class ContainerOverview extends PureComponent {
 		return (
 			<Fragment>
 				<div className="row">
-					<div className="col-9">
+					<div className="col-6">
 						<h5>{this.props.selectedContainer.get('name')}</h5>
 					</div>
-					<div className="col-3">
-						<button
-							className="btn btn-light btn-sm float-right"
-							type="button"
-							onClick={this.onRequestContainerLogs}
-							title="Request container logs"
-						>
-							Logs
-						</button>
+					<div className="col-6">
+						<div className="btn-group float-right">
+							<button
+								className="btn btn-light btn-sm btn--icon"
+								type="button"
+								onClick={this.onRequestContainerLogs}
+								title="Request container logs"
+							>
+								<span className="fas fa-file-alt" /> Logs
+							</button>
+
+							<button
+								className="btn btn-warning btn-sm btn--icon"
+								type="button"
+								onClick={this.onRestartButtonClick}
+								title="Restart this app"
+							>
+								<span className="fas fa-power-off" /> Restart
+							</button>
+						</div>
 					</div>
 				</div>
 				<div className="row">
@@ -115,25 +138,14 @@ class ContainerOverview extends PureComponent {
 				</div>
 				<div className="row">
 					<div className="col-3 offset-9">
-						<ul className="btn-group float-right">
-							<button
-								className="btn btn-light btn-sm"
-								type="button"
-								onClick={this.onRestartButtonClick}
-								title="Restart this app"
-							>
-								Restart
-							</button>
-
-							<button
-								className="btn btn-danger btn--icon btn-sm"
-								type="button"
-								onClick={this.onDeleteButtonClick}
-								title="Delete this app"
-							>
-								<span className="fas fa-trash" />
-							</button>
-						</ul>
+						<button
+							className="btn btn-danger btn--icon btn-sm float-right"
+							type="button"
+							onClick={this.onDeleteButtonClick}
+							title="Delete this app"
+						>
+							<span className="fas fa-trash" /> Delete
+						</button>
 					</div>
 				</div>
 			</Fragment>

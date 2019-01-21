@@ -109,6 +109,7 @@ module.exports = (db, mqttSocket) ->
 		currentGroups = current?.groups or ["default"]
 		update        = groups: uniq compact [currentGroups..., payload...]
 
+		console.log "update", update
 		await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
 		await publishGroupsForDevice dest
 
