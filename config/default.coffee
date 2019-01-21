@@ -122,14 +122,15 @@ module.exports =
 			entryInDetail: true
 
 		tun0IP:
-			headerName:   "VPN IP"
-			defaultValue: ""
-			columnIndex:  50
-			sortable:     false
-			filterable:   false
-			copyable:     true
-			getIn:        "systemInfo.tun0IP"
-			editable:     false
+			headerName:    "VPN IP"
+			defaultValue:  ""
+			columnIndex:   50
+			sortable:      false
+			filterable:    false
+			copyable:      true
+			getIn:         "systemInfo.tun0"
+			fallbackGetIn: "systemInfo.tun0"
+			editable:      false
 			headerStyle:
 				minWidth: "100px"
 			entryInTable:  true
@@ -174,7 +175,8 @@ module.exports =
 		# Detail-only entries
 		linuxKernel:
 			headerName:    "Linux kernel"
-			getIn:         "systemInfo.linuxKernel"
+			getIn:         "systemInfo.kernel"
+			fallbackGetIn: "systemInfo.linuxKernel"
 			columnIndex:   41
 			entryInDetail: true
 			editable:      false
@@ -188,14 +190,23 @@ module.exports =
 
 		ppp0IP:
 			headerName:    "Cellular IP"
-			getIn:         "systemInfo.ppp0IP"
+			getIn:         "systemInfo.ppp0"
+			fallbackGetIn: "systemInfo.ppp0IP"
+			columnIndex:   51
+			entryInDetail: true
+			editable:      false
+
+		wlan0IP:
+			headerName:    "Wireless IP"
+			getIn:         "systemInfo.wlan0"
 			columnIndex:   51
 			entryInDetail: true
 			editable:      false
 
 		eth0IP:
 			headerName:    "Ethernet IP"
-			getIn:         "systemInfo.eth0IP"
+			getIn:         "systemInfo.eth0"
+			fallbackGetIn: "systemInfo.eth0IP"
 			columnIndex:   52
 			entryInDetail: true
 			editable:      false
