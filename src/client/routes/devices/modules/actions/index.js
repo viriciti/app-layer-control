@@ -163,7 +163,7 @@ export function removeGroup(payload) {
 
 export function multiRemoveGroups(payload) {
 	return {
-		type: DEVICES_NAMESPACE + REMOVE_GROUP,
+		type: DB_NAMESPACE + REMOVE_GROUP,
 		payload
 	}
 }

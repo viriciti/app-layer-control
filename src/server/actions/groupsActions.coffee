@@ -1,7 +1,7 @@
-async                      = require "async"
-config                     = require "config"
-{ compact, uniq, without } = require "lodash"
-{ promisify }              = require "util"
+async                               = require "async"
+config                              = require "config"
+{ compact, uniq, without, isArray } = require "lodash"
+{ promisify }                       = require "util"
 
 debug = (require "debug") "app:actions:groupsActions"
 
@@ -44,13 +44,18 @@ module.exports = (db, mqttSocket) ->
 
 	removeDeviceGroup = ({ payload }, cb) ->
 		{ payload, dest } = payload
-		query             = deviceId: dest
-		current           = await db.DeviceGroup.findOne(query).lean()
-		currentGroups     = current?.groups or ["default"]
-		newGroups         = without currentGroups, payload
+		dest              = [dest] unless isArray dest
 
-		await db.DeviceGroup.findOneAndUpdate query, groups: newGroups
-		await publishGroupsForDevice dest
+		debug "Removing #{payload.length} group(s) for #{dest.length} device(s)"
+
+		await Promise.all dest.map (deviceId) ->
+			query             = deviceId: deviceId
+			current           = await db.DeviceGroup.findOne(query).lean()
+			currentGroups     = current?.groups or ["default"]
+			newGroups         = without currentGroups, payload
+
+			await db.DeviceGroup.findOneAndUpdate query, groups: newGroups
+			await publishGroupsForDevice deviceId
 
 		cb()
 
@@ -61,13 +66,12 @@ module.exports = (db, mqttSocket) ->
 			.lean()
 
 		await Promise.all devices.map (device) ->
-			query  = deviceId: device.deviceId
-			update = groups: without device.groups, label
+			{ deviceId } = device
+			query        = deviceId: deviceId
+			update       = groups: without device.groups, label
 
-			Promise.all [
-				db.DeviceGroup.findOneAndUpdate query, update
-				publishGroupsForDevice device.deviceId
-			]
+			await db.DeviceGroup.findOneAndUpdate query, update
+			await publishGroupsForDevice deviceId
 
 		await db.Group.findOneAndRemove { label }
 
@@ -103,15 +107,18 @@ module.exports = (db, mqttSocket) ->
 
 	storeGroups = ({ payload }, cb) ->
 		{ payload, dest } = payload
-		query             = deviceId: dest
+		dest              = [dest] unless isArray dest
 
-		current       = await db.DeviceGroup.findOne(query).select("groups").lean()
-		currentGroups = current?.groups or ["default"]
-		update        = groups: uniq compact [currentGroups..., payload...]
+		debug "Storing #{payload.length} group(s) for #{dest.length} device(s)"
 
-		console.log "update", update
-		await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
-		await publishGroupsForDevice dest
+		await Promise.all dest.map (deviceId) ->
+			query         = deviceId: deviceId
+			current       = await db.DeviceGroup.findOne(query).select("groups").lean()
+			currentGroups = current?.groups or ["default"]
+			update        = groups: uniq compact [currentGroups..., payload...]
+
+			await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
+			await publishGroupsForDevice deviceId
 
 		cb()
 

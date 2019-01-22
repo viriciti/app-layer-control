@@ -4,12 +4,15 @@
 		"browser": true,
 		"mocha": true
 	},
-	"globals": {
-		"CONFIG": true
-	},
 	"rules": {
-		"comma-dangle": ["error", "always-multiline"],
-		"jsx-quotes": ["warn", "prefer-double"],
+		"comma-dangle": [
+			"error",
+			"always-multiline"
+		],
+		"jsx-quotes": [
+			"warn",
+			"prefer-double"
+		],
 		"key-spacing": [
 			"warn",
 			{
@@ -19,10 +22,18 @@
 		],
 		"no-multi-spaces": 0,
 		"no-tabs": 0,
-		"arrow-body-style": ["error", "always"],
-		"react/jsx-indent": [2, "tab"],
-		"react/jsx-indent-props": [2, "tab"],
-		"semi": ["warn", "never"],
+		"react/jsx-indent": [
+			2,
+			"tab"
+		],
+		"react/jsx-indent-props": [
+			2,
+			"tab"
+		],
+		"semi": [
+			"warn",
+			"never"
+		],
 		"indent": [
 			"error",
 			"tab",
@@ -36,8 +47,10 @@
 				"code": 120
 			}
 		],
-
 		"react/jsx-equals-spacing": 0
 	},
-	"extends": ["standard", "standard-jsx"]
+	"extends": [
+		"standard",
+		"standard-jsx"
+	]
 }
