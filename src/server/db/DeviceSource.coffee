@@ -1,5 +1,10 @@
 module.exports = (mongoose) ->
 	mongoose.model "DeviceSource",
+		name:
+			type:     String
+			required: true
+			unique:   true
+
 		editable:
 			type:    Boolean
 			default: true

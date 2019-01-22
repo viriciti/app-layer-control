@@ -34,12 +34,14 @@ runUpdates                   = require "./updates"
 sendMessageToMqtt            = require "./updates/sendMessageToMqtt"
 { cacheUpdate }              = require "./observables"
 apiRouter                    = require "./api"
+bundle                       = require "./bundle"
 
 log = (require "./lib/Logger") "main"
 
 # Server initialization
 app     = express()
 server  = http.createServer app
+port    = process.env.PORT or config.server.port
 io      = socketio server
 sockets = {}
 db      = new Database
@@ -57,8 +59,7 @@ main = ->
 	initMqtt()
 	initSocketIO()
 
-	store.ensureDefaultDeviceSources ->
-		log.info "Saved default table columns"
+	await store.ensureDefaultDeviceSources()
 
 	registry$ = DockerRegistry config.versioning, db
 	registry$.subscribe(
@@ -417,39 +418,20 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 		debug "Received result for action: #{action} - #{result}"
 		cb null, messageTable[action] or "Done"
 
-port              = process.env.PORT or config.server.port
-indexFileLocation = path.resolve __dirname, "..", "client", "index.html"
-
 app.use cors()
 app.use compression()
 app.use cookieParser()
 app.use "/api", apiRouter
 
-if process.env.NODE_ENV isnt "production"
-	# parcel
-	Bundler = require "parcel-bundler"
-	bundler = new Bundler indexFileLocation
-
-	app.use bundler.middleware()
-
-	bundler.once "bundled", (bundle) ->
-		await db.connect()
-		await runUpdates { db, store }
-
+bundle app
+	.then ->
+		db.connect()
+	.then ->
+		runUpdates
+			db:    db
+			store: store
+	.then ->
 		main()
-
+	.then ->
 		server.listen port, ->
 			log.info "Server listening on :#{@address().port}"
-else
-	app.use express.static path.join __dirname, "..", "client"
-	app.use "*", (req, res, next) ->
-		res.sendFile indexFileLocation
-
-	db
-		.connect()
-		.then -> runUpdates { db, store }
-		.then ->
-			main()
-
-			server.listen port, ->
-				log.info "Server listening on :#{@address().port}"

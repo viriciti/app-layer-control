@@ -4,6 +4,7 @@ module.exports = (mongoose) ->
 			type:     String
 			required: true
 			unique:   true
+			index:    true
 		groups: [
 			type:     String
 			required: true

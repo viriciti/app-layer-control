@@ -1,6 +1,9 @@
 # App Layer Control
 
-![Docker Build](https://img.shields.io/docker/build/viriciti/app-layer-control.svg)
+![](https://img.shields.io/badge/app--layer--agent-%5E1.19.0-lightgrey.svg)
+![](https://img.shields.io/github/last-commit/viriciti/app-layer-control.svg)
+![](https://img.shields.io/david/viriciti/app-layer-control.svg)
+![](https://img.shields.io/david/dev/viriciti/app-layer-control.svg)
 
 ## Dependencies
 
