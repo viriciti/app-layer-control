@@ -59,8 +59,7 @@ main = ->
 	initMqtt()
 	initSocketIO()
 
-	store.ensureDefaultDeviceSources ->
-		log.info "Saved default table columns"
+	await store.ensureDefaultDeviceSources()
 
 	registry$ = DockerRegistry config.versioning, db
 	registry$.subscribe(

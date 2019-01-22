@@ -2,6 +2,7 @@ _                     = require 'underscore'
 async                 = require "async"
 config                = require "config"
 { Map, List, fromJS } = require "immutable"
+{ toPairs, without }  = require "lodash"
 
 log = (require "./lib/Logger") "store"
 
@@ -86,14 +87,14 @@ module.exports = (db) ->
 
 			cb null, deviceSources
 
-	ensureDefaultDeviceSources = (cb) ->
-		async.eachOf config.defaultColumns, (column, key, next) ->
-			db.DeviceSource.findOneAndUpdate
-				getIn: column.getIn,
-				column,
-				{ upsert: true, setDefaultsOnInsert: true, new: true }
-			, next
-		, cb
+	ensureDefaultDeviceSources = ->
+		Promise.all toPairs(config.defaultColumns).map ([name, column]) ->
+			query   = name: name
+			options =
+				upsert:              true
+				setDefaultsOnInsert: true
+
+			db.DeviceSource.findOneAndUpdate query, column, options
 
 	cacheConfigurations = (configs) ->
 		cache = cache.set "configurations", configs
