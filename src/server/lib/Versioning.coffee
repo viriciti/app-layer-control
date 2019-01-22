@@ -31,7 +31,7 @@ class Versioning
 			, (error, response, body) =>
 				return cb error if error
 
-				debug "[renewToken] Renewed token for '#{image}', body", body.toString()
+				debug "[renewToken] Renewed token for '#{image}'"
 
 				try
 					json = JSON.parse body.toString()
