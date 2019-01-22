@@ -18,7 +18,7 @@ This will allow you to fetch from GitHub, but prevents any accidental push.
 The closed source version (the one you are looking at) cannot be released in the conventional release cycle, because the tags are also copied over to this repository. Instead, we push a tag versioned as: `[version]-production`.  
 The version can be repushed if a fix is required for ViriCiti only. For general bug fixes, **use the open source version**.
 
-So, to automate this, copy the following commands and run them in your terminal.  
+So, to automate this, copy the following commands and run them in your terminal:  
 **Note:** Depending on your editor, `:wq!` or `CTRL` + `X` when prompted for a commit message.
 
 ```
