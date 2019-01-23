@@ -4,7 +4,7 @@ This repository mirrors the [open source repository](http://github.com/viriciti/
 
 ## Remote
 
-If you have just cloned this repository, changes are `origin` points to `git.viriciti.com`. This is fine, but we require another remote to stay up to date.
+If you have just cloned this repository, chances are you have one remote (origin) which points to `git.viriciti.com`. This is fine, but you need a second remote to stay up to date. Execute the following in your terminal:
 
 ```
 git remote add github https://github.com/viriciti/app-layer-control.git
@@ -15,11 +15,11 @@ This will allow you to fetch from GitHub, but prevents any accidental push.
 
 ## How to release
 
-The closed source version (the one you are looking at) cannot be released in the conventional release cycle, because the tags are also copied over to this repository. Instead, we push a tag versioned as: `[version]-production`.  
-The version can be repushed if a fix is required for ViriCiti only. For general bug fixes, **use the open source version**.
+The closed source version (the one you are looking at) cannot be released in the conventional release cycle, because the tags are also copied over to this repository.  
+Instead, we push a tag versioned as: `[version]-production`.  
+The tag can be removed and repushed if a fix is required for ViriCiti only. For general bug fixes, **fix them in the open source version**.
 
-So, to automate this, copy the following commands and run them in your terminal:  
-**Note:** Depending on your editor, `:wq!` or `CTRL` + `X` when prompted for a commit message.
+To automate the release cycle, execute the following commands in your terminal:
 
 ```
 VERSION=$(cat package.json | jq -r '.version')
@@ -30,3 +30,5 @@ git tag $VERSION-production
 git push origin master
 git push origin $VERSION-production
 ```
+
+**Note:** Depending on your editor, `:wq!` or `CTRL` + `X` when prompted for a commit message.
