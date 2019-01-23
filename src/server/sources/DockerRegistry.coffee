@@ -1,14 +1,14 @@
-{ Observable }     = require "rxjs"
-{ isEqual, pluck } = require 'underscore'
+{ Observable }   = require "rxjs"
+{ isEqual, map } = require "lodash"
 
 getRegistryImages = require "../lib/getRegistryImages"
 
 module.exports = (config, db) ->
 	_getRegistryImages = (cb) ->
-		db.AllowedImage.find {}, (error, images) ->
-			return cb error if error
+		images = await db.AllowedImage.find {}
+		images = await getRegistryImages map images, "name"
 
-			getRegistryImages pluck(images, "name"), cb
+		cb null, images
 
 	initRegistry$ = (Observable.bindNodeCallback _getRegistryImages)()
 	registry$     = Observable

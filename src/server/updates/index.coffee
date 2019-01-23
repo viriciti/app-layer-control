@@ -1,4 +1,3 @@
-async                           = require "async"
 mqtt                            = require "mqtt"
 { Map }                         = require "immutable"
 { isBoolean, throttle, random } = require "lodash"

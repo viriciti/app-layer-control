@@ -1,6 +1,6 @@
 config                         = require "config"
 map                            = require "p-map"
-{ Map, fromJS }                = require "immutable"
+{ Map, fromJS, Iterable }      = require "immutable"
 { object, pluck }              = require "underscore"
 { toPairs, mapValues, reduce } = require "lodash"
 
@@ -27,7 +27,7 @@ class Store
 			@getAllowedImages()
 		]
 
-		fromJS
+		Map
 			configurations: configurations
 			groups:         groups
 			registryImages: registryImages
@@ -64,8 +64,9 @@ class Store
 			.Configuration
 			.find {}
 			.select "-_id -__v"
+			.lean()
 
-		configurations = reduce configurations, (memo, configuration) ->
+		configurations = configurations.reduce (memo, configuration) ->
 			{ applicationName } = configuration
 
 			Object.assign {}, memo,
@@ -99,16 +100,21 @@ class Store
 			@db.DeviceSource.findOneAndUpdate query, column, options
 
 	cacheConfigurations: (configs) ->
-		@cache = @cache.set "configurations", configs
+		@setCache "configurations", configs
 
 	cacheEnabledRegistryImages: (enabledRegistryImages) ->
-		@cache = @cache.set "enabledRegistryImages", enabledRegistryImages
+		@setCache "enabledRegistryImages", enabledRegistryImages
 
 	cacheRegistryImages: (images) ->
-		@cache = @cache.set "registryImages", images
+		@setCache "registryImages", images
 
 	cacheGroups: (groups) ->
-		@cache = @cache.set "groups", groups
+		@setCache "groups", groups
+
+	setCache: (section, value) ->
+		throw new Error "Cannot cache non-Immutable values" unless Iterable.isIterable value
+
+		@cache = @cache.set section, value
 
 	getCache: (section) ->
 		return @cache.get section if section
@@ -119,14 +125,15 @@ class Store
 	getEnabledRegistryImages: (cb) ->
 		log.warn "'getEnabledRegistryImages' is deprecated ..."
 
-		@db.RegistryImages.find {}, (error, images) ->
-			return cb error if error
-			cb null, fromJS images.reduce (memo, data) ->
-				{ name }   = data
-				memo[name] = data
-					.toJSON()
-					.enabledVersion
-				memo
-			, {}
+		images = await @db.RegistryImages.find {}
+		images = images.reduce (memo, data) ->
+			{ name }   = data
+			memo[name] = data
+				.toJSON()
+				.enabledVersion
+			memo
+		, {}
+
+		fromJS images
 
 module.exports = Store
