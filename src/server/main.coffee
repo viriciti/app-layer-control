@@ -132,6 +132,38 @@ initMqtt = ->
 		deviceGroups$   = DeviceGroups.observable   mqttClient
 		cacheUpdate$    = cacheUpdate               store
 
+		each externals, (source) ->
+			{
+				observable
+				mapFrom
+				mapTo
+				foreignKey
+			} = source getDeviceStates
+
+			observable
+				.takeUntil Observable.fromEvent mqttClient, "disconnected"
+				.bufferTime config.batchState.defaultInterval
+				.subscribe (externalOutputs) ->
+					return unless externalOutputs.length
+
+					updatesToSend = externalOutputs.reduce (updates, externalOutput) ->
+						data         = fromJS externalOutput
+						value        = data.getIn mapFrom
+						clientId     = data.getIn foreignKey
+						keyPath      = [clientId].concat(mapTo)
+						deviceStates = deviceStates.setIn keyPath, value
+
+						# getIn makes it harder to determine the updates
+						# For now, just send the whole state and let Redux
+						# on the client side determine the difference
+						updates[clientId] = deviceStates.get clientId
+						updates
+					, {}
+
+					debug "Sending #{size updatesToSend} state updates after external source updates"
+
+					_broadcastAction "devicesBatchState", deviceStates
+
 		cacheUpdate$
 			.takeUntil Observable.fromEvent mqttClient, "disconnected"
 			.subscribe ->
@@ -357,7 +389,7 @@ _onActionDeviceGet = (action, cb) ->
 	legacy_sendToMqtt action, cb
 
 _onActionDb = ({ action, payload, meta }, cb) ->
-	{ execute }  = (require "./actions") db, mqttClient, _broadcastAction, store
+	execute      = (require "./actions") db, mqttClient, _broadcastAction, store
 	messageTable =
 		storeGroups:         "Groups updated for #{payload?.dest}"
 		createConfiguration: "Application updated"
@@ -367,12 +399,13 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 		addRegistryImage:    "Registry image added"
 		removeRegistryImage: "Registry image removed"
 
-	execute { action, payload, meta }, (error, result) ->
-		debug "Received an error: #{error.message}" if error
-		return cb message: error.message if error
+	try
+		result = await execute { action, payload, meta }
 
 		debug "Received result for action: #{action} - #{result}"
 		cb null, messageTable[action] or "Done"
+	catch error
+		cb message: error.message
 
 app.use cors()
 app.use compression()
