@@ -1,6 +1,5 @@
 log   = (require "../lib/Logger") "Actions"
 _     = require 'underscore'
-async = require "async"
 
 module.exports = (db, mqttClient, broadcastAction, store) ->
 	configurationsActions   = (require "./configurationsActions")   db, mqttClient, store
@@ -22,51 +21,42 @@ module.exports = (db, mqttClient, broadcastAction, store) ->
 			return cb "Action #{action} can't be executed. Check logs."
 
 		# Broadcast the new state of the db to all the sockets
-		actionsMap[action] { payload, meta }, (error, result) ->
-			if error
-				log.error error
-				return cb error
+		try
+			result = await actionsMap[action] { payload, meta }
 
 			if configurationsActions[action]
-				store.getConfigurations (error, configs) ->
-					return log.error error.message if error
+				configs = await store.getConfigurations()
 
-					store.cacheConfigurations configs
-
-					broadcastAction "configurations", configs
+				store.cacheConfigurations configs
+				broadcastAction "configurations", configs
 
 			else if registryImagesActions[action]
-				async.parallel
-					registryImages:        store.getRegistryImages
-					allowedImages:         store.getAllowedImages
-				, (error, { registryImages, allowedImages } = {}) ->
-					return log.error error.message if error
+				[registryImages, allowedImages] = await Promise.all [
+					store.getRegistryImages()
+					store.getAllowedImages()
+				]
 
-					store.cacheRegistryImages registryImages
-
-					broadcastAction "registryImages", registryImages.toJS()
-					broadcastAction "allowedImages",  allowedImages.toJS()
+				store.cacheRegistryImages registryImages
+				broadcastAction "registryImages", registryImages.toJS()
+				broadcastAction "allowedImages",  allowedImages.toJS()
 
 			else if groupsActions[action]
-				store.getGroups (error, groups) ->
-					return log.error error.message if error
+				groups = await store.getGroups()
 
-					store.cacheGroups groups
-
-					broadcastAction "groups", groups
+				store.cacheGroups groups
+				broadcastAction "groups", groups
 
 			else if deviceSourceActions[action]
-				store.getDeviceSources (error, deviceSources) ->
-					return log.error error.message if error
+				deviceSources = await store.getDeviceSources()
 
-					broadcastAction "deviceSources", deviceSources.toJS()
+				broadcastAction "deviceSources", deviceSources.toJS()
 
 			else if allowedImagesActions[action]
-				store.getAllowedImages (error, allowedImages) ->
-					return log.error error.message if error
+				allowedImages = await store.getAllowedImages()
 
-					broadcastAction "allowedImages", allowedImages.toJS()
-
+				broadcastAction "allowedImages", allowedImages.toJS()
 			cb null, result
+		catch error
+			return cb error
 
 	{ execute }

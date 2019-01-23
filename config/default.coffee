@@ -8,7 +8,8 @@ module.exports =
 		defaultInterval: 3000
 
 	server:
-		port: 3000
+		port:        3000
+		skipUpdates: false
 
 	mqtt:
 		clientId: "app-layer-control-#{os.hostname()}"

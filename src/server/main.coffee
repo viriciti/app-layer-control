@@ -7,12 +7,11 @@ cors                  = require "cors"
 debug                 = (require "debug") "app:main"
 express               = require "express"
 http                  = require "http"
-path                  = require "path"
 socketio              = require "socket.io"
 { Map, List, fromJS } = require "immutable"
 { Observable }        = require "rxjs"
 { each, size, noop }  = require "lodash"
-mqtt                  = require "mqtt"
+mqtt                  = require "async-mqtt"
 RPC                   = require "mqtt-json-rpc"
 semver                = require "semver"
 
@@ -35,6 +34,7 @@ sendMessageToMqtt            = require "./updates/sendMessageToMqtt"
 { cacheUpdate }              = require "./observables"
 apiRouter                    = require "./api"
 bundle                       = require "./bundle"
+Store                        = require "./Store"
 
 log = (require "./lib/Logger") "main"
 
@@ -45,15 +45,17 @@ port    = process.env.PORT or config.server.port
 io      = socketio server
 sockets = {}
 db      = new Database
+store   = new Store db
 
 rpc               = null
 mqttClient        = null
 legacy_sendToMqtt = null
-store             = (require "./store") db
 deviceStates      = Map()
 getDeviceStates   = -> deviceStates
 
 log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
+
+
 
 main = ->
 	initMqtt()
@@ -66,10 +68,10 @@ main = ->
 		(images) ->
 			debug "Getting images from registry..."
 
-			store.setImages images, (error, result) ->
-				return log.error error.message if error
-				log.info "Images have been updated!"
-				_broadcastAction "registryImages", images
+			await store.storeRegistryImages images
+
+			log.info "Images have been updated!"
+			_broadcastAction "registryImages", images
 
 		(error) -> log.error "Error in Docker Registry: #{error.message}"
 	)
@@ -97,224 +99,216 @@ containersNotRunningToString = (containers) ->
 		.join "\n"
 
 initMqtt = ->
-	options =
-		Object.assign(
-			{},
-			config.mqtt
-			config.mqtt.connectionOptions
-			clientId: config.mqtt.clientId
-		)
-
-	client            = mqttClient = mqtt.connect options
+	options           = { ...config.mqtt.connectionOptions, ...config.mqtt }
+	client            = mqttClient  = mqtt.connect options
 	client.publish    = noop if config.mqtt.readOnly
 	legacy_sendToMqtt = sendMessageToMqtt mqttClient
-	rpc               = new RPC client, timeout: config.mqtt.responseTimeout
+	rpc               = new RPC client._client, timeout: config.mqtt.responseTimeout
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
 
-		async.parallel [
-			(cb) -> populateMqttWithGroups db, mqttClient, cb
-			(cb) -> populateMqttWithDeviceGroups db, mqttClient, cb
-		], (error) ->
+		await Promise.all [
+			populateMqttWithGroups db, mqttClient
+			populateMqttWithDeviceGroups db, mqttClient
+		]
+
+		async.parallel
+			configurations:        store.getConfigurations
+			registryImages:        store.getRegistryImages
+			groups:                store.getGroups
+		, (error, populate) ->
 			return log.error if error
 
-			async.parallel
-				configurations:        store.getConfigurations
-				registryImages:        store.getRegistryImages
-				groups:                store.getGroups
-			, (error, populate) ->
-				return log.error if error
+			store.cacheConfigurations        populate.configurations
+			store.cacheRegistryImages        populate.registryImages
+			store.cacheGroups                populate.groups
 
-				store.cacheConfigurations        populate.configurations
-				store.cacheRegistryImages        populate.registryImages
-				store.cacheGroups                populate.groups
+			log.info "Cache succesfully populated"
 
-				log.info "Cache succesfully populated"
+			devicesLogs$    = DevicesLogs.observable    mqttClient
+			devicesNsState$ = DevicesNsState.observable mqttClient
+			devicesState$   = DevicesState.observable   mqttClient
+			devicesStatus$  = DevicesStatus.observable  mqttClient
+			deviceGroups$   = DeviceGroups.observable   mqttClient
+			cacheUpdate$    = cacheUpdate               store
 
-				devicesLogs$    = DevicesLogs.observable    mqttClient
-				devicesNsState$ = DevicesNsState.observable mqttClient
-				devicesState$   = DevicesState.observable   mqttClient
-				devicesStatus$  = DevicesStatus.observable  mqttClient
-				deviceGroups$   = DeviceGroups.observable   mqttClient
-				cacheUpdate$    = cacheUpdate               store
-
-				each externals, (source) ->
-					{
-						observable
-						mapFrom
-						mapTo
-						foreignKey
-					} = source getDeviceStates
-
+			each externals, (source) ->
+				{
 					observable
-						.takeUntil Observable.fromEvent mqttClient, "disconnected"
-						.bufferTime config.batchState.defaultInterval
-						.subscribe (externalOutputs) ->
-							return unless externalOutputs.length
+					mapFrom
+					mapTo
+					foreignKey
+				} = source getDeviceStates
 
-							updatesToSend = externalOutputs.reduce (updates, externalOutput) ->
-								data         = fromJS externalOutput
-								value        = data.getIn mapFrom
-								clientId     = data.getIn foreignKey
-								keyPath      = [ clientId ].concat(mapTo)
-								deviceStates = deviceStates.setIn keyPath, value
-
-								# getIn makes it harder to determine the updates
-								# For now, just send the whole state and let Redux
-								# on the client side determine the difference
-								updates[clientId] = deviceStates.get clientId
-								updates
-							, {}
-
-							debug "Sending #{size updatesToSend} state updates after external source updates"
-
-							_broadcastAction "devicesBatchState", deviceStates
-
-				cacheUpdate$
+				observable
 					.takeUntil Observable.fromEvent mqttClient, "disconnected"
-					.subscribe ->
-						log.info "Cache has been updated... Validating outdated software for devices"
-
-						deviceUpdates = deviceStates
-							.reduce (updates, device) ->
-								versionsNotMatching = getVersionsNotMatching
-									store:             store
-									deviceGroups:      convertDeviceGroupsToArrayMap device.get "groups"
-									currentContainers: device.get "containers"
-
-								deviceId        = device.get "deviceId"
-								versionMismatch = versionsMismatchToString versionsNotMatching
-								device          = device.setIn ["activeAlerts", "versionsNotMatching"], versionMismatch
-								deviceStates    = deviceStates.mergeIn [deviceId], device
-
-								updates[deviceId] = device
-								updates
-							, {}
-
-						_broadcastAction "devicesBatchState", deviceUpdates
-
-				devicesState$
 					.bufferTime config.batchState.defaultInterval
-					.subscribe (stateUpdates) ->
-						return unless stateUpdates.length
+					.subscribe (externalOutputs) ->
+						return unless externalOutputs.length
 
-						newStates = stateUpdates.map (stateUpdate) ->
-							debug "Getting state for device #{stateUpdate.get "deviceId"}"
+						updatesToSend = externalOutputs.reduce (updates, externalOutput) ->
+							data         = fromJS externalOutput
+							value        = data.getIn mapFrom
+							clientId     = data.getIn foreignKey
+							keyPath      = [ clientId ].concat(mapTo)
+							deviceStates = deviceStates.setIn keyPath, value
 
-							clientId          = stateUpdate.get "deviceId"
-							currentContainers = stateUpdate.get "containers"
-							groups            = stateUpdate.get "groups"
+							# getIn makes it harder to determine the updates
+							# For now, just send the whole state and let Redux
+							# on the client side determine the difference
+							updates[clientId] = deviceStates.get clientId
+							updates
+						, {}
 
-							deviceGroups          = convertDeviceGroupsToArrayMap groups
-							containersNotRunning  = getContainersNotRunning       currentContainers
-							versionsNotMatching   = getVersionsNotMatching
+						debug "Sending #{size updatesToSend} state updates after external source updates"
+
+						_broadcastAction "devicesBatchState", deviceStates
+
+			cacheUpdate$
+				.takeUntil Observable.fromEvent mqttClient, "disconnected"
+				.subscribe ->
+					log.info "Cache has been updated... Validating outdated software for devices"
+
+					deviceUpdates = deviceStates
+						.reduce (updates, device) ->
+							versionsNotMatching = getVersionsNotMatching
 								store:             store
-								deviceGroups:      deviceGroups
-								currentContainers: currentContainers
+								deviceGroups:      convertDeviceGroupsToArrayMap device.get "groups"
+								currentContainers: device.get "containers"
 
-							extraState = fromJS
-								deviceId:          clientId
-								lastSeenTimestamp: Date.now()
-								activeAlerts:
-									versionsNotMatching:  versionsMismatchToString versionsNotMatching
-									containersNotRunning: containersNotRunningToString containersNotRunning
+							deviceId        = device.get "deviceId"
+							versionMismatch = versionsMismatchToString versionsNotMatching
+							device          = device.setIn ["activeAlerts", "versionsNotMatching"], versionMismatch
+							deviceStates    = deviceStates.mergeIn [deviceId], device
 
-							newState     = stateUpdate.merge extraState
-							deviceStates = deviceStates.mergeIn [ clientId ], newState
-
-							newState
-						.reduce (devices, deviceState) ->
-							devices[deviceState.get "deviceId"] = deviceState
-							devices
-						, {}
-
-						debug "Sending #{size newStates} state updates"
-
-						_broadcastAction "devicesBatchState", newStates
-
-				devicesNsState$
-					.merge deviceGroups$
-					.bufferTime config.batchState.nsStateInterval
-					.subscribe (nsStateUpdates) ->
-						return unless nsStateUpdates.length
-
-						newNsStates = nsStateUpdates.reduce (updates, nsStateUpdate) ->
-							{ deviceId, key, value } = nsStateUpdate
-							debug "devicesNsState is updating #{deviceId}"
-
-							newState = fromJS
-								deviceId:          deviceId
-								"#{key}":          value
-								lastSeenTimestamp: Date.now()
-
-							deviceStates      = deviceStates.mergeIn [ deviceId ], newState
-							updates[deviceId] = newState
+							updates[deviceId] = device
 							updates
 						, {}
 
-						debug "Sending #{size newNsStates} namespace state updates"
+					_broadcastAction "devicesBatchState", deviceUpdates
 
-						_broadcastAction "devicesBatchState", newNsStates
+			devicesState$
+				.bufferTime config.batchState.defaultInterval
+				.subscribe (stateUpdates) ->
+					return unless stateUpdates.length
 
-				devicesStatus$
-					.bufferTime config.batchState.defaultInterval
-					.subscribe (statusUpdates) ->
-						return unless statusUpdates.length
+					newStates = stateUpdates.map (stateUpdate) ->
+						debug "Getting state for device #{stateUpdate.get "deviceId"}"
+
+						clientId          = stateUpdate.get "deviceId"
+						currentContainers = stateUpdate.get "containers"
+						groups            = stateUpdate.get "groups"
+
+						deviceGroups          = convertDeviceGroupsToArrayMap groups
+						containersNotRunning  = getContainersNotRunning       currentContainers
+						versionsNotMatching   = getVersionsNotMatching
+							store:             store
+							deviceGroups:      deviceGroups
+							currentContainers: currentContainers
+
+						extraState = fromJS
+							deviceId:          clientId
+							lastSeenTimestamp: Date.now()
+							activeAlerts:
+								versionsNotMatching:  versionsMismatchToString versionsNotMatching
+								containersNotRunning: containersNotRunningToString containersNotRunning
+
+						newState     = stateUpdate.merge extraState
+						deviceStates = deviceStates.mergeIn [ clientId ], newState
+
+						newState
+					.reduce (devices, deviceState) ->
+						devices[deviceState.get "deviceId"] = deviceState
+						devices
+					, {}
+
+					debug "Sending #{size newStates} state updates"
+
+					_broadcastAction "devicesBatchState", newStates
+
+			devicesNsState$
+				.merge deviceGroups$
+				.bufferTime config.batchState.nsStateInterval
+				.subscribe (nsStateUpdates) ->
+					return unless nsStateUpdates.length
+
+					newNsStates = nsStateUpdates.reduce (updates, nsStateUpdate) ->
+						{ deviceId, key, value } = nsStateUpdate
+						debug "devicesNsState is updating #{deviceId}"
+
+						newState = fromJS
+							deviceId:          deviceId
+							"#{key}":          value
+							lastSeenTimestamp: Date.now()
+
+						deviceStates      = deviceStates.mergeIn [ deviceId ], newState
+						updates[deviceId] = newState
+						updates
+					, {}
+
+					debug "Sending #{size newNsStates} namespace state updates"
+
+					_broadcastAction "devicesBatchState", newNsStates
+
+			devicesStatus$
+				.bufferTime config.batchState.defaultInterval
+				.subscribe (statusUpdates) ->
+					return unless statusUpdates.length
 
 
-						newStatuses = statusUpdates.reduce (updates, statusUpdate) ->
-							{ deviceId, status } = statusUpdate
-							newState             = fromJS
-								deviceId:     deviceId
-								onlineStatus: status
+					newStatuses = statusUpdates.reduce (updates, statusUpdate) ->
+						{ deviceId, status } = statusUpdate
+						newState             = fromJS
+							deviceId:     deviceId
+							onlineStatus: status
 
-							deviceStates      = deviceStates.mergeIn [ deviceId ], newState
-							updates[deviceId] = onlineStatus: status
-							updates
-						, {}
+						deviceStates      = deviceStates.mergeIn [ deviceId ], newState
+						updates[deviceId] = onlineStatus: status
+						updates
+					, {}
 
-						debug "Sending #{size newStatuses} status updates"
+					debug "Sending #{size newStatuses} status updates"
 
-						_broadcastAction "devicesBatchState", newStatuses
+					_broadcastAction "devicesBatchState", newStatuses
 
-				devicesLogs$.subscribe (logs) ->
-					_broadcastAction "deviceLogs", logs
+			devicesLogs$.subscribe (logs) ->
+				_broadcastAction "deviceLogs", logs
 
-				# Takes care of publishing groups for devices which connect for the first time
-				devicesStatus$
-					.filter ({ deviceId, retained }) ->
-						not retained and deviceStates
-							.getIn [deviceId, "groups"], List()
-							.isEmpty()
-					.subscribe ({ deviceId }) ->
-						log.warn "No groups found for #{deviceId}, setting default groups ..."
+			# Takes care of publishing groups for devices which connect for the first time
+			devicesStatus$
+				.filter ({ deviceId, retained }) ->
+					not retained and deviceStates
+						.getIn [deviceId, "groups"], List()
+						.isEmpty()
+				.subscribe ({ deviceId }) ->
+					log.warn "No groups found for #{deviceId}, setting default groups ..."
 
-						topic   = "devices/#{deviceId}/groups"
-						message = JSON.stringify ["default"]
-						options = retain: true
+					topic   = "devices/#{deviceId}/groups"
+					message = JSON.stringify ["default"]
+					options = retain: true
 
-						client.publish topic, message, options
+					client.publish topic, message, options
 
-				# After we have subscribed to all socket events. We subscribe to the mqtt topics.
-				# We do this so we do not miss any data that might come through when we are not listening for events yet.
-				client.subscribe [
-					DevicesState.topic
-					DevicesLogs.topic
-					DevicesNsState.topic
-					DevicesStatus.topic
-					DeviceGroups.topic
-				], (error, granted) ->
-					throw new Error "Error subscribing topics: #{error.message}" if error
+			# After we have subscribed to all socket events. We subscribe to the mqtt topics.
+			# We do this so we do not miss any data that might come through when we are not listening for events yet.
+			client.subscribe [
+				DevicesState.topic
+				DevicesLogs.topic
+				DevicesNsState.topic
+				DevicesStatus.topic
+				DeviceGroups.topic
+			], (error, granted) ->
+				throw new Error "Error subscribing topics: #{error.message}" if error
 
-					log.info "Subscribed to MQTT"
-					log.info "Topics: #{granted.map(({ topic }) -> topic).join ", "}"
+				log.info "Subscribed to MQTT"
+				log.info "Topics: #{granted.map(({ topic }) -> topic).join ", "}"
 
 	onError = (error) ->
 		log.error error.message
 
 	onClose = ->
-		log.info "Connecting to the MQTT broker closed"
+		log.warn "Connection to the MQTT broker closed"
 
 	client
 		.on "connect", onConnect
@@ -327,22 +321,20 @@ initSocketIO = ->
 	io.on "connection", (socket) ->
 		log.info "Client connected: #{socket.id}"
 		sockets[socket.id] = socket
+		state              = await store.kick()
 
-		store.kick (error, state) ->
-			return log.error error if error
+		mapActionToValue =
+			configurations:        state.get "configurations"
+			groups:                state.get "groups"
+			registryImages:        state.get "registryImages"
+			devicesState:          state.get "devicesState", deviceStates
+			deviceSources:         state.get "deviceSources"
+			allowedImages:         state.get "allowedImages"
 
-			mapActionToValue =
-				configurations:        state.get "configurations"
-				groups:                state.get "groups"
-				registryImages:        state.get "registryImages"
-				devicesState:          state.get "devicesState", deviceStates
-				deviceSources:         state.get "deviceSources"
-				allowedImages:         state.get "allowedImages"
-
-			each mapActionToValue, (data, type) ->
-				socket.emit "action",
-					type: constantCase type
-					data: data.toJS()
+		each mapActionToValue, (data, type) ->
+			socket.emit "action",
+				type: constantCase type
+				data: data.toJS()
 
 		socket
 			.on "action:device",     _onActionDevice

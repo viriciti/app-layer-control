@@ -1,10 +1,11 @@
 async                           = require "async"
-log                             = (require "../lib/Logger") "updates"
 mqtt                            = require "mqtt"
 { Map }                         = require "immutable"
 { isBoolean, throttle, random } = require "lodash"
 config                          = require "config"
 MQTTPattern                     = require "mqtt-pattern"
+
+log = (require "../lib/Logger") "updates"
 
 updateGroups = ({ db, store }, cb) ->
 	store.getGroups (error, groups) ->
@@ -139,7 +140,10 @@ updateDeviceGroups = ({ db, store, mqttClient }, cb) ->
 	client.subscribe "devices/+/groups"
 
 module.exports = ({ db, store }) ->
-	# :)
+	if config.server.skipUpdates
+		log.warn "Skipping updates"
+		return Promise.resolve()
+
 	new Promise (resolve, reject) ->
 		async.parallel [
 			(next) ->

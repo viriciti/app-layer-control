@@ -1,5 +1,4 @@
-async                    = require "async"
-{ pluck, first, values } = require 'underscore'
+{ map, first } = require "lodash"
 
 getRegistryImages  = require "../lib/getRegistryImages"
 prependRegistryUrl = require "../helpers/prependRegistryUrl"
@@ -16,60 +15,40 @@ module.exports = (db, mqttSocket, store) ->
 	addRegistryImage = ({ payload }, cb) ->
 		{ name } = payload
 
-		async.parallel [
-			(cb) ->
-				db.AllowedImage.create { name }, cb
-			(cb) ->
-				async.waterfall [
-					(next) ->
-						getRegistryImages [name], next
-					(images, next) ->
-						{ versions, access } = first values images
+		await db.AllowedImage.create { name }
 
-						db.RegistryImages.create
-							name:     prependRegistryUrl name
-							versions: versions
-							access:   access
-						, next
-				], cb
-		], cb
+		images               = await getRegistryImages [name]
+		{ versions, access } = first Object.values images
 
-	removeRegistryImage = ({ payload }, cb) ->
+		await db.RegistryImages.create
+			name:     prependRegistryUrl name
+			versions: versions
+			access:   access
+
+	removeRegistryImage = ({ payload }) ->
 		{ name, image } = payload
 
-		store.getConfigurations (error, configurations) ->
-			return cb error                                                                if error
-			return cb new Error "One or more configurations depend on this registry image" if isRegistryImageDependentOn image, configurations
+		configurations = await store.getConfigurations()
+		return Promise.reject "Unable to remove this registry images" if isRegistryImageDependentOn image, configurations
 
-			async.parallel [
-				(cb) ->
-					db.AllowedImage.findOneAndRemove { name }, cb
-				(cb) ->
-					db.RegistryImages.findOneAndRemove name: image, cb
-			], cb
+		Promise.all [
+			db.AllowedImage.findOneAndRemove { name }
+			db.RegistryImages.findOneAndRemove name: image
+		]
 
-	storeRegistryImages = ({ payload: images }, cb) ->
-		async.mapValues images, ({ versions, access, exists }, name, cb) ->
-			async.series [
-				(next) ->
-					db.RegistryImages.findOneAndRemove { name }, next
-				(next) ->
-					db.RegistryImages.findOneAndUpdate { name },
-						{ name, versions, access, exists },
-						{ upsert: true, new: true },
-						next
-			], cb
-		, cb
+	storeRegistryImages = ({ payload: images }) ->
+		store.storeRegistryImages images
 
-	refreshRegistryImages = ({ payload }, cb) ->
-		async.waterfall [
-			(next) ->
-				db.AllowedImage.find {}, next
-			(images, next) ->
-				getRegistryImages pluck(images, "name"), next
-			(images, next) ->
-				storeRegistryImages payload: images, next
-		], cb
+	refreshRegistryImages = ({ payload }) ->
+		images = await db
+			.AllowedImage
+			.find {}
+			.select "name"
+			.lean()
+		names  = map images, "name"
+		images = await getRegistryImages names
+
+		storeRegistryImages payload: images
 
 	return {
 		storeRegistryImages

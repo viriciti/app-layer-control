@@ -12,6 +12,13 @@ models     =
 	RegistryImages: (require "./RegistryImages") mongoose
 
 class Database
+	constructor: (@options) ->
+		@options = Object.assign {},
+			autoConnect: false
+		, @options
+
+		@connect() if @options.autoConnect
+
 	connect: ->
 		mongoose.Promise = global.Promise
 		url              = mongodbURI.format
@@ -19,15 +26,14 @@ class Database
 			database: config.db.name
 			options:  config.db.options or undefined
 
+		forEach models, (model, name) =>
+			return if @[name]
+			@[name] = model
+
 		mongoose
 			.connect url,
 				useCreateIndex:   true
 				useFindAndModify: false
 				useNewUrlParser:  true
-			.then =>
-				forEach models, (model, name) =>
-					throw new Error "Name collision: #{name}" if @[name]
-
-					@[name] = model
 
 module.exports = Database

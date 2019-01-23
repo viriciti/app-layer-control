@@ -2,12 +2,11 @@ async                               = require "async"
 config                              = require "config"
 { compact, uniq, without, isArray } = require "lodash"
 { promisify }                       = require "util"
+debug                               = (require "debug") "app:actions:groupsActions"
 
-debug = (require "debug") "app:actions:groupsActions"
+populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
 
 module.exports = (db, mqttSocket) ->
-	{ enrich } = (require "../helpers/enrichAppsForMqtt") db
-
 	publishGroupsForDevice = (deviceId) ->
 		query   = deviceId: deviceId
 		topic   = "devices/#{deviceId}/groups"
@@ -42,7 +41,7 @@ module.exports = (db, mqttSocket) ->
 			return cb error if error
 			cb null, "Group #{label} created correctly"
 
-	removeDeviceGroup = ({ payload }, cb) ->
+	removeDeviceGroup = ({ payload }) ->
 		{ payload, dest } = payload
 		dest              = [dest] unless isArray dest
 
@@ -57,9 +56,7 @@ module.exports = (db, mqttSocket) ->
 			await db.DeviceGroup.findOneAndUpdate query, groups: newGroups
 			await publishGroupsForDevice deviceId
 
-		cb()
-
-	removeGroup = ({ payload: label }, cb) ->
+	removeGroup = ({ payload: label }) ->
 		devices = await db
 			.DeviceGroup
 			.find groups: label
@@ -75,43 +72,18 @@ module.exports = (db, mqttSocket) ->
 
 		await db.Group.findOneAndRemove { label }
 
-		publishGroups (error) ->
-			return cb error if error
-			cb null, "Group #{label} removed correctly"
+		populateMqttWithGroups db, mqttSocket
 
-	publishGroups = (cb) ->
-		async.waterfall [
-			(cb) ->
-				db.Group.find {}, cb
+	publishGroups = ->
+		populateMqttWithGroups db, mqttSocket
 
-			(groups, cb) ->
-				async.reduce groups, {}, (memo, group, cb) ->
-					enrich group.label, group.applications, (error, appsToInstall) ->
-						return cb error if error
-
-						memo[group.label] = appsToInstall
-						cb null, memo
-				, cb
-
-			(enrichedGroups, cb) ->
-				if config.readOnly
-					debug "Read only mode, not sending enriched groups to MQTT"
-					return cb()
-
-				topic   = "global/collections/groups"
-				message = JSON.stringify enrichedGroups
-				options = retain: true
-
-				mqttSocket.publish topic, message, options, cb
-		], cb
-
-	storeGroups = ({ payload }, cb) ->
+	storeGroups = ({ payload }) ->
 		{ payload, dest } = payload
 		dest              = [dest] unless isArray dest
 
 		debug "Storing #{payload.length} group(s) for #{dest.length} device(s)"
 
-		await Promise.all dest.map (deviceId) ->
+		Promise.all dest.map (deviceId) ->
 			query         = deviceId: deviceId
 			current       = await db.DeviceGroup.findOne(query).select("groups").lean()
 			currentGroups = current?.groups or ["default"]
@@ -119,8 +91,6 @@ module.exports = (db, mqttSocket) ->
 
 			await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
 			await publishGroupsForDevice deviceId
-
-		cb()
 
 	return {
 		createGroup
