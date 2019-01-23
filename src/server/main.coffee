@@ -113,6 +113,24 @@ initMqtt = ->
 			populateMqttWithDeviceGroups db, mqttClient
 		]
 
+		[
+			configurations
+			registryImages
+			groups
+		] = await Promise.all [
+			store.getConfigurations()
+			store.getRegistryImages()
+			store.getGroups()
+		]
+
+		store.cacheConfigurations configurations
+		store.cacheRegistryImages registryImages
+		store.cacheGroups         groups
+
+		log.info "Cache succesfully populated with configurations, registry images and groups"
+
+		devicesLogs$ = DevicesLogs.observable mqttClient
+
 		async.parallel
 			configurations:        store.getConfigurations
 			registryImages:        store.getRegistryImages

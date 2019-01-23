@@ -1,5 +1,3 @@
-debug = (require "debug") "app:actions:configuration"
-
 populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
 
 isDependentOn = (groups, name) ->
@@ -11,34 +9,19 @@ isDependentOn = (groups, name) ->
 				.toArray()
 		.includes name
 
-module.exports = (db, mqttSocket, store) ->
-	createConfiguration = ({ payload }, cb) ->
+module.exports = (db, socket, store) ->
+	createConfiguration = ({ payload }) ->
 		{ key, value } = payload
+		query          = applicationName: key
 
-		debug "Configuration create", key, payload
+		await db.Configuration.findOneAndUpdate query, value, upsert: true
+		await populateMqttWithGroups db, socket
 
-		db.Configuration.findOneAndUpdate { applicationName: key },
-			value,
-			{ upsert: true },
-			(error, doc) ->
-				return cb error if error
+	removeConfiguration = ({ payload: configName }) ->
+		groups = await store.getGroups()
+		return Promise.reject new Error "One or more groups depend on this configuration" if isDependentOn groups, configName
 
-				debug "Configuration saved", key, doc
-
-				populateMqttWithGroups db, mqttSocket, (error) ->
-					return cb error if error
-					cb null, "Configuration #{key} created correctly!"
-
-
-	removeConfiguration = ({ payload: configName }, cb) ->
-		store.getGroups (error, groups) ->
-			return cb error                                                       if error
-			return cb new Error "One or more groups depend on this configuration" if isDependentOn groups, configName
-
-			db.Configuration.findOneAndRemove { applicationName: configName }, (error) ->
-				return cb error if error
-				cb null, "Configuration #{configName} removed correctly!"
-
+		await db.Configuration.findOneAndRemove applicationName: configName
 
 	return {
 		createConfiguration,

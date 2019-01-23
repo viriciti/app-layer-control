@@ -1,7 +1,4 @@
-async                               = require "async"
-config                              = require "config"
 { compact, uniq, without, isArray } = require "lodash"
-{ promisify }                       = require "util"
 debug                               = (require "debug") "app:actions:groupsActions"
 
 populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
@@ -18,28 +15,17 @@ module.exports = (db, mqttSocket) ->
 			.lean()
 		).groups
 
-		promisify(mqttSocket.publish.bind mqttSocket) topic, groups, options
+		mqttSocket.publish topic, groups, options
 
-	createGroup = ({ payload }, cb) ->
+	createGroup = ({ payload }) ->
 		{ label } = payload
 
-		async.series [
-			(cb) ->
-				return cb() if label is "default"
+		unless label is "default"
+			group = await db.Group.findOne label: "default"
+			return Promise.reject "Default group must exist prior to other groups" unless group
 
-				db.Group.findOne { label: "default" }, (error, group) ->
-					return cb error if error
-					return cb new Error "Group 'default' must exist prior to other groups" unless group
-
-					cb()
-			(cb) ->
-				db.Group.findOneAndUpdate { label }, payload, { upsert: true }, cb
-
-			publishGroups
-
-		], (error) ->
-			return cb error if error
-			cb null, "Group #{label} created correctly"
+		await db.Group.findOneAndUpdate { label }, payload, upsert: true
+		await populateMqttWithGroups db, mqttSocket
 
 	removeDeviceGroup = ({ payload }) ->
 		{ payload, dest } = payload
@@ -47,7 +33,7 @@ module.exports = (db, mqttSocket) ->
 
 		debug "Removing #{payload.length} group(s) for #{dest.length} device(s)"
 
-		await Promise.all dest.map (deviceId) ->
+		Promise.all dest.map (deviceId) ->
 			query             = deviceId: deviceId
 			current           = await db.DeviceGroup.findOne(query).lean()
 			currentGroups     = current?.groups or ["default"]
@@ -71,11 +57,7 @@ module.exports = (db, mqttSocket) ->
 			await publishGroupsForDevice deviceId
 
 		await db.Group.findOneAndRemove { label }
-
-		populateMqttWithGroups db, mqttSocket
-
-	publishGroups = ->
-		populateMqttWithGroups db, mqttSocket
+		await populateMqttWithGroups db, mqttSocket
 
 	storeGroups = ({ payload }) ->
 		{ payload, dest } = payload
@@ -96,6 +78,5 @@ module.exports = (db, mqttSocket) ->
 		createGroup
 		removeGroup
 		removeDeviceGroup
-		publishGroups
 		storeGroups
 	}

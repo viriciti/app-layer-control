@@ -6,14 +6,12 @@ module.exports = (db, mqttClient, broadcastAction, store) ->
 	registryImagesActions   = (require "./registryImagesActions")   db, mqttClient, store
 	groupsActions           = (require "./groupsActions")           db, mqttClient
 	deviceSourceActions     = (require "./deviceSourceActions")     db
-	allowedImagesActions    = (require "./allowedImageActions")     db
 
 	actionsMap = _.extend {},
 		configurationsActions
 		registryImagesActions
 		groupsActions
 		deviceSourceActions
-		allowedImagesActions
 
 	execute = ({ action, payload, meta }, cb) ->
 		unless actionsMap[action]
@@ -51,10 +49,6 @@ module.exports = (db, mqttClient, broadcastAction, store) ->
 
 				broadcastAction "deviceSources", deviceSources.toJS()
 
-			else if allowedImagesActions[action]
-				allowedImages = await store.getAllowedImages()
-
-				broadcastAction "allowedImages", allowedImages.toJS()
 			cb null, result
 		catch error
 			return cb error

@@ -1,19 +1,15 @@
-{ omit } = require 'underscore'
-
 module.exports = (db) ->
-	editColumn = ({ payload, meta }, cb) ->
+	editColumn = ({ payload, meta }) ->
 		query   = headerName: meta.name
 		update  = Object.assign {}, payload, getIn: payload.getIn
 
-		db.DeviceSource.findOneAndUpdate query, update, (error, result) ->
-			return cb error if error
+		await db.DeviceSource.findOneAndUpdate query, update
+		await db.DeviceSource.find(query).select "-_id, -__v"
 
-			cb null, omit result, "_id"
-
-	addColumn = ({ payload }, cb) ->
-		db.DeviceSource.create payload, cb
+	addColumn = ({ payload }) ->
+		await db.DeviceSource.create payload
 
 	removeColumn = ({ meta }, cb) ->
-		db.DeviceSource.findOneAndRemove headerName: meta.name, cb
+		await db.DeviceSource.findOneAndRemove headerName: meta.name
 
 	{ editColumn, addColumn, removeColumn }
