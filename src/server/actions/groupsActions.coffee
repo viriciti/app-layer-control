@@ -74,9 +74,7 @@ module.exports = (db, mqttSocket) ->
 			await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
 			await publishGroupsForDevice deviceId
 
-	return {
-		createGroup
-		removeGroup
-		removeDeviceGroup
-		storeGroups
-	}
+	createGroup:       createGroup
+	removeGroup:       removeGroup
+	removeDeviceGroup: removeDeviceGroup
+	storeGroups:       storeGroups

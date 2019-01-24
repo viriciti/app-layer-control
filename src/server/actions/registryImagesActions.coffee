@@ -50,9 +50,7 @@ module.exports = (db, mqttSocket, store) ->
 
 		storeRegistryImages payload: images
 
-	return {
-		storeRegistryImages
-		refreshRegistryImages
-		addRegistryImage
-		removeRegistryImage
-	}
+	storeRegistryImages:   storeRegistryImages
+	refreshRegistryImages: refreshRegistryImages
+	addRegistryImage:      addRegistryImage
+	removeRegistryImage:   removeRegistryImage

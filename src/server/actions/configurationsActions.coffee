@@ -23,7 +23,5 @@ module.exports = (db, socket, store) ->
 
 		await db.Configuration.findOneAndRemove applicationName: configName
 
-	return {
-		createConfiguration,
-		removeConfiguration
-	}
+	createConfiguration: createConfiguration
+	removeConfiguration: removeConfiguration

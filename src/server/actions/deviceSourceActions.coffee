@@ -12,4 +12,6 @@ module.exports = (db) ->
 	removeColumn = ({ meta }, cb) ->
 		await db.DeviceSource.findOneAndRemove headerName: meta.name
 
-	{ editColumn, addColumn, removeColumn }
+	addColumn:    addColumn
+	editColumn:   editColumn
+	removeColumn: removeColumn
