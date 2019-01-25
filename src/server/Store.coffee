@@ -4,11 +4,12 @@ map                            = require "p-map"
 { object, pluck }              = require "underscore"
 { toPairs, mapValues, reduce } = require "lodash"
 
-log = (require "./lib/Logger") "store"
+Database = require "./db"
+log      = (require "./lib/Logger") "store"
 
 class Store
 	constructor: (@db) ->
-		@db.connect()
+		@db or= new Database autoConnect: true
 
 		@cache = Map()
 
