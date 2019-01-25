@@ -17,4 +17,6 @@ router.get "/version", (req, res) ->
 		.send version: await getPackageVersion()
 		.end()
 
+router.use "/v1", require "./v1"
+
 module.exports = router

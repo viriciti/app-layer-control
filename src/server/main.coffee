@@ -2,7 +2,6 @@ async                 = require "async"
 compression           = require "compression"
 config                = require "config"
 constantCase          = require "constant-case"
-cookieParser          = require "cookie-parser"
 cors                  = require "cors"
 debug                 = (require "debug") "app:main"
 express               = require "express"
@@ -14,6 +13,7 @@ socketio              = require "socket.io"
 mqtt                  = require "async-mqtt"
 RPC                   = require "mqtt-json-rpc"
 semver                = require "semver"
+bodyParser            = require "body-parser"
 
 {
 	DevicesLogs
@@ -32,7 +32,6 @@ getContainersNotRunning      = require "./lib/getContainersNotRunning"
 runUpdates                   = require "./updates"
 sendMessageToMqtt            = require "./updates/sendMessageToMqtt"
 { cacheUpdate }              = require "./observables"
-apiRouter                    = require "./api"
 bundle                       = require "./bundle"
 Store                        = require "./Store"
 
@@ -40,6 +39,9 @@ log = (require "./lib/Logger") "main"
 
 # Server initialization
 app     = express()
+
+# TODO: use app.set to keep a single mqtt/ws connection open
+
 server  = http.createServer app
 port    = process.env.PORT or config.server.port
 io      = socketio server
@@ -409,8 +411,8 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 
 app.use cors()
 app.use compression()
-app.use cookieParser()
-app.use "/api", apiRouter
+app.use bodyParser.json strict: true
+app.use "/api", require "./api"
 
 bundle app
 	.then ->
