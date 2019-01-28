@@ -1,10 +1,12 @@
-filter               = require "p-filter"
-{ Router }           = require "express"
-{ without, isArray } = require "lodash"
-debug                = (require "debug") "app:api:administration"
+debug                                           = (require "debug") "app:api:administration"
+filter                                          = require "p-filter"
+{ Router }                                      = require "express"
+{ without, isArray, uniq, compact, first, map } = require "lodash"
 
-populateMqttWithGroups = require "../../helpers/populateMqttWithGroups"
 Store                  = require "../../Store"
+getRegistryImages      = require "../../lib/getRegistryImages"
+populateMqttWithGroups = require "../../helpers/populateMqttWithGroups"
+prependRegistryUrl     = require "../../helpers/prependRegistryUrl"
 
 router = Router()
 store  = new Store
@@ -17,6 +19,14 @@ getDependents = (groups, applicationName) ->
 		.map ([name]) ->
 			name
 		.toArray()
+
+isRegistryImageDependentOn = (image, configurations) ->
+	configurations
+		.map (configuration) ->
+			configuration.get "fromImage"
+		.valueSeq()
+		.toArray()
+		.includes image
 
 publishGroupsForDevice = ({ mqtt, db, deviceId }) ->
 	query   = deviceId: deviceId
@@ -232,37 +242,157 @@ router.delete "/group/:label", ({ app, params, body }, res) ->
 				message: error.message
 
 # Device Groups
-# Supported types are "store" and "remove"
+# Supported operations are "store" and "remove"
 # NOTE: Move to a separate endpoint?
-router.patch "/group/:label/devices", ({ app, params, body }) ->
-	{ db, mqtt }             = app.locals
-	{ type, groups, target } = body
-	target                 = [target] unless isArray target
+router.patch "/group/:label/devices", ({ app, params, body }, res) ->
+	{ db, mqtt }                  = app.locals
+	{ operation, groups, target } = body
+	target                        = [target] unless isArray target
 
-	if type is "remove"
-		debug "Removing #{groups.length} group(s) for #{target.length} device(s)"
+	if operation is "remove"
+		message = "Removing #{groups.length} group(s) for #{target.length} device(s) ..."
+
+		debug message
 
 		Promise.all target.map (deviceId) ->
 			query             = deviceId: deviceId
 			current           = await db.DeviceGroup.findOne(query).lean()
 			currentGroups     = current?.groups or ["default"]
-			newGroups         = without currentGroups, groups
+			newGroups         = without currentGroups, ...groups
 
 			await db.DeviceGroup.findOneAndUpdate query, groups: newGroups
 			await publishGroupsForDevice { db, mqtt, deviceId }
 
 		res
-			.status 401
-	else if type is "store"
-		debug "Storing #{payload.length} group(s) for #{dest.length} device(s)"
+			.status 200
+			.json
+				status:  "success"
+				message: message
+	else if operation is "store"
+		message = "Storing #{groups.length} group(s) for #{target.length} device(s) ..."
 
-		Promise.all dest.map (deviceId) ->
+		debug message
+
+		Promise.all target.map (deviceId) ->
 			query         = deviceId: deviceId
 			current       = await db.DeviceGroup.findOne(query).select("groups").lean()
 			currentGroups = current?.groups or ["default"]
-			update        = groups: uniq compact [currentGroups..., payload...]
+			update        = groups: uniq compact [currentGroups..., groups...]
 
 			await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
-			await publishGroupsForDevice deviceId
+			await publishGroupsForDevice { db, mqtt, deviceId }
+
+		res
+			.status 200
+			.json
+				status:  "message"
+				message: message
+
+# Registry Images
+router.post "/registry", ({ app, params, body }, res) ->
+	{ db }   = app.locals
+	{ name } = body
+
+	try
+		await db.AllowedImage.create { name }
+
+		images               = await getRegistryImages [name]
+		{ versions, access } = first Object.values images
+
+		await db.RegistryImages.create
+			access:   access
+			name:     prependRegistryUrl name
+			versions: versions
+
+		res
+			.status 200
+			.json
+				status:  "success"
+				message: "Registry image added"
+	catch error
+		if error.code is 11000
+			res
+				.status 409
+				.json
+					status:  "error"
+					message: "This registry image is already added"
+		else
+			res
+				.status 500
+				.json
+					status:  "error"
+					message: error.message
+
+router.delete "/registry/:name", ({ app, params, body }, res) ->
+	{ db }    = app.locals
+	{ name }  = params
+	{ image } = body
+
+	try
+		configurations = await store.getConfigurations()
+
+		if isRegistryImageDependentOn image, configurations
+			return res
+				.status 409
+				.json
+					status:  "error"
+					message: "One or more configurations depend on this registry image"
+
+		await Promise.all [
+			db.AllowedImage.findOneAndRemove { name }
+			db.RegistryImages.findOneAndRemove name: image
+		]
+
+		res
+			.status 200
+			.json
+				status:  "success"
+				message: "Registry image removed"
+	catch error
+		res
+			.status 500
+			.json
+				status:  "error"
+				message: error.message
+
+router.get "/registry", ({ app }, res) ->
+	{ db } = app.locals
+
+	try
+		images = await db
+			.AllowedImage
+			.find {}
+			.select "name"
+			.lean()
+		names  = map images, "name"
+		images = await getRegistryImages names
+
+		store.storeRegistryImages images
+
+		res
+			.status 200
+			.json
+				status: "success"
+				data:   images: images
+	catch error
+		res
+			.status 500
+			.json
+				status: "error"
+				data:   error.message
+
+# storeRegistryImages = ({ payload: images }) ->
+# 	store.storeRegistryImages images
+
+# refreshRegistryImages = ({ payload }) ->
+# 	images = await db
+# 		.AllowedImage
+# 		.find {}
+# 		.select "name"
+# 		.lean()
+# 	names  = map images, "name"
+# 	images = await getRegistryImages names
+
+# 	storeRegistryImages payload: images
 
 module.exports = router

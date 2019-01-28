@@ -422,10 +422,11 @@ bundle app
 			db:    db
 			store: store
 	.then ->
-		main()
+		app.locals.mqtt      = mqttClient
+		app.locals.db        = db
+		# app.locals.broadcast = broadcast
 
-		app.locals.mqtt = mqttClient
-		app.locals.db   = db
+		main()
 	.then ->
 		server.listen port, ->
 			log.info "Server listening on :#{@address().port}"
