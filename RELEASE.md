@@ -22,10 +22,10 @@ The tag can be removed and repushed if a fix is required for ViriCiti only. For 
 To automate the release cycle, execute the following commands in your terminal:
 
 ```
-VERSION=$(cat package.json | jq -r '.version')
 git fetch --all
 git merge -X theirs github/master master
 git checkout master
+VERSION=$(cat package.json | jq -r '.version')
 git tag $VERSION-production
 git push origin master
 git push origin $VERSION-production
