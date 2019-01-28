@@ -4,7 +4,9 @@ import { toast } from 'react-toastify'
 
 import { updateAsyncState, updateDeviceAsyncState } from '/store/globalReducers/userInterface'
 
-const socket = io(window.location.origin)
+const socket = io(window.location.origin, {
+	transports: ['websocket'],
+})
 
 export default ({ dispatch }) => {
 	const notify = (type, ...message) => {
