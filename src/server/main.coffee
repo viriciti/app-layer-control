@@ -342,7 +342,6 @@ initSocketIO = ->
 				allowedImages:         state.get "allowedImages"
 
 			each mapActionToValue, (data, type) ->
-				console.log "action", type
 				socket.emit "action",
 					type: constantCase type
 					data: data.toJS()
@@ -352,8 +351,8 @@ initSocketIO = ->
 			.on "action:device:get", _onActionDeviceGet
 			.on "action:devices",    _onActionDevices
 			.on "action:db",         _onActionDb
-			.once "disconnect", ->
-				log.warn "Client #{socket.id} disconnected!"
+			.once "disconnect", (reason) ->
+				log.warn "Client #{socket.id} disconnected, reason: #{reason}"
 				socket.removeListener "action:device",     _onActionDevice
 				socket.removeListener "action:device:get", _onActionDeviceGet
 				socket.removeListener "action:devices",    _onActionDevices
