@@ -12,6 +12,7 @@ getApplicationsConfiguration = (names) ->
 		db
 			.Configuration
 			.findOne applicationName: name
+			.orFail new Error "No configuration found for '#{name}'"
 			.select "-_id -__v -version"
 			.lean()
 

@@ -20,6 +20,7 @@ module.exports =
 		readOnly:        true
 		responseTimeout: 5000
 
+
 	db:
 		hosts: [
 			host: "localhost"
