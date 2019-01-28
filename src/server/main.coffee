@@ -324,6 +324,8 @@ initMqtt = ->
 initSocketIO = ->
 	log.info "Initializing socket.io"
 
+	io.set "transports", ["websocket"]
+
 	io.on "connection", (socket) ->
 		log.info "Client connected: #{socket.id}"
 		sockets[socket.id] = socket
@@ -340,6 +342,7 @@ initSocketIO = ->
 				allowedImages:         state.get "allowedImages"
 
 			each mapActionToValue, (data, type) ->
+				console.log "action", type
 				socket.emit "action",
 					type: constantCase type
 					data: data.toJS()
