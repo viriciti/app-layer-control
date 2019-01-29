@@ -17,6 +17,10 @@ const render = Component => {
 	)
 }
 
+// ws.addEventListener('open', () => console.info('Connected'))
+// ws.addEventListener('close', () => console.info('Disconnected'))
+// ws.addEventListener('message', )
+
 render(App)
 
 // Hot Module Replacement API

@@ -40,8 +40,6 @@ log = (require "./lib/Logger") "main"
 # Server initialization
 app     = express()
 
-# TODO: use app.set to keep a single mqtt/ws connection open
-
 server  = http.createServer app
 port    = process.env.PORT or config.server.port
 sockets = {}
@@ -59,7 +57,6 @@ log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
 
 main = ->
 	initMqtt()
-	initSocketIO()
 
 	await store.ensureDefaultDeviceSources()
 
@@ -313,45 +310,11 @@ initMqtt = ->
 		.on "error",   onError
 		.on "close",   onClose
 
-initSocketIO = ->
-	log.info "Initializing socket.io"
-
-	# io.on "connection", (socket) ->
-	# 	log.info "Client connected: #{socket.id}"
-	# 	sockets[socket.id] = socket
-	# 	state              = await store.kick()
-
-	# 	mapActionToValue =
-	# 		configurations:        state.get "configurations"
-	# 		groups:                state.get "groups"
-	# 		registryImages:        state.get "registryImages"
-	# 		devicesState:          state.get "devicesState", deviceStates
-	# 		deviceSources:         state.get "deviceSources"
-	# 		allowedImages:         state.get "allowedImages"
-
-	# 	each mapActionToValue, (data, type) ->
-	# 		socket.emit "action",
-	# 			type: constantCase type
-	# 			data: data.toJS()
-
-	# 	socket
-	# 		.on "action:device",     _onActionDevice
-	# 		.on "action:device:get", _onActionDeviceGet
-	# 		.on "action:devices",    _onActionDevices
-	# 		.on "action:db",         _onActionDb
-	# 		.once "disconnect", ->
-	# 			log.warn "Client #{socket.id} disconnected!"
-	# 			socket.removeListener "action:device",     _onActionDevice
-	# 			socket.removeListener "action:device:get", _onActionDeviceGet
-	# 			socket.removeListener "action:devices",    _onActionDevices
-	# 			socket.removeListener "action:db",         _onActionDb
-	# 			delete sockets[socket.id]
-
 _broadcastAction = (type, data) ->
-	each sockets, (socket) ->
-		socket.emit "action",
-			type: constantCase type
-			data: data
+	ws.clients.forEach (socket) ->
+		socket.send JSON.stringify
+			action: constantCase type
+			data:   data
 
 _onActionDevice = (action, cb) ->
 	messageTable    =
@@ -412,7 +375,9 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 app.use cors()
 app.use compression()
 app.use bodyParser.json strict: true
-app.use "/api", require "./api"
+
+app.use "/api",         require "./api"
+app.use "/api/devices", (require "./api/devices") getDeviceStates
 
 bundle app
 	.then ->

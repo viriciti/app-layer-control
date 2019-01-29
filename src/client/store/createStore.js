@@ -3,12 +3,12 @@ import { applyMiddleware, compose, createStore } from 'redux'
 import thunk from 'redux-thunk'
 import { Map } from 'immutable'
 import createDebounce from 'redux-debounced'
-import socketIOMiddleware from './middlewares/socket.io-middleware'
 
-import makeRootReducer from './reducers'
+import makeRootReducer from '/store/reducers'
+import hydrate from '/store/hydrate'
 
 export default (initialState = Map({})) => {
-	const middleware = [createDebounce(), thunk, socketIOMiddleware]
+	const middleware = [createDebounce(), thunk]
 	const enhancers = []
 
 	let composeEnhancers = compose
@@ -21,12 +21,15 @@ export default (initialState = Map({})) => {
 		}
 	}
 
+	const ws = new WebSocket(`ws://${window.location.host}`)
 	const store = createStore(
 		makeRootReducer(),
 		initialState,
 		composeEnhancers(applyMiddleware(...middleware), ...enhancers)
 	)
+
 	store.asyncReducers = {}
+	store.dispatch(hydrate(ws))
 
 	if (module.hot) {
 		module.hot.accept('./reducers', () => {

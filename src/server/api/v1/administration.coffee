@@ -49,7 +49,7 @@ router.get "/applications", ({ app }, res, next) ->
 			.status 200
 			.json
 				status: "success"
-				data:   applications: await store.getConfigurations()
+				data:   await store.getConfigurations()
 	catch error
 		next error
 
@@ -116,7 +116,7 @@ router.get "/sources", ({ app }, res, next) ->
 			.status 200
 			.json
 				status: "success"
-				data:   sources: await store.getDeviceSources()
+				data:   await store.getDeviceSources()
 	catch error
 		next error
 
@@ -170,7 +170,7 @@ router.get "/groups", ({ app }, res, next) ->
 			.status 200
 			.json
 				status: "success"
-				data:   groups: await store.getGroups()
+				data:   await store.getGroups()
 	catch error
 		next error
 
@@ -372,7 +372,7 @@ router.get "/registry", ({ app }, res, next) ->
 			.status 200
 			.json
 				status: "success"
-				data:   images: images
+				data:   images
 	catch error
 		next error
 
