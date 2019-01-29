@@ -1,4 +1,6 @@
+RPC                   = require "mqtt-json-rpc"
 async                 = require "async"
+bodyParser            = require "body-parser"
 compression           = require "compression"
 config                = require "config"
 constantCase          = require "constant-case"
@@ -6,14 +8,12 @@ cors                  = require "cors"
 debug                 = (require "debug") "app:main"
 express               = require "express"
 http                  = require "http"
-socketio              = require "socket.io"
+mqtt                  = require "async-mqtt"
+semver                = require "semver"
 { Map, List, fromJS } = require "immutable"
 { Observable }        = require "rxjs"
 { each, size, noop }  = require "lodash"
-mqtt                  = require "async-mqtt"
-RPC                   = require "mqtt-json-rpc"
-semver                = require "semver"
-bodyParser            = require "body-parser"
+WebSocket             = require "ws"
 
 {
 	DevicesLogs
@@ -44,8 +44,8 @@ app     = express()
 
 server  = http.createServer app
 port    = process.env.PORT or config.server.port
-io      = socketio server
 sockets = {}
+ws      = new WebSocket.Server server: server
 db      = new Database
 store   = new Store db
 
@@ -316,36 +316,36 @@ initMqtt = ->
 initSocketIO = ->
 	log.info "Initializing socket.io"
 
-	io.on "connection", (socket) ->
-		log.info "Client connected: #{socket.id}"
-		sockets[socket.id] = socket
-		state              = await store.kick()
+	# io.on "connection", (socket) ->
+	# 	log.info "Client connected: #{socket.id}"
+	# 	sockets[socket.id] = socket
+	# 	state              = await store.kick()
 
-		mapActionToValue =
-			configurations:        state.get "configurations"
-			groups:                state.get "groups"
-			registryImages:        state.get "registryImages"
-			devicesState:          state.get "devicesState", deviceStates
-			deviceSources:         state.get "deviceSources"
-			allowedImages:         state.get "allowedImages"
+	# 	mapActionToValue =
+	# 		configurations:        state.get "configurations"
+	# 		groups:                state.get "groups"
+	# 		registryImages:        state.get "registryImages"
+	# 		devicesState:          state.get "devicesState", deviceStates
+	# 		deviceSources:         state.get "deviceSources"
+	# 		allowedImages:         state.get "allowedImages"
 
-		each mapActionToValue, (data, type) ->
-			socket.emit "action",
-				type: constantCase type
-				data: data.toJS()
+	# 	each mapActionToValue, (data, type) ->
+	# 		socket.emit "action",
+	# 			type: constantCase type
+	# 			data: data.toJS()
 
-		socket
-			.on "action:device",     _onActionDevice
-			.on "action:device:get", _onActionDeviceGet
-			.on "action:devices",    _onActionDevices
-			.on "action:db",         _onActionDb
-			.once "disconnect", ->
-				log.warn "Client #{socket.id} disconnected!"
-				socket.removeListener "action:device",     _onActionDevice
-				socket.removeListener "action:device:get", _onActionDeviceGet
-				socket.removeListener "action:devices",    _onActionDevices
-				socket.removeListener "action:db",         _onActionDb
-				delete sockets[socket.id]
+	# 	socket
+	# 		.on "action:device",     _onActionDevice
+	# 		.on "action:device:get", _onActionDeviceGet
+	# 		.on "action:devices",    _onActionDevices
+	# 		.on "action:db",         _onActionDb
+	# 		.once "disconnect", ->
+	# 			log.warn "Client #{socket.id} disconnected!"
+	# 			socket.removeListener "action:device",     _onActionDevice
+	# 			socket.removeListener "action:device:get", _onActionDeviceGet
+	# 			socket.removeListener "action:devices",    _onActionDevices
+	# 			socket.removeListener "action:db",         _onActionDb
+	# 			delete sockets[socket.id]
 
 _broadcastAction = (type, data) ->
 	each sockets, (socket) ->
@@ -422,11 +422,15 @@ bundle app
 			db:    db
 			store: store
 	.then ->
+		main()
+
 		app.locals.mqtt      = mqttClient
 		app.locals.db        = db
-		# app.locals.broadcast = broadcast
-
-		main()
+		app.locals.broadcast = (type, data) ->
+			ws.clients.forEach (client) ->
+				client.send JSON.stringify
+					type: constantCase type
+					data: data
 	.then ->
 		server.listen port, ->
 			log.info "Server listening on :#{@address().port}"

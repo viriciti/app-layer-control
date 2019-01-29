@@ -3,6 +3,7 @@ filter                                          = require "p-filter"
 { Router }                                      = require "express"
 { without, isArray, uniq, compact, first, map } = require "lodash"
 
+log                    = (require "../../lib/Logger") "administration"
 Store                  = require "../../Store"
 getRegistryImages      = require "../../lib/getRegistryImages"
 populateMqttWithGroups = require "../../helpers/populateMqttWithGroups"
@@ -42,20 +43,33 @@ publishGroupsForDevice = ({ mqtt, db, deviceId }) ->
 	mqtt.publish topic, groups, options
 
 # Application
-router.put "/application/:name", ({ app, params, body }, res) ->
+router.get "/applications", ({ app }, res, next) ->
+	try
+		res
+			.status 200
+			.json
+				status: "success"
+				data:   applications: await store.getConfigurations()
+	catch error
+		next error
+
+router.put "/application/:name", ({ app, params, body }, res, next) ->
 	{ db, mqtt } = app.locals
 	{ name }     = params
 	query        = applicationName: name
 
 	try
 		body   = { ...body, applicationName: name }
-		exists = 0 isnt await db
+		exists = await db
 			.Configuration
 			.find query
 			.countDocuments()
 
-		await db.Configuration.create body unless exists
-		await db.Configuration.findOneAndUpdate query, body
+		if exists
+			await db.Configuration.findOneAndUpdate query, body
+		else
+			await db.Configuration.create body
+
 		await populateMqttWithGroups db, mqtt
 
 		res
@@ -69,13 +83,9 @@ router.put "/application/:name", ({ app, params, body }, res) ->
 					.select "-_id -__v"
 					.lean()
 	catch error
-		res
-			.status 500
-			.json
-				status:  "error"
-				message: error.message
+		next error
 
-router.delete "/application/:name", ({ app, params }, res) ->
+router.delete "/application/:name", ({ app, params }, res, next) ->
 	{ db }   = app.locals
 	{ name } = params
 
@@ -97,28 +107,35 @@ router.delete "/application/:name", ({ app, params }, res) ->
 			.status 204
 			.end()
 	catch error
-		res
-			.status 500
-			.json
-				status:  "error"
-				message: error.message
+		next error
 
 # Sources
-router.put "/source/:name", ({ app, params, body }, res) ->
+router.get "/sources", ({ app }, res, next) ->
+	try
+		res
+			.status 200
+			.json
+				status: "success"
+				data:   sources: await store.getDeviceSources()
+	catch error
+		next error
+
+router.put "/source/:name", ({ app, params, body }, res, next) ->
 	{ db }   = app.locals
 	{ name } = params
 	query    = name: name
 	update   = { ...body, name: name }
 
 	try
-		exists = not not (await db
+		exists = await db
 			.DeviceSource
 			.find query
-			.lean()
-		).length
+			.countDocuments()
 
-		await db.DeviceSource.create update unless exists
-		await db.DeviceSource.findOneAndUpdate query, update
+		if exists
+			await db.DeviceSource.findOneAndUpdate query, update
+		else
+			await db.DeviceSource.create update
 
 		res
 			.status 200
@@ -131,13 +148,9 @@ router.put "/source/:name", ({ app, params, body }, res) ->
 					.select "-_id -__v"
 					.lean()
 	catch error
-		res
-			.status 500
-			.json
-				status:  "error"
-				message: error.message
+		next error
 
-router.delete "/source/:name", ({ app, params }, res) ->
+router.delete "/source/:name", ({ app, params }, res, next) ->
 	{ db }   = app.locals
 	{ name } = params
 
@@ -148,14 +161,20 @@ router.delete "/source/:name", ({ app, params }, res) ->
 			.status 204
 			.end()
 	catch error
-		res
-			.status 500
-			.json
-				status:  "error"
-				message: error.message
+		next error
 
 # Groups
-router.put "/group/:label", ({ app, params, body }, res) ->
+router.get "/groups", ({ app }, res, next) ->
+	try
+		res
+			.status 200
+			.json
+				status: "success"
+				data:   groups: await store.getGroups()
+	catch error
+		next error
+
+router.put "/group/:label", ({ app, params, body }, res, next) ->
 	{ db, mqtt } = app.locals
 	{ label }    = params
 	applications = Object.keys body.applications
@@ -204,13 +223,9 @@ router.put "/group/:label", ({ app, params, body }, res) ->
 				status:  "success"
 				message: "Group #{if exists then "updated" else "created"}"
 	catch error
-		res
-			.status 500
-			.json
-				status:  "error"
-				message: error.message
+		next error
 
-router.delete "/group/:label", ({ app, params, body }, res) ->
+router.delete "/group/:label", ({ app, params, body }, res, next) ->
 	{ db, mqtt } = app.locals
 	{ label }    = params
 
@@ -235,15 +250,10 @@ router.delete "/group/:label", ({ app, params, body }, res) ->
 			.status 204
 			.end()
 	catch error
-		res
-			.status 500
-			.json
-				status:  "error"
-				message: error.message
+		next error
 
 # Device Groups
 # Supported operations are "store" and "remove"
-# NOTE: Move to a separate endpoint?
 router.patch "/group/:label/devices", ({ app, params, body }, res) ->
 	{ db, mqtt }                  = app.locals
 	{ operation, groups, target } = body
@@ -277,7 +287,7 @@ router.patch "/group/:label/devices", ({ app, params, body }, res) ->
 			query         = deviceId: deviceId
 			current       = await db.DeviceGroup.findOne(query).select("groups").lean()
 			currentGroups = current?.groups or ["default"]
-			update        = groups: uniq compact [currentGroups..., groups...]
+			update        = groups: uniq compact [...currentGroups, ...groups]
 
 			await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
 			await publishGroupsForDevice { db, mqtt, deviceId }
@@ -289,7 +299,7 @@ router.patch "/group/:label/devices", ({ app, params, body }, res) ->
 				message: message
 
 # Registry Images
-router.post "/registry", ({ app, params, body }, res) ->
+router.post "/registry", ({ app, params, body }, res, next) ->
 	{ db }   = app.locals
 	{ name } = body
 
@@ -310,20 +320,15 @@ router.post "/registry", ({ app, params, body }, res) ->
 				status:  "success"
 				message: "Registry image added"
 	catch error
-		if error.code is 11000
-			res
-				.status 409
-				.json
-					status:  "error"
-					message: "This registry image is already added"
-		else
-			res
-				.status 500
-				.json
-					status:  "error"
-					message: error.message
+		return next error unless error.code is 11000
 
-router.delete "/registry/:name", ({ app, params, body }, res) ->
+		res
+			.status 409
+			.json
+				status:  "error"
+				message: "This registry image is already added"
+
+router.delete "/registry/:name", ({ app, params, body }, res, next) ->
 	{ db }    = app.locals
 	{ name }  = params
 	{ image } = body
@@ -344,18 +349,12 @@ router.delete "/registry/:name", ({ app, params, body }, res) ->
 		]
 
 		res
-			.status 200
-			.json
-				status:  "success"
-				message: "Registry image removed"
+			.status 204
+			.end()
 	catch error
-		res
-			.status 500
-			.json
-				status:  "error"
-				message: error.message
+		next error
 
-router.get "/registry", ({ app }, res) ->
+router.get "/registry", ({ app }, res, next) ->
 	{ db } = app.locals
 
 	try
@@ -375,24 +374,12 @@ router.get "/registry", ({ app }, res) ->
 				status: "success"
 				data:   images: images
 	catch error
-		res
-			.status 500
-			.json
-				status: "error"
-				data:   error.message
+		next error
 
-# storeRegistryImages = ({ payload: images }) ->
-# 	store.storeRegistryImages images
+# Error middleware
+router.use (error, req, res, next) ->
+	log.error error.stack
 
-# refreshRegistryImages = ({ payload }) ->
-# 	images = await db
-# 		.AllowedImage
-# 		.find {}
-# 		.select "name"
-# 		.lean()
-# 	names  = map images, "name"
-# 	images = await getRegistryImages names
-
-# 	storeRegistryImages payload: images
+	res.sendStatus 500
 
 module.exports = router

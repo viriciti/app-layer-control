@@ -86,7 +86,11 @@ class Store
 		fromJS groups
 
 	getDeviceSources: ->
-		sources = await @db.DeviceSource.find {}
+		sources = await @db
+			.DeviceSource
+			.find()
+			.select "-_id -__v"
+			.lean()
 		sources = object (pluck sources, "getIn"), sources
 
 		fromJS sources
@@ -113,7 +117,7 @@ class Store
 		@setCache "groups", groups
 
 	setCache: (section, value) ->
-		throw new Error "Cannot cache non-Immutable values" unless Iterable.isIterable value
+		throw new Error "Will not cache non-Immutable values" unless Iterable.isIterable value
 
 		@cache = @cache.set section, value
 
