@@ -34,14 +34,11 @@ class RegistryImagesOverview extends PureComponent {
 		configuredHost: undefined,
 	}
 
-	componentWillMount () {
-		fetch('/api/versioning')
-			.then(response => {
-				return response.json()
-			})
-			.then(({ host: configuredHost }) => {
-				this.setState({ configuredHost })
-			})
+	async componentWillMount () {
+		const response = await fetch('/api/versioning')
+		const json = await response.json()
+
+		this.setState({ configuredHost: json.data.host })
 	}
 
 	withRegistryUrl = repository => {

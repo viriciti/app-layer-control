@@ -5,14 +5,11 @@ class Footer extends PureComponent {
 		version: undefined,
 	}
 
-	componentWillMount () {
-		fetch('/api/version')
-			.then(response => {
-				return response.json()
-			})
-			.then(({ version }) => {
-				return this.setState({ version })
-			})
+	async componentWillMount () {
+		const response = await fetch('/api/version')
+		const json = await response.json()
+
+		this.setState({ version: json.data.version })
 	}
 
 	render () {
