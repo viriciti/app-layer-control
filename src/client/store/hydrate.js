@@ -1,3 +1,5 @@
+import map from 'p-map'
+
 export default ws => {
 	const endpoints = [
 		{ action: 'DEVICES_STATE', url: '/api/devices' },
@@ -8,16 +10,15 @@ export default ws => {
 	]
 
 	return async dispatch => {
-		const responses = await Promise.all(
-			endpoints.map(endpoint =>
-				fetch(endpoint.url)
-					.then(response => response.json())
-					.then(({ data }) => ({
-						action: endpoint.action,
-						data,
-					}))
-			)
-		)
+		const responses = await map(endpoints, async endpoint => {
+			const response = await fetch(endpoint.url)
+			const json = await response.json()
+
+			return {
+				action: endpoint.action,
+				data:   json.data,
+			}
+		})
 
 		responses.forEach(({ action, data }) =>
 			dispatch({
