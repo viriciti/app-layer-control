@@ -1,4 +1,5 @@
 RPC                   = require "mqtt-json-rpc"
+WebSocket             = require "ws"
 async                 = require "async"
 bodyParser            = require "body-parser"
 compression           = require "compression"
@@ -8,12 +9,12 @@ cors                  = require "cors"
 debug                 = (require "debug") "app:main"
 express               = require "express"
 http                  = require "http"
+morgan                = require "morgan"
 mqtt                  = require "async-mqtt"
 semver                = require "semver"
 { Map, List, fromJS } = require "immutable"
 { Observable }        = require "rxjs"
 { each, size, noop }  = require "lodash"
-WebSocket             = require "ws"
 
 {
 	DevicesLogs
@@ -375,6 +376,12 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 app.use cors()
 app.use compression()
 app.use bodyParser.json strict: true
+
+unless process.env.NODE_ENV is "production"
+	# HTTP request logger
+	app.use morgan "dev",
+		skip: (req) ->
+			not req.baseUrl.startsWith "/api"
 
 app.use "/api",         require "./api"
 app.use "/api/devices", (require "./api/devices") getDeviceStates
