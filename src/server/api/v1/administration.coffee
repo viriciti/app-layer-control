@@ -1,12 +1,11 @@
-debug                                           = (require "debug") "app:api:administration"
-filter                                          = require "p-filter"
-{ Router }                                      = require "express"
-{ without, isArray, uniq, compact, first, map } = require "lodash"
+debug                   = (require "debug") "app:api"
+filter                  = require "p-filter"
+{ Router }              = require "express"
+{ isArray, first, map } = require "lodash"
 
 log                    = (require "../../lib/Logger") "administration"
 Store                  = require "../../Store"
 getRegistryImages      = require "../../lib/getRegistryImages"
-populateMqttWithGroups = require "../../helpers/populateMqttWithGroups"
 prependRegistryUrl     = require "../../helpers/prependRegistryUrl"
 
 router = Router()
@@ -29,19 +28,6 @@ isRegistryImageDependentOn = (image, configurations) ->
 		.toArray()
 		.includes image
 
-publishGroupsForDevice = ({ mqtt, db, deviceId }) ->
-	query   = deviceId: deviceId
-	topic   = "devices/#{deviceId}/groups"
-	options = retain: true
-	groups  = JSON.stringify (await db
-		.DeviceGroup
-		.findOne query
-		.select "groups"
-		.lean()
-	).groups
-
-	mqtt.publish topic, groups, options
-
 # Application
 router.get "/applications", ({ app }, res, next) ->
 	try
@@ -54,27 +40,23 @@ router.get "/applications", ({ app }, res, next) ->
 		next error
 
 router.put "/application/:name", ({ app, params, body }, res, next) ->
-	{ db, mqtt } = app.locals
-	{ name }     = params
-	query        = applicationName: name
+	{ db, broadcastApplications } = app.locals
+	{ name }                      = params
+	query                         = applicationName: name
 
 	try
-		body   = { ...body, applicationName: name }
-		exists = await db
-			.Configuration
-			.find query
-			.countDocuments()
+		body = { ...body, applicationName: name }
+		doc  = await db.Configuration.findOneAndUpdate query, body,
+			upsert:              true
+			setDefaultsOnInsert: true
 
-		if exists
-			await db.Configuration.findOneAndUpdate query, body
-		else
-			await db.Configuration.create body
+		broadcastApplications()
 
 		res
 			.status 200
 			.json
 				status:  "success"
-				message: "Application was succesfully #{if exists then "updated" else "created"}"
+				message: "Application was succesfully #{if doc? then "updated" else "created"}"
 				data:    await db
 					.Configuration
 					.findOne query
@@ -84,8 +66,8 @@ router.put "/application/:name", ({ app, params, body }, res, next) ->
 		next error
 
 router.delete "/application/:name", ({ app, params }, res, next) ->
-	{ db }   = app.locals
-	{ name } = params
+	{ db, broadcastApplications } = app.locals
+	{ name }                      = params
 
 	try
 		groups     = await store.getGroups()
@@ -100,6 +82,8 @@ router.delete "/application/:name", ({ app, params }, res, next) ->
 					data:    dependents: dependents
 
 		await db.Configuration.deleteMany applicationName: name
+
+		broadcastApplications()
 
 		res
 			.status 204
@@ -119,27 +103,23 @@ router.get "/sources", ({ app }, res, next) ->
 		next error
 
 router.put "/source/:name", ({ app, params, body }, res, next) ->
-	{ db }   = app.locals
-	{ name } = params
-	query    = name: name
-	update   = { ...body, name: name }
+	{ db, broadcastSources } = app.locals
+	{ name }                 = params
+	query                    = name           : name
+	update                   = { ...body, name: name }
 
 	try
-		exists = await db
-			.DeviceSource
-			.find query
-			.countDocuments()
+		doc = await db.DeviceSource.findOneAndUpdate query, update,
+			upsert:              true
+			setDefaultsOnInsert: true
 
-		if exists
-			await db.DeviceSource.findOneAndUpdate query, update
-		else
-			await db.DeviceSource.create update
+		broadcastSources()
 
 		res
 			.status 200
 			.json
 				status:  "success"
-				message: "Source was succesfully #{if exists then "updated" else "created"}"
+				message: "Source was succesfully #{if doc? then "updated" else "created"}"
 				data:    await db
 					.DeviceSource
 					.findOne query
@@ -149,11 +129,13 @@ router.put "/source/:name", ({ app, params, body }, res, next) ->
 		next error
 
 router.delete "/source/:name", ({ app, params }, res, next) ->
-	{ db }   = app.locals
-	{ name } = params
+	{ db, broadcastSources } = app.locals
+	{ name }                 = params
 
 	try
 		await db.DeviceSource.deleteMany headerName: name
+
+		broadcastSources()
 
 		res
 			.status 204
@@ -173,9 +155,9 @@ router.get "/groups", ({ app }, res, next) ->
 		next error
 
 router.put "/group/:label", ({ app, params, body }, res, next) ->
-	{ db, mqtt } = app.locals
-	{ label }    = params
-	applications = Object.keys body.applications
+	{ db, broadcastGroups } = app.locals
+	{ label }               = params
+	applications            = Object.keys body.applications
 
 	try
 		unless label is "default"
@@ -203,49 +185,36 @@ router.put "/group/:label", ({ app, params, body }, res, next) ->
 					message: "One or more application(s) do not exist"
 					data:    missing: missing
 
-		exists = await db
-			.Group
-			.find label: label
-			.countDocuments()
+		query  = label: label
+		update = label: label, applications: body.applications
+		doc    = await db.Group.findOneAndUpdate query, update,
+			upsert:              true
+			setDefaultsOnInsert: true
 
-		if exists
-			await db.Group.findOneAndUpdate { label }, body
-		else
-			await db.Group.create
-				label:        label
-				applications: body.applications
-
-		populateMqttWithGroups db, mqtt
+		broadcastGroups()
 
 		res
 			.status 200
 			.json
 				status:  "success"
-				message: "Group #{if exists then "updated" else "created"}"
+				message: "Group #{if doc? then "updated" else "created"}"
 	catch error
 		next error
 
 router.delete "/group/:label", ({ app, params, body }, res, next) ->
-	{ db, mqtt } = app.locals
-	{ label }    = params
+	{ db, broadcastGroups } = app.locals
+	{ label }               = params
 
 	try
-		devices = await db
-			.DeviceGroup
-			.find groups: label
-			.lean()
+		query         = groups: label
+		update        = $pull:  groups: label
+		{ nModified } = await db.DeviceGroup.updateMany query, update
+		debug "Removed group #{label} for #{nModified} device(s)"
 
-		await db.Group.findOneAndRemove { label }
+		await db.Group.findOneAndDelete { label }
+		debug "Removed group #{label}"
 
-		await Promise.all devices.map (device) ->
-			{ deviceId } = device
-			query        = deviceId: deviceId
-			update       = groups: without device.groups, label
-
-			await db.DeviceGroup.findOneAndUpdate query, update
-			await publishGroupsForDevice { db, mqtt, deviceId }
-
-		populateMqttWithGroups db, mqtt
+		broadcastGroups()
 
 		res
 			.status 204
@@ -256,23 +225,19 @@ router.delete "/group/:label", ({ app, params, body }, res, next) ->
 # Device Groups
 # Supported operations are "store" and "remove"
 router.patch "/group/:label/devices", ({ app, params, body }, res) ->
-	{ db, mqtt }                  = app.locals
+	{ db }                        = app.locals
 	{ operation, groups, target } = body
+	{ label }                     = params
 	target                        = [target] unless isArray target
 
 	if operation is "remove"
-		message = "Removing #{groups.length} group(s) for #{target.length} device(s) ..."
+		query  = groups: label
+		update = $pull:  groups: label
+
+		{ nModified } = await db.DeviceGroup.update query, update
+		message       = "Removed group #{label} for #{nModified} device(s)"
 
 		debug message
-
-		Promise.all target.map (deviceId) ->
-			query             = deviceId: deviceId
-			current           = await db.DeviceGroup.findOne(query).lean()
-			currentGroups     = current?.groups or ["default"]
-			newGroups         = without currentGroups, ...groups
-
-			await db.DeviceGroup.findOneAndUpdate query, groups: newGroups
-			await publishGroupsForDevice { db, mqtt, deviceId }
 
 		res
 			.status 200
@@ -280,18 +245,17 @@ router.patch "/group/:label/devices", ({ app, params, body }, res) ->
 				status:  "success"
 				message: message
 	else if operation is "store"
-		message = "Storing #{groups.length} group(s) for #{target.length} device(s) ..."
+
+		query  = groups:    label
+		update = $addToSet: groups: label
+		options =
+			upsert:              true
+			setDefaultsOnInsert: true
+
+		{ nModified } = await db.DeviceGroup.findOneAndUpdate query, update, options
+		message       = "Added #{groups.length} (#{groups.join ', '}) group(s) to #{nModified} device(s)"
 
 		debug message
-
-		Promise.all target.map (deviceId) ->
-			query         = deviceId: deviceId
-			current       = await db.DeviceGroup.findOne(query).select("groups").lean()
-			currentGroups = current?.groups or ["default"]
-			update        = groups: uniq compact [...currentGroups, ...groups]
-
-			await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
-			await publishGroupsForDevice { db, mqtt, deviceId }
 
 		res
 			.status 200
@@ -301,11 +265,11 @@ router.patch "/group/:label/devices", ({ app, params, body }, res) ->
 
 # Registry Images
 router.post "/registry", ({ app, params, body }, res, next) ->
-	{ db }   = app.locals
-	{ name } = body
+	{ db, broadcastRegistry } = app.locals
+	{ name }                  = body
 
 	try
-		await db.AllowedImage.create { name }
+		await db.AllowedImage.create name: name
 
 		images               = await getRegistryImages [name]
 		{ versions, access } = first Object.values images
@@ -314,6 +278,8 @@ router.post "/registry", ({ app, params, body }, res, next) ->
 			access:   access
 			name:     prependRegistryUrl name
 			versions: versions
+
+		broadcastRegistry()
 
 		res
 			.status 200
@@ -330,14 +296,12 @@ router.post "/registry", ({ app, params, body }, res, next) ->
 				message: "This registry image is already added"
 
 router.delete "/registry/:name", ({ app, params, body }, res, next) ->
-	{ db }    = app.locals
-	{ name }  = params
-	{ image } = body
+	{ db, broadcastRegistry } = app.locals
+	{ name }                  = params
+	{ image }                 = body
 
 	try
-		configurations = await store.getConfigurations()
-
-		if isRegistryImageDependentOn image, configurations
+		if isRegistryImageDependentOn image, await store.getConfigurations()
 			return res
 				.status 409
 				.json
@@ -345,9 +309,11 @@ router.delete "/registry/:name", ({ app, params, body }, res, next) ->
 					message: "One or more configurations depend on this registry image"
 
 		await Promise.all [
-			db.AllowedImage.findOneAndRemove { name }
-			db.RegistryImages.findOneAndRemove name: image
+			db.AllowedImage.findOneAndDelete { name }
+			db.RegistryImages.findOneAndDelete name: image
 		]
+
+		broadcastRegistry()
 
 		res
 			.status 204
@@ -356,7 +322,7 @@ router.delete "/registry/:name", ({ app, params, body }, res, next) ->
 		next error
 
 router.get "/registry", ({ app }, res, next) ->
-	{ db } = app.locals
+	{ db, broadcastRegistry } = app.locals
 
 	try
 		images = await db
@@ -368,6 +334,8 @@ router.get "/registry", ({ app }, res, next) ->
 		images = await getRegistryImages names
 
 		store.storeRegistryImages images
+
+		broadcastRegistry()
 
 		res
 			.status 200

@@ -345,26 +345,27 @@ do ->
 		ws.clients.forEach (client) ->
 			client.send JSON.stringify
 				action: constantCase type
-				data:   data
+				data:   data.toJS()
 
-	app.locals.mqtt      = mqttClient
-	app.locals.db        = db
-	app.locals.broadcast = broadcast
+	broadcastApplications = ->
+		broadcast "configurations", await store.getConfigurations()
 
-	watcher.on "applications", (applications) ->
-		broadcast "configurations", applications.toJS()
+	broadcastRegistry = ->
+		broadcast "allowedImages",  await store.getAllowedImages()
+		broadcast "registryImages", await store.getRegistryImages()
 
-	watcher.on "registry", ({ allowedImages, registryImages }) ->
-		broadcast "allowedImages",  allowedImages.toJS()
-		broadcast "registryImages", registryImages.toJS()
+	broadcastGroups = ->
+		broadcast "groups", await store.getGroups()
 
-	watcher.on "groups", (groups) ->
-		broadcast "groups", groups.toJS()
+	broadcastSources = ->
+		broadcast "deviceSources", await store.getDeviceSources()
 
-	watcher.on "sources", (sources) ->
-		broadcast "deviceSources", sources.toJS()
-
-	watcher.start()
+	app.locals.mqtt = mqttClient
+	app.locals.db   = db
+	app.locals.broadcastApplications = broadcastApplications
+	app.locals.broadcastRegistry     = broadcastRegistry
+	app.locals.broadcastGroups       = broadcastGroups
+	app.locals.broadcastSources      = broadcastSources
 
 	server.listen port, ->
 		log.info "Server listening on :#{@address().port}"

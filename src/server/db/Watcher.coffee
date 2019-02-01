@@ -31,7 +31,13 @@ class Watcher extends EventEmitter
 			.watch()
 			.on "change", @onSourceChange
 
-	onApplicationChange: ({ operationType }) =>
+		@db
+			.DeviceGroup
+			.watch()
+			.on "change", @onDeviceGroupChange
+
+	onApplicationChange: (fields) =>
+		{ operationType } = fields
 		debug "onApplicationChange: #{operationType}"
 
 		return unless operationType in ["update", "delete", "insert"]
@@ -39,10 +45,10 @@ class Watcher extends EventEmitter
 		configurations = await @store.getConfigurations()
 
 		@store.cacheConfigurations configurations
-		@emit "any", "applications", configurations
-		@emit "applications",        configurations
+		@emit "applications", { ...fields, data: configurations }
 
-	onRegistryChange: ({ operationType }) =>
+	onRegistryChange: (fields) =>
+		{ operationType }               = fields
 		[registryImages, allowedImages] = await Promise.all [
 			@store.getRegistryImages()
 			@store.getAllowedImages()
@@ -51,30 +57,30 @@ class Watcher extends EventEmitter
 		debug "onRegistryChange: #{operationType}"
 
 		@store.cacheRegistryImages registryImages
+		@emit "registry", Object.assign {},
+			fields
+			data:
+				allowedImages:  allowedImages
+				registryImages: registryImages
 
-		@emit "any", "registry",
-			allowedImages:  allowedImages
-			registryImages: registryImages
-
-		@emit "registry",
-			allowedImages:  allowedImages
-			registryImages: registryImages
-
-	onGroupChange: ({ operationType }) =>
-		groups = await @store.getGroups()
+	onGroupChange: (fields) =>
+		{ operationType } = fields
+		groups            = await @store.getGroups()
 
 		debug "onGroupChange: #{operationType}"
 
 		@store.cacheGroups groups
-		@emit "any", "groups", groups
-		@emit "groups",        groups
+		@emit "groups", { ...fields, data: groups }
 
-	onSourceChange: ({ operationType }) =>
-		sources = await @store.getDeviceSources()
+	onDeviceGroupChange: (fields) =>
+		# console.log fields
+
+	onSourceChange: (fields) =>
+		{ operationType } = fields
+		sources           = await @store.getDeviceSources()
 
 		debug "onSourceChange: #{operationType}"
 
-		@emit "any", "sources", sources
-		@emit "sources",        sources
+		@emit "sources", { ...fields, data: sources }
 
 module.exports = Watcher
