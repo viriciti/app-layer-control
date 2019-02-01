@@ -4,10 +4,10 @@ import { Map, List } from 'immutable'
 import { connect } from 'react-redux'
 import { reduce } from 'lodash'
 import { toast } from 'react-toastify'
+import axios from 'axios'
 
 import AsyncButton from '/components/common/AsyncButton'
 import Modal from '/components/common/Modal'
-import { createConfiguration } from '/routes/administration/modules/actions'
 import validate from '/routes/administration/modules/validateForm'
 
 import { TextInput, VersionInput, SelectInput, DoubleTextInput, SliderInput } from '/routes/administration/commons'
@@ -145,23 +145,19 @@ class ConfigurationsForm extends PureComponent {
 			configuration.restartPolicy = 'unless-stopped'
 		}
 
-		const response = await fetch(`/api/v1/administration/application/${applicationName}`, {
-			method: 'PUT',
-			body:   configuration,
-		})
-		const { message } = await response.json()
+		const { data } = await axios.put(`/api/v1/administration/application/${applicationName}`, configuration)
 
 		this.props.onRequestClose()
 		this.props.reset()
 
-		toast.success(message)
+		toast.success(data.message)
 	}
 
-	renderImagesNames () {
+	getAvailableImages () {
 		return this.props.registryImages.keySeq().toArray()
 	}
 
-	renderInstallStep () {
+	getInstallationSteps () {
 		return [
 			{ title: 'Pull', value: 'Pull' },
 			{ title: 'Clean', value: 'Clean' },
@@ -188,7 +184,13 @@ class ConfigurationsForm extends PureComponent {
 						/>
 						<Field name="containerName" label="Container name" component={TextInput} required />
 
-						<Field name="fromImage" label="Image" component={SelectInput} options={this.renderImagesNames()} required />
+						<Field
+							name="fromImage"
+							label="Image"
+							component={SelectInput}
+							options={this.getAvailableImages()}
+							required
+						/>
 						<Field name="version" label="Version" component={VersionInput} required />
 						<Field
 							name="frontEndPort"
@@ -207,7 +209,7 @@ class ConfigurationsForm extends PureComponent {
 							name="lastInstallStep"
 							label="Last Install Step"
 							component={SelectInput}
-							options={this.renderInstallStep()}
+							options={this.getInstallationSteps()}
 						/>
 						<Field
 							name="networkMode"
@@ -286,10 +288,7 @@ const mapStateToProps = state => {
 	}
 }
 
-export default connect(
-	mapStateToProps,
-	{ createConfiguration }
-)(
+export default connect(mapStateToProps)(
 	reduxForm({
 		form:          'configurations',
 		validate,

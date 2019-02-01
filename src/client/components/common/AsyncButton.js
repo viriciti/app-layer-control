@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { Fragment } from 'react'
 import classNames from 'classnames'
-import { noop } from 'lodash'
+import { noop, isFunction } from 'lodash'
 
 function AsyncButton ({ busy, busyText, children, onClick, white, ...buttonProps }) {
 	return (
@@ -21,7 +21,7 @@ AsyncButton.propTypes = {
 	busy:     PropTypes.bool.isRequired,
 	busyText: PropTypes.string,
 	children: PropTypes.node.isRequired,
-	onClick:  PropTypes.func.isRequired,
+	onClick:  PropTypes.func,
 	white:    PropTypes.bool,
 }
 

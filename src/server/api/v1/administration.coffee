@@ -70,8 +70,6 @@ router.put "/application/:name", ({ app, params, body }, res, next) ->
 		else
 			await db.Configuration.create body
 
-		await populateMqttWithGroups db, mqtt
-
 		res
 			.status 200
 			.json
@@ -101,7 +99,7 @@ router.delete "/application/:name", ({ app, params }, res, next) ->
 					message: "One or more groups depend on this configuration"
 					data:    dependents: dependents
 
-		await db.Configuration.remove applicationName: name
+		await db.Configuration.deleteMany applicationName: name
 
 		res
 			.status 204
@@ -155,7 +153,7 @@ router.delete "/source/:name", ({ app, params }, res, next) ->
 	{ name } = params
 
 	try
-		await db.DeviceSource.remove headerName: name
+		await db.DeviceSource.deleteMany headerName: name
 
 		res
 			.status 204
@@ -213,9 +211,11 @@ router.put "/group/:label", ({ app, params, body }, res, next) ->
 		if exists
 			await db.Group.findOneAndUpdate { label }, body
 		else
-			await db.Group.create { ...body, label: label }
+			await db.Group.create
+				label:        label
+				applications: body.applications
 
-		await populateMqttWithGroups db, mqtt
+		populateMqttWithGroups db, mqtt
 
 		res
 			.status 200
@@ -235,6 +235,8 @@ router.delete "/group/:label", ({ app, params, body }, res, next) ->
 			.find groups: label
 			.lean()
 
+		await db.Group.findOneAndRemove { label }
+
 		await Promise.all devices.map (device) ->
 			{ deviceId } = device
 			query        = deviceId: deviceId
@@ -243,8 +245,7 @@ router.delete "/group/:label", ({ app, params, body }, res, next) ->
 			await db.DeviceGroup.findOneAndUpdate query, update
 			await publishGroupsForDevice { db, mqtt, deviceId }
 
-		await db.Group.findOneAndRemove { label }
-		await populateMqttWithGroups db, mqtt
+		populateMqttWithGroups db, mqtt
 
 		res
 			.status 204
@@ -360,7 +361,7 @@ router.get "/registry", ({ app }, res, next) ->
 	try
 		images = await db
 			.AllowedImage
-			.find {}
+			.find()
 			.select "name"
 			.lean()
 		names  = map images, "name"

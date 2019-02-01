@@ -4,12 +4,12 @@ mongoose    = require "mongoose"
 { forEach } = require "lodash"
 
 models     =
-	AllowedImage:   (require "./AllowedImage")   mongoose
-	Configuration:  (require "./Configuration")  mongoose
-	DeviceGroup:    (require "./DeviceGroup")    mongoose
-	DeviceSource:   (require "./DeviceSource")   mongoose
-	Group:          (require "./Group")          mongoose
-	RegistryImages: (require "./RegistryImages") mongoose
+	AllowedImage:   (require "./models/AllowedImage")   mongoose
+	Configuration:  (require "./models/Configuration")  mongoose
+	DeviceGroup:    (require "./models/DeviceGroup")    mongoose
+	DeviceSource:   (require "./models/DeviceSource")   mongoose
+	Group:          (require "./models/Group")          mongoose
+	RegistryImages: (require "./models/RegistryImages") mongoose
 
 class Database
 	constructor: (@options) ->

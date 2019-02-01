@@ -9,8 +9,7 @@ log      = (require "./lib/Logger") "store"
 
 class Store
 	constructor: (@db) ->
-		@db or= new Database autoConnect: true
-
+		@db  or= new Database autoConnect: true
 		@cache = Map()
 
 	kick: ->
@@ -37,19 +36,18 @@ class Store
 
 	storeRegistryImages: (images) ->
 		map toPairs(images), ([name, { versions, access, exists }]) =>
-			await @db.RegistryImages.findOneAndRemove { name }
 			await @db.RegistryImages.findOneAndUpdate { name },
 				{ name, versions, access, exists }
 				{ upsert: true }
 
 	getAllowedImages: ->
-		images = await @db.AllowedImage.find {}
+		images = await @db.AllowedImage.find().lean()
 		images = Object.values mapValues images, (image) -> image.name
 
 		fromJS images
 
 	getRegistryImages: ->
-		images = await @db.RegistryImages.find {}
+		images = await @db.RegistryImages.find().lean()
 		images = images.reduce (memo, { name, versions, access, exists }) ->
 			Object.assign {}, memo,
 				"#{name}":

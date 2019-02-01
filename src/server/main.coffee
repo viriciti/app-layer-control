@@ -1,6 +1,4 @@
-RPC                   = require "mqtt-json-rpc"
 WebSocket             = require "ws"
-async                 = require "async"
 bodyParser            = require "body-parser"
 compression           = require "compression"
 config                = require "config"
@@ -11,7 +9,6 @@ express               = require "express"
 http                  = require "http"
 morgan                = require "morgan"
 mqtt                  = require "async-mqtt"
-semver                = require "semver"
 { Map, List, fromJS } = require "immutable"
 { Observable }        = require "rxjs"
 { each, size, noop }  = require "lodash"
@@ -26,15 +23,17 @@ semver                = require "semver"
 	externals
 }                            = require "./sources"
 Database                     = require "./db"
-populateMqttWithGroups       = require "./helpers/populateMqttWithGroups"
-populateMqttWithDeviceGroups = require "./helpers/populateMqttWithDeviceGroups"
-getVersionsNotMatching       = require "./lib/getVersionsNotMatching"
+Store                        = require "./Store"
+Watcher                      = require "./db/Watcher"
+bundle                       = require "./bundle"
 getContainersNotRunning      = require "./lib/getContainersNotRunning"
+getVersionsNotMatching       = require "./lib/getVersionsNotMatching"
+populateMqttWithDeviceGroups = require "./helpers/populateMqttWithDeviceGroups"
+populateMqttWithGroups       = require "./helpers/populateMqttWithGroups"
 runUpdates                   = require "./updates"
 sendMessageToMqtt            = require "./updates/sendMessageToMqtt"
+watchChanges                 = require "./db/watchChanges"
 { cacheUpdate }              = require "./observables"
-bundle                       = require "./bundle"
-Store                        = require "./Store"
 
 log = (require "./lib/Logger") "main"
 
@@ -47,6 +46,9 @@ sockets = {}
 ws      = new WebSocket.Server server: server
 db      = new Database
 store   = new Store db
+watcher = new Watcher
+	db:    db
+	store: store
 
 rpc               = null
 mqttClient        = null
@@ -100,8 +102,8 @@ initMqtt = ->
 	options           = { ...config.mqtt.connectionOptions, ...config.mqtt }
 	client            = mqttClient  = mqtt.connect options
 	client.publish    = noop if config.mqtt.readOnly
-	legacy_sendToMqtt = sendMessageToMqtt mqttClient
-	rpc               = new RPC client._client, timeout: config.mqtt.responseTimeout
+	# legacy_sendToMqtt = sendMessageToMqtt mqttClient
+	# rpc               = new RPC client._client, timeout: config.mqtt.responseTimeout
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
@@ -317,62 +319,6 @@ _broadcastAction = (type, data) ->
 			action: constantCase type
 			data:   data
 
-_onActionDevice = (action, cb) ->
-	messageTable    =
-		refreshState: "State refreshed"
-		storeGroups:  "Group(s) added"
-
-	appVersion = deviceStates.getIn [action.dest, "systemInfo", "appVersion"]
-	appVersion = deviceStates.getIn [action.dest, "systemInfo", "dmVersion"] unless appVersion
-
-	message = messageTable[action.action]
-	log.warn "No message configured for action '#{action.action}'" unless message?.trim?().length
-	message or= "Done"
-
-	# device-mqtt has been removed since 1.16.0
-	if appVersion and semver.gt appVersion, "1.15.0"
-		try
-			await rpc.call "actions/#{action.dest}/#{action.action}", action.payload
-			cb null, message
-		catch error
-			cb message: error.message
-	else
-		legacy_sendToMqtt action, (error) ->
-			return cb message: error.message if error
-			cb null, message
-
-_onActionDevices = (action, cb) ->
-	{ payload, dest } = action
-
-	debug "Performing #{action.action} for #{dest?.length or 0} devices"
-
-	async.map dest, (device, next) ->
-		actionToSend = Object.assign {}, action, { payload, dest: device }
-		legacy_sendToMqtt actionToSend, next
-	, cb
-
-_onActionDeviceGet = (action, cb) ->
-	legacy_sendToMqtt action, cb
-
-_onActionDb = ({ action, payload, meta }, cb) ->
-	execute      = (require "./actions") db, mqttClient, _broadcastAction, store
-	messageTable =
-		storeGroups:         "Groups updated for #{payload?.dest}"
-		createConfiguration: "Application updated"
-		removeConfiguration: "Application removed"
-		createGroup:         "Group updated"
-		removeGroup:         "Group removed"
-		addRegistryImage:    "Registry image added"
-		removeRegistryImage: "Registry image removed"
-
-	try
-		result = await execute { action, payload, meta }
-
-		debug "Received result for action: #{action} - #{result}"
-		cb null, messageTable[action] or "Done"
-	catch error
-		cb message: error.message
-
 app.use cors()
 app.use compression()
 app.use bodyParser.json strict: true
@@ -386,23 +332,39 @@ unless process.env.NODE_ENV is "production"
 app.use "/api",         require "./api"
 app.use "/api/devices", (require "./api/devices") getDeviceStates
 
-bundle app
-	.then ->
-		db.connect()
-	.then ->
-		runUpdates
-			db:    db
-			store: store
-	.then ->
-		main()
+do ->
+	await bundle app
+	await db.connect()
+	await runUpdates db: db, store: store
 
-		app.locals.mqtt      = mqttClient
-		app.locals.db        = db
-		app.locals.broadcast = (type, data) ->
-			ws.clients.forEach (client) ->
-				client.send JSON.stringify
-					type: constantCase type
-					data: data
-	.then ->
-		server.listen port, ->
-			log.info "Server listening on :#{@address().port}"
+	main()
+
+	broadcast = (type, data) ->
+		debug "Broadcasting '#{type}' to #{size ws.clients} client(s)"
+
+		ws.clients.forEach (client) ->
+			client.send JSON.stringify
+				action: constantCase type
+				data:   data
+
+	app.locals.mqtt      = mqttClient
+	app.locals.db        = db
+	app.locals.broadcast = broadcast
+
+	watcher.on "applications", (applications) ->
+		broadcast "configurations", applications.toJS()
+
+	watcher.on "registry", ({ allowedImages, registryImages }) ->
+		broadcast "allowedImages",  allowedImages.toJS()
+		broadcast "registryImages", registryImages.toJS()
+
+	watcher.on "groups", (groups) ->
+		broadcast "groups", groups.toJS()
+
+	watcher.on "sources", (sources) ->
+		broadcast "deviceSources", sources.toJS()
+
+	watcher.start()
+
+	server.listen port, ->
+		log.info "Server listening on :#{@address().port}"

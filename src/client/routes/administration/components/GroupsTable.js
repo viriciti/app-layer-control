@@ -1,6 +1,8 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 import { Map } from 'immutable'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 
 import GroupsForm from './GroupsForm'
 import { removeGroup, sendGroupToAllDevices, removeGroupFromAllDevices } from '/routes/administration/modules/actions'
@@ -11,6 +13,7 @@ class GroupsTable extends PureComponent {
 		isAdding:  false,
 		isEditing: false,
 		editing:   null,
+		deleting:  false,
 	}
 
 	renderGroups () {
@@ -56,7 +59,11 @@ class GroupsTable extends PureComponent {
 							</button>
 
 							{label !== 'default' ? (
-								<button className="btn btn--text btn--icon" onClick={this.onRemoveGroup.bind(this, label)}>
+								<button
+									disabled={this.state.deleting}
+									className="btn btn--text btn--icon"
+									onClick={this.onRemoveGroup.bind(this, label)}
+								>
 									<span className="fas fa-trash" data-toggle="tooltip" title="Delete group" />
 								</button>
 							) : null}
@@ -80,13 +87,19 @@ class GroupsTable extends PureComponent {
 		})
 	}
 
-	onRemoveGroup = label => {
+	onRemoveGroup = async label => {
 		if (!confirm(`Deleting group ${label}. Confirm?`)) {
 			return
 		}
 
-		this.props.removeGroup(label)
-		this.props.removeGroupFromAllDevices({ payload: label, dest: this.props.devices })
+		this.setState({ deleting: true })
+
+		const { status } = await axios.delete(`/api/v1/administration/group/${label}`)
+		if (status === 204) {
+			toast.success('Group deleted')
+		}
+
+		this.setState({ deleting: false })
 	}
 
 	onRequestClose = () => {

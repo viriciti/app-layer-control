@@ -8,7 +8,7 @@ const AdministrationMain = () => {
 	return (
 		<div className="mx-3 mb-4">
 			<header className="dashboard-header">
-				<i className="dashboard-header__icon fas fa-boxes" />
+				<i className="dashboard-header__icon fas fa-user-tie" />
 				<div className="dashboard-header__titles-container">
 					<h1 className="dashboard-header__title">Administration</h1>
 					<h2 className="dashboard-header__subtitle">Handle administration for your devices</h2>

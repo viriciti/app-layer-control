@@ -46,6 +46,7 @@
 		"ansi-to-html": "^0.6.4",
 		"assemble": "^0.3.83",
 		"async": "^2.6.0",
+		"axios": "^0.18.0",
 		"body-parser": "^1.18.3",
 		"bootstrap": "^4.1.3",
 		"camel-case": "^3.0.0",
