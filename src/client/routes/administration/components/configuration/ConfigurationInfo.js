@@ -23,7 +23,7 @@ class ConfigurationInfo extends PureComponent {
 		this.props.onEditApplication()
 	}
 
-	onRemove = async () => {
+	onDelete = async () => {
 		this.setState({ deleting: true })
 
 		try {
@@ -33,7 +33,6 @@ class ConfigurationInfo extends PureComponent {
 
 			toast.success('Application deleted')
 		} catch ({ response }) {
-			console.log(response.data)
 			toast.error(response.data.message)
 		}
 
@@ -75,13 +74,13 @@ class ConfigurationInfo extends PureComponent {
 
 								<AsyncButton
 									busy={this.state.deleting}
-									busyText="Removing ..."
+									busyText="Deleting ..."
 									className="btn btn-secondary"
-									onClick={this.onRemove}
+									onClick={this.onDelete}
 									type="button"
 									white
 								>
-									<span className="fas fa-trash" /> Remove
+									<span className="fas fa-trash" /> Delete
 								</AsyncButton>
 							</div>
 						</div>

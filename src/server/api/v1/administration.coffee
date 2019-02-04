@@ -78,8 +78,8 @@ router.delete "/application/:name", ({ app, params }, res, next) ->
 				.status 409
 				.json
 					status:  "error"
-					message: "One or more groups depend on this configuration"
-					data:    dependents: dependents
+					message: "One or more groups depend on this application"
+					data:    dependents
 
 		await db.Configuration.deleteMany applicationName: name
 
@@ -183,7 +183,7 @@ router.put "/group/:label", ({ app, params, body }, res, next) ->
 				.json
 					status:  "error"
 					message: "One or more application(s) do not exist"
-					data:    missing: missing
+					data:    missing
 
 		query  = label: label
 		update = label: label, applications: body.applications
@@ -209,10 +209,10 @@ router.delete "/group/:label", ({ app, params, body }, res, next) ->
 		query         = groups: label
 		update        = $pull:  groups: label
 		{ nModified } = await db.DeviceGroup.updateMany query, update
-		debug "Removed group #{label} for #{nModified} device(s)"
+		debug "Deleted group #{label} for #{nModified} device(s)"
 
 		await db.Group.findOneAndDelete { label }
-		debug "Removed group #{label}"
+		debug "Deleted group #{label}"
 
 		broadcastGroups()
 
