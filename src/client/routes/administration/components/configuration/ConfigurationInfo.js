@@ -26,13 +26,15 @@ class ConfigurationInfo extends PureComponent {
 	onRemove = async () => {
 		this.setState({ deleting: true })
 
-		const applicationName = this.props.selectedConfiguration.get('applicationName')
-		const { status, data } = await axios.delete(`/api/v1/administration/application/${applicationName}`)
+		try {
+			await axios.delete(
+				`/api/v1/administration/application/${this.props.selectedConfiguration.get('applicationName')}`
+			)
 
-		if (status !== 204) {
-			toast.error(data.message)
-		} else {
 			toast.success('Application deleted')
+		} catch ({ response }) {
+			console.log(response.data)
+			toast.error(response.data.message)
 		}
 
 		this.setState({ deleting: false })
