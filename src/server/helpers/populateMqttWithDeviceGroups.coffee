@@ -1,6 +1,6 @@
 module.exports = (db, socket) ->
 	devices = await db.DeviceGroup
-		.find {}
+		.find()
 		.lean()
 
 	await Promise.all devices.map ({ deviceId, groups }) ->

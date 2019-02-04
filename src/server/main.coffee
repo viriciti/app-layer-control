@@ -31,8 +31,6 @@ getVersionsNotMatching       = require "./lib/getVersionsNotMatching"
 populateMqttWithDeviceGroups = require "./helpers/populateMqttWithDeviceGroups"
 populateMqttWithGroups       = require "./helpers/populateMqttWithGroups"
 runUpdates                   = require "./updates"
-sendMessageToMqtt            = require "./updates/sendMessageToMqtt"
-watchChanges                 = require "./db/watchChanges"
 { cacheUpdate }              = require "./observables"
 
 log = (require "./lib/Logger") "main"
@@ -42,13 +40,9 @@ app     = express()
 
 server  = http.createServer app
 port    = process.env.PORT or config.server.port
-sockets = {}
 ws      = new WebSocket.Server server: server
 db      = new Database
 store   = new Store db
-watcher = new Watcher
-	db:    db
-	store: store
 
 rpc               = null
 mqttClient        = null
@@ -121,9 +115,9 @@ initMqtt = ->
 			store.getGroups()
 		]
 
-		store.cacheConfigurations configurations
-		store.cacheRegistryImages registryImages
-		store.cacheGroups         groups
+		store.set "configurations", configurations
+		store.set "registry",       registryImages
+		store.set "groups",         groups
 
 		log.info "Cache succesfully populated with configurations, registry images and groups"
 
@@ -327,7 +321,10 @@ unless process.env.NODE_ENV is "production"
 	# HTTP request logger
 	app.use morgan "dev",
 		skip: (req) ->
-			not req.baseUrl.startsWith "/api"
+			url   = req.baseUrl
+			url or= req.originalUrl
+
+			not url.startsWith "/api"
 
 app.use "/api",         require "./api"
 app.use "/api/devices", (require "./api/devices") getDeviceStates
@@ -366,6 +363,18 @@ do ->
 	app.locals.broadcastRegistry     = broadcastRegistry
 	app.locals.broadcastGroups       = broadcastGroups
 	app.locals.broadcastSources      = broadcastSources
+
+	db
+		.DeviceGroup
+		.watch [], fullDocument: "updateLookup"
+		.on "change", ({ fullDocument }) ->
+			{ deviceId, groups } = fullDocument
+
+			topic   = "devices/#{deviceId}/groups"
+			groups  = JSON.stringify groups
+			options = retain: true
+
+			mqttClient.publish topic, groups, options
 
 	server.listen port, ->
 		log.info "Server listening on :#{@address().port}"

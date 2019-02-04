@@ -10,7 +10,7 @@ log      = (require "./lib/Logger") "store"
 class Store
 	constructor: (@db) ->
 		@db  or= new Database autoConnect: true
-		@cache = Map()
+		@bag   = Map()
 
 	kick: ->
 		[
@@ -102,27 +102,16 @@ class Store
 
 			@db.DeviceSource.findOneAndUpdate query, column, options
 
-	cacheConfigurations: (configs) ->
-		@setCache "configurations", configs
+	set: (key, value) ->
+		throw new Error "Value must be Immutable" unless Iterable.isIterable value
 
-	cacheEnabledRegistryImages: (enabledRegistryImages) ->
-		@setCache "enabledRegistryImages", enabledRegistryImages
+		@bag = @bag.set key, value
 
-	cacheRegistryImages: (images) ->
-		@setCache "registryImages", images
+	get: (key) ->
+		@bag.get key
 
-	cacheGroups: (groups) ->
-		@setCache "groups", groups
-
-	setCache: (section, value) ->
-		throw new Error "Will not cache non-Immutable values" unless Iterable.isIterable value
-
-		@cache = @cache.set section, value
-
-	getCache: (section) ->
-		return @cache.get section if section
-
-		@cache
+	getAll: ->
+		@bag
 
 	# @deprecated: Do not use in production
 	getEnabledRegistryImages: (cb) ->

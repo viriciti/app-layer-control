@@ -224,18 +224,17 @@ router.delete "/group/:label", ({ app, params, body }, res, next) ->
 
 # Device Groups
 # Supported operations are "store" and "remove"
-router.patch "/group/:label/devices", ({ app, params, body }, res) ->
+router.post "/group/devices", ({ app, body }, res) ->
 	{ db }                        = app.locals
 	{ operation, groups, target } = body
-	{ label }                     = params
 	target                        = [target] unless isArray target
 
 	if operation is "remove"
-		query  = groups: label
-		update = $pull:  groups: label
+		query   = deviceId: $in: target
+		update  = $pullAll: groups: groups
 
-		{ nModified } = await db.DeviceGroup.update query, update
-		message       = "Removed group #{label} for #{nModified} device(s)"
+		{ nModified } = await db.DeviceGroup.updateMany query, update
+		message       = "Removed groups #{groups.join ', '} for #{nModified} device(s)"
 
 		debug message
 
@@ -245,15 +244,14 @@ router.patch "/group/:label/devices", ({ app, params, body }, res) ->
 				status:  "success"
 				message: message
 	else if operation is "store"
-
-		query  = groups:    label
-		update = $addToSet: groups: label
+		query   = deviceId: $in: target
+		update  = $addToSet: groups: $each: groups
 		options =
 			upsert:              true
 			setDefaultsOnInsert: true
 
-		{ nModified } = await db.DeviceGroup.findOneAndUpdate query, update, options
-		message       = "Added #{groups.length} (#{groups.join ', '}) group(s) to #{nModified} device(s)"
+		{ nModified } = await db.DeviceGroup.updateMany query, update, options
+		message       = "Added groups #{groups.join ', '} to #{nModified} device(s)"
 
 		debug message
 

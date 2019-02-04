@@ -7,7 +7,7 @@ module.exports = ({ db, store, broadcast }) ->
 
 		configurations = await store.getConfigurations()
 
-		store.cacheConfigurations configurations
+		store.set "configurations", configurations
 		broadcast "configurations", configurations
 
 		console.log "broadcast configs"
@@ -21,7 +21,7 @@ module.exports = ({ db, store, broadcast }) ->
 
 		debug "onRegistryChange: #{operationType}"
 
-		store.cacheRegistryImages registryImages
+		store.set "registryImages", registryImages
 		broadcast "registryImages", registryImages
 		broadcast "allowedImages",  allowedImages
 
@@ -30,7 +30,7 @@ module.exports = ({ db, store, broadcast }) ->
 
 		debug "onGroupChange: #{operationType}"
 
-		store.cacheGroups groups
+		store.set "groups", groups
 		broadcast "groups", groups
 
 	onSourceChange = ({ operationType }) ->

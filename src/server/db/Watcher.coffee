@@ -44,7 +44,7 @@ class Watcher extends EventEmitter
 
 		configurations = await @store.getConfigurations()
 
-		@store.cacheConfigurations configurations
+		@store.set "configurations", configurations
 		@emit "applications", { ...fields, data: configurations }
 
 	onRegistryChange: (fields) =>
@@ -56,7 +56,7 @@ class Watcher extends EventEmitter
 
 		debug "onRegistryChange: #{operationType}"
 
-		@store.cacheRegistryImages registryImages
+		@store.set "registry", registryImages
 		@emit "registry", Object.assign {},
 			fields
 			data:
@@ -69,7 +69,7 @@ class Watcher extends EventEmitter
 
 		debug "onGroupChange: #{operationType}"
 
-		@store.cacheGroups groups
+		@store.set "groups", groups
 		@emit "groups", { ...fields, data: groups }
 
 	onDeviceGroupChange: (fields) =>
