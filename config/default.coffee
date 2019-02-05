@@ -27,6 +27,8 @@ module.exports =
 			port: 27017
 		]
 		name: "app-layer-control"
+		options:
+			replSet: "rs0"
 
 	versioning:
 		maxTokenAttempts: 3
