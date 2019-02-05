@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { get } from 'lodash'
+
 import { DEVICE_SOURCES } from '/store/globalReducers/actions'
+import { updateDeviceAsyncState } from '/store/globalReducers/userInterface'
 
 export const MULTISELECT_DEVICE = 'MULTISELECT_DEVICE'
 export const MULTISELECT_DEVICES = 'MULTISELECT_DEVICES'
@@ -123,6 +125,16 @@ export function cleanLogs (payload) {
 	return {
 		type: CLEAN_LOGS,
 		payload,
+	}
+}
+
+export function asyncRefreshState (deviceId) {
+	return async dispatch => {
+		dispatch(updateDeviceAsyncState('isRefreshingState', deviceId, true))
+
+		await axios.put(`/api/devices/${deviceId}/state`)
+
+		dispatch(updateDeviceAsyncState('isRefreshingState', deviceId, false))
 	}
 }
 

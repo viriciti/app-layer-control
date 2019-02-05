@@ -17,7 +17,26 @@ export default (initialState = Map({})) => {
 		const composeWithDevToolsExtension = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
 
 		if (typeof composeWithDevToolsExtension === 'function') {
-			composeEnhancers = composeWithDevToolsExtension({ maxAge: 15 })
+			composeEnhancers = composeWithDevToolsExtension({
+				maxAge:           15,
+				actionsBlacklist: [
+					'@@redux-form/BLUR',
+					'@@redux-form/CHANGE',
+					'@@redux-form/DESTROY',
+					'@@redux-form/FOCUS',
+					'@@redux-form/INITIALIZE',
+					'@@redux-form/REGISTER_FIELD',
+					'@@redux-form/RESET',
+					'@@redux-form/SET_SUBMIT_SUCCEEDED',
+					'@@redux-form/START_SUBMIT',
+					'@@redux-form/STOP_SUBMIT',
+					'@@redux-form/TOUCH',
+					'@@redux-form/UNREGISTER_FIELD',
+					'@@redux-form/UPDATE_SYNC_ERRORS',
+					'DEVICES_STATE',
+					'DEVICE_SOURCES',
+				],
+			})
 		}
 	}
 

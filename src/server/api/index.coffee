@@ -2,6 +2,7 @@ config     = require "config"
 { Router } = require "express"
 
 getPackageVersion = require "../helpers/getPackageVersion"
+log               = (require "../lib/Logger") "api"
 
 router = Router()
 
@@ -22,5 +23,11 @@ router.get "/version", (req, res) ->
 		.end()
 
 router.use "/v1", require "./v1"
+
+# Error middleware
+router.use (error, req, res, next) ->
+	log.error error.stack
+
+	res.sendStatus 500
 
 module.exports = router

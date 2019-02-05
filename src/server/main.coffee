@@ -1,3 +1,4 @@
+RPC                   = require "mqtt-json-rpc"
 WebSocket             = require "ws"
 bodyParser            = require "body-parser"
 compression           = require "compression"
@@ -24,7 +25,6 @@ mqtt                  = require "async-mqtt"
 }                            = require "./sources"
 Database                     = require "./db"
 Store                        = require "./Store"
-Watcher                      = require "./db/Watcher"
 bundle                       = require "./bundle"
 getContainersNotRunning      = require "./lib/getContainersNotRunning"
 getVersionsNotMatching       = require "./lib/getVersionsNotMatching"
@@ -97,7 +97,7 @@ initMqtt = ->
 	client            = mqttClient  = mqtt.connect options
 	client.publish    = noop if config.mqtt.readOnly
 	# legacy_sendToMqtt = sendMessageToMqtt mqttClient
-	# rpc               = new RPC client._client, timeout: config.mqtt.responseTimeout
+	rpc               = new RPC client._client, timeout: config.mqtt.responseTimeout
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
@@ -357,6 +357,7 @@ do ->
 	broadcastSources = ->
 		broadcast "deviceSources", await store.getDeviceSources()
 
+	app.locals.rpc  = rpc
 	app.locals.mqtt = mqttClient
 	app.locals.db   = db
 	app.locals.broadcastApplications = broadcastApplications

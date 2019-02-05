@@ -1,25 +1,28 @@
 import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
+import { partial } from 'lodash'
 
 import Modal from '/components/common/Modal'
-import { refreshState, selectDevice } from '/routes/devices/modules/actions'
+import { asyncRefreshState, selectDevice } from '/routes/devices/modules/actions'
 import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
 import AsyncButton from '/components/common/AsyncButton'
 
 import { SystemInfo, DeviceLogs, DeviceContainers, DeviceImages, DeviceGroups, Queue } from './widgets'
 
 class DeviceDetail extends PureComponent {
+	state = {
+		isRefreshing: false,
+	}
+
 	getDeviceSources () {
 		return this.props.deviceSources.filter(deviceSource => {
 			return deviceSource.get('entryInDetail')
 		})
 	}
 
-	onRefreshState = () => {
-		this.props.refreshState({
-			dest: this.props.selectedDevice.get('deviceId'),
-		})
+	onRefreshState = async () => {
+		this.props.asyncRefreshState(this.props.selectedDevice.get('deviceId'))
 	}
 
 	renderContent = () => {
@@ -139,9 +142,7 @@ class DeviceDetail extends PureComponent {
 				title={title}
 				headerClassName={headerClassName}
 				visible={this.props.open}
-				onClose={() => {
-					return this.props.selectDevice(null)
-				}}
+				onClose={partial(this.props.selectDevice, null)}
 				wide
 			>
 				{this.renderContent()}
@@ -158,7 +159,7 @@ export default connect(
 		}
 	},
 	{
-		refreshState,
+		asyncRefreshState,
 		selectDevice,
 	}
 )(DeviceDetail)

@@ -1,9 +1,8 @@
-debug                          = (require "debug") "app:api"
-filter                         = require "p-filter"
-{ Router }                     = require "express"
-{ isArray, first, map, size  } = require "lodash"
+debug                         = (require "debug") "app:api"
+filter                        = require "p-filter"
+{ Router }                    = require "express"
+{ isArray, first, map, size } = require "lodash"
 
-log                    = (require "../../lib/Logger") "administration"
 Store                  = require "../../Store"
 getRegistryImages      = require "../../lib/getRegistryImages"
 prependRegistryUrl     = require "../../helpers/prependRegistryUrl"
@@ -364,11 +363,5 @@ router.put "/registry", ({ app }, res, next) ->
 				message: "Registry refreshed"
 	catch error
 		next error
-
-# Error middleware
-router.use (error, req, res, next) ->
-	log.error error.stack
-
-	res.sendStatus 500
 
 module.exports = router
