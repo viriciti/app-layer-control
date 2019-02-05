@@ -4,7 +4,7 @@ import { ALLOWED_IMAGES } from './actions'
 
 const ACTION_HANDLERS = {
 	[ALLOWED_IMAGES]: (_, action) => {
-		return List(fromJS(action.data))
+		return List(fromJS(action.payload))
 	},
 }
 

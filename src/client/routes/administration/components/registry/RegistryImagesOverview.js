@@ -7,7 +7,7 @@ import { toast } from 'react-toastify'
 
 import AsyncButton from '/components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'
-import { refreshRegistryImages, addRegistryImage, removeRegistryImage } from '/routes/administration/modules/actions'
+import { fetchRegistry } from '/routes/administration/modules/actions'
 
 const RegistryImage = ({ name, image, onRemoveImage }) => {
 	return (
@@ -41,6 +41,10 @@ class RegistryImagesOverview extends PureComponent {
 		const { data } = await axios.get('/api/versioning')
 
 		this.setState({ configuredHost: data.data.host })
+	}
+
+	componentDidMount () {
+		this.props.fetchRegistry()
 	}
 
 	withRegistryUrl = repository => {
@@ -94,34 +98,40 @@ class RegistryImagesOverview extends PureComponent {
 					</div>
 
 					<div className="card-body spacing-base">
-						<RegistryImageForm imageNames={this.props.allowedImages} onSubmit={this.onAddImage} />
-
-						{this.props.allowedImages.size ? (
-							<div className="table-responsive">
-								<table className="table">
-									<thead className="thead-light">
-										<tr>
-											<th style={{ width: '30%' }}>Image</th>
-											<th>Versions</th>
-											<th />
-										</tr>
-									</thead>
-									<tbody>
-										{this.props.allowedImages.sort().map(name => {
-											return (
-												<RegistryImage
-													key={name}
-													name={this.withRegistryUrl(name)}
-													image={this.props.registryImages.get(this.withRegistryUrl(name), Map())}
-													onRemoveImage={partial(this.onRemoveImage, { name, image: this.withRegistryUrl(name) })}
-												/>
-											)
-										})}
-									</tbody>
-								</table>
-							</div>
+						{this.props.isFetchingRegistry ? (
+							<div className="loader" />
 						) : (
-							<div className="card-message">No registry images available, try to fetch versions first</div>
+							<Fragment>
+								<RegistryImageForm imageNames={this.props.allowedImages} onSubmit={this.onAddImage} />
+
+								{this.props.allowedImages.size ? (
+									<div className="table-responsive">
+										<table className="table">
+											<thead className="thead-light">
+												<tr>
+													<th style={{ width: '30%' }}>Image</th>
+													<th>Versions</th>
+													<th />
+												</tr>
+											</thead>
+											<tbody>
+												{this.props.allowedImages.sort().map(name => {
+													return (
+														<RegistryImage
+															key={name}
+															name={this.withRegistryUrl(name)}
+															image={this.props.registryImages.get(this.withRegistryUrl(name), Map())}
+															onRemoveImage={partial(this.onRemoveImage, { name, image: this.withRegistryUrl(name) })}
+														/>
+													)
+												})}
+											</tbody>
+										</table>
+									</div>
+								) : (
+									<div className="card-message">No registry images available, try to fetch versions first</div>
+								)}
+							</Fragment>
 						)}
 					</div>
 				</div>
@@ -136,7 +146,8 @@ export default connect(
 			allowedImages:      state.get('allowedImages'),
 			registryImages:     state.get('registryImages'),
 			isFetchingVersions: state.getIn(['userInterface', 'isFetchingVersions']),
+			isFetchingRegistry: state.getIn(['userInterface', 'isFetchingRegistry']),
 		}
 	},
-	{ refreshRegistryImages, addRegistryImage, removeRegistryImage }
+	{ fetchRegistry }
 )(RegistryImagesOverview)

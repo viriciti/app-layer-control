@@ -127,19 +127,17 @@ export function cleanLogs (payload) {
 }
 
 export function fetchDevices () {
-	return async dispatch => {
+	return async dispatch =>
 		dispatch({
 			type:    DEVICES_STATE,
 			payload: get(await axios.get('/api/devices'), 'data.data'),
 		})
-	}
 }
 
 export function fetchSources () {
-	return async dispatch => {
+	return async dispatch =>
 		dispatch({
 			type:    DEVICE_SOURCES,
 			payload: get(await axios.get('/api/v1/administration/sources'), 'data.data'),
 		})
-	}
 }

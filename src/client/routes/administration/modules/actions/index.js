@@ -1,5 +1,9 @@
-export const DB_NAMESPACE = 'db/'
-export const DEVICES_NAMESPACE = 'devices/'
+import axios from 'axios'
+import { get } from 'lodash'
+import { Promise } from 'q'
+import { REGISTRY_IMAGES, ALLOWED_IMAGES } from '/store/globalReducers/actions'
+import { updateAsyncState } from '/store/globalReducers/userInterface'
+
 export const CONFIGURATIONS = 'CONFIGURATIONS'
 export const CREATE_CONFIGURATION = 'CREATE_CONFIGURATION'
 export const CONFIGURATION_SELECTED = 'CONFIGURATION_SELECTED'
@@ -16,13 +20,6 @@ export const GROUPS = 'GROUPS'
 export const REMOVE_GROUP = 'REMOVE_GROUP'
 export const STORE_GROUP = 'STORE_GROUP'
 
-export function createConfiguration (payload) {
-	return {
-		type: DB_NAMESPACE + CREATE_CONFIGURATION,
-		payload,
-	}
-}
-
 export function configurationSelected (configuration) {
 	return {
 		type:    CONFIGURATION_SELECTED,
@@ -30,70 +27,45 @@ export function configurationSelected (configuration) {
 	}
 }
 
-export function sendConfigurationToAllDevices (payload) {
-	return {
-		type: DEVICES_NAMESPACE + STORE_CONFIGURATION,
-		payload,
+export function fetchApplications () {
+	return async dispatch => {
+		dispatch(updateAsyncState('isFetchingApplications', true))
+		dispatch({
+			type:    CONFIGURATIONS,
+			payload: get(await axios.get('/api/v1/administration/applications'), 'data.data'),
+		})
+		dispatch(updateAsyncState('isFetchingApplications', false))
 	}
 }
 
-export function removeConfiguration (payload) {
-	return {
-		type: DB_NAMESPACE + REMOVE_CONFIGURATION,
-		payload,
+export function fetchGroups () {
+	return async dispatch => {
+		dispatch(updateAsyncState('isFetchingGroups', true))
+		dispatch({
+			type:    GROUPS,
+			payload: get(await axios.get('/api/v1/administration/groups'), 'data.data'),
+		})
+		dispatch(updateAsyncState('isFetchingGroups', false))
 	}
 }
 
-export function refreshRegistryImages () {
-	return {
-		type: DB_NAMESPACE + REFRESH_REGISTRY_IMAGES,
-		meta: {
-			async: 'isFetchingVersions',
-		},
-	}
-}
+export function fetchRegistry () {
+	return async dispatch => {
+		dispatch(updateAsyncState('isFetchingRegistry', true))
 
-export function addRegistryImage (payload) {
-	return {
-		type: DB_NAMESPACE + ADD_REGISTRY_IMAGE,
-		payload,
-		meta: {
-			async: 'isAddingImage',
-		},
-	}
-}
+		const [images, allowed] = await Promise.all([
+			axios.get('/api/v1/administration/registry?only=images'),
+			axios.get('/api/v1/administration/registry?only=allowed'),
+		])
 
-export function removeRegistryImage (payload) {
-	return {
-		type: DB_NAMESPACE + REMOVE_REGISTRY_IMAGE,
-		payload,
-	}
-}
-
-export function createGroup (payload) {
-	return {
-		type: DB_NAMESPACE + CREATE_GROUP,
-		payload,
-	}
-}
-
-export function removeGroup (payload) {
-	return {
-		type: DB_NAMESPACE + REMOVE_GROUP,
-		payload,
-	}
-}
-
-export function sendGroupToAllDevices (payload) {
-	return {
-		type: DEVICES_NAMESPACE + STORE_GROUP,
-		payload,
-	}
-}
-
-export function removeGroupFromAllDevices (payload) {
-	return {
-		type: DEVICES_NAMESPACE + REMOVE_GROUP,
-		payload,
+		dispatch({
+			type:    REGISTRY_IMAGES,
+			payload: get(images, 'data.data'),
+		})
+		dispatch({
+			type:    ALLOWED_IMAGES,
+			payload: get(allowed, 'data.data'),
+		})
+		dispatch(updateAsyncState('isFetchingRegistry', false))
 	}
 }

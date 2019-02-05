@@ -5,7 +5,7 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 
 import GroupsForm from './GroupsForm'
-import { removeGroup, sendGroupToAllDevices, removeGroupFromAllDevices } from '/routes/administration/modules/actions'
+import { fetchGroups } from '/routes/administration/modules/actions'
 import selectorDevicesDeviceId from '/routes/administration/modules/selectors/getDevicesSerial'
 
 class GroupsTable extends PureComponent {
@@ -16,11 +16,13 @@ class GroupsTable extends PureComponent {
 		deleting:  false,
 	}
 
+	componentDidMount () {
+		this.props.fetchGroups()
+	}
+
 	renderGroups () {
 		return this.props.groups
-			.sortBy((_, label) => {
-				return label
-			})
+			.sortBy((_, label) => label)
 			.entrySeq()
 			.map(([label, applications]) => {
 				return (
@@ -112,25 +114,31 @@ class GroupsTable extends PureComponent {
 				<div className="card mb-3">
 					<div className="card-header">Groups</div>
 					<div className="card-body">
-						<div className="float-right mt-1 mb-3">
-							<button className="btn btn-primary" onClick={this.onAddGroup}>
-								<span className="fas fa-layer-group" /> Add Group
-							</button>
-						</div>
-
-						{this.props.groups.size ? (
-							<table className="table">
-								<thead className="thead-light">
-									<tr>
-										<th>Label</th>
-										<th>Applications</th>
-										<th />
-									</tr>
-								</thead>
-								<tbody>{this.renderGroups()}</tbody>
-							</table>
+						{this.props.isFetchingGroups ? (
+							<div className="loader" />
 						) : (
-							<div className="card-message mt-3">You must create a group first</div>
+							<Fragment>
+								<div className="float-right mt-1 mb-3">
+									<button className="btn btn-primary" onClick={this.onAddGroup}>
+										<span className="fas fa-layer-group" /> Add Group
+									</button>
+								</div>
+
+								{this.props.groups.size ? (
+									<table className="table">
+										<thead className="thead-light">
+											<tr>
+												<th>Label</th>
+												<th>Applications</th>
+												<th />
+											</tr>
+										</thead>
+										<tbody>{this.renderGroups()}</tbody>
+									</table>
+								) : (
+									<div className="card-message mt-3">Create a group first</div>
+								)}
+							</Fragment>
 						)}
 					</div>
 				</div>
@@ -150,10 +158,11 @@ class GroupsTable extends PureComponent {
 export default connect(
 	state => {
 		return {
-			groups:         state.get('groups'),
-			configurations: state.get('configurations'),
-			devices:        selectorDevicesDeviceId(state),
+			groups:           state.get('groups'),
+			configurations:   state.get('configurations'),
+			devices:          selectorDevicesDeviceId(state),
+			isFetchingGroups: state.getIn(['userInterface', 'isFetchingGroups']),
 		}
 	},
-	{ removeGroup, sendGroupToAllDevices, removeGroupFromAllDevices }
+	{ fetchGroups }
 )(GroupsTable)

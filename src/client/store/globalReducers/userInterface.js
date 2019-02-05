@@ -51,6 +51,10 @@ const initialState = Map({
 	isFetchingVersions: false,
 	isRefreshingState:  List(),
 	isStoringGroups:    List(),
+
+	isFetchingApplications: true,
+	isFetchingGroups:       true,
+	isFetchingRegistry:     true,
 })
 
 export default function registryImagesReducer (state = initialState, action) {

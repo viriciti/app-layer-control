@@ -9,7 +9,6 @@ const ACTION_HANDLERS = {
 	[DEVICE_SOURCES]: (filters = Map(), action) => {
 		let columns = fromJS(action.payload)
 
-		console.log(action)
 		columns = columns
 			.filter(column => {
 				return column.get('filterable')
