@@ -25,15 +25,15 @@ const ACTION_HANDLERS = {
 	},
 
 	[DEVICES_STATE]: (_, action) => {
-		return fromJS(action.data)
+		return fromJS(action.payload)
 	},
 
 	[DEVICES_BATCH_STATE]: (devices, action) => {
 		return devices.reduce((updatedDevices, device) => {
 			const deviceId = device.get('deviceId')
 
-			if (action.data[deviceId]) {
-				return updatedDevices.mergeIn([deviceId], fromJS(action.data[deviceId]))
+			if (action.payload[deviceId]) {
+				return updatedDevices.mergeIn([deviceId], fromJS(action.payload[deviceId]))
 			} else {
 				return updatedDevices
 			}
@@ -41,18 +41,18 @@ const ACTION_HANDLERS = {
 	},
 
 	[DEVICE_STATE]: (devices, action) => {
-		const deviceId = action.data.deviceId
-		const deviceState = fromJS(action.data)
+		const deviceId = action.payload.deviceId
+		const deviceState = fromJS(action.payload)
 
 		return devices.mergeIn([deviceId], deviceState)
 	},
 
 	[CONTAINER_LOGS]: (devices, action) => {
 		const containerLogs = fromJS({
-			[action.data.containerId]: action.data.logs,
+			[action.payload.containerId]: action.payload.logs,
 		})
 
-		return devices.setIn([action.data.device, 'containerLogs'], containerLogs)
+		return devices.setIn([action.payload.device, 'containerLogs'], containerLogs)
 	},
 }
 

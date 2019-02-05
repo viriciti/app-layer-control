@@ -1,7 +1,6 @@
-export const DEVICE_NAMESPACE = 'device/'
-export const DEVICES_NAMESPACE = 'devices/'
-export const DB_NAMESPACE = 'db/'
-export const DEVICE_GET_NAMESPACE = 'device:get/'
+import axios from 'axios'
+import { get } from 'lodash'
+import { DEVICE_SOURCES } from '/store/globalReducers/actions'
 
 export const MULTISELECT_DEVICE = 'MULTISELECT_DEVICE'
 export const MULTISELECT_DEVICES = 'MULTISELECT_DEVICES'
@@ -120,85 +119,27 @@ export function selectDevice (payload) {
 	}
 }
 
-export function refreshState (payload) {
-	return {
-		type: DEVICE_NAMESPACE + REFRESH_STATE,
-		payload,
-		meta: {
-			async:    'isRefreshingState',
-			debounce: {
-				time: 500,
-			},
-		},
-	}
-}
-
-export function rebootDevices (payload) {
-	return {
-		type: DEVICES_NAMESPACE + REBOOT,
-		payload,
-	}
-}
-
-export function storeGroups (payload) {
-	return {
-		type: DB_NAMESPACE + STORE_GROUPS,
-		payload,
-	}
-}
-
-export function multiStoreGroups (payload) {
-	return {
-		type: DB_NAMESPACE + STORE_GROUPS,
-		payload,
-	}
-}
-
-export function removeGroup (payload) {
-	return {
-		type: DB_NAMESPACE + REMOVE_GROUP,
-		payload,
-	}
-}
-
-export function multiRemoveGroups (payload) {
-	return {
-		type: DB_NAMESPACE + REMOVE_GROUP,
-		payload,
-	}
-}
-
-export function removeImage (payload) {
-	return {
-		type: DEVICE_NAMESPACE + REMOVE_IMAGE,
-		payload,
-	}
-}
-
-export function removeContainer (payload) {
-	return {
-		type: DEVICE_NAMESPACE + REMOVE_CONTAINER,
-		payload,
-	}
-}
-
-export function restartContainer (payload) {
-	return {
-		type: DEVICE_NAMESPACE + RESTART_CONTAINER,
-		payload,
-	}
-}
-
-export function getContainerLogs (payload) {
-	return {
-		type: DEVICE_GET_NAMESPACE + GET_CONTAINER_LOGS,
-		payload,
-	}
-}
-
 export function cleanLogs (payload) {
 	return {
 		type: CLEAN_LOGS,
 		payload,
+	}
+}
+
+export function fetchDevices () {
+	return async dispatch => {
+		dispatch({
+			type:    DEVICES_STATE,
+			payload: get(await axios.get('/api/devices'), 'data.data'),
+		})
+	}
+}
+
+export function fetchSources () {
+	return async dispatch => {
+		dispatch({
+			type:    DEVICE_SOURCES,
+			payload: get(await axios.get('/api/v1/administration/sources'), 'data.data'),
+		})
 	}
 }

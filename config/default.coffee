@@ -34,14 +34,14 @@ module.exports =
 
 	defaultColumns:
 		onlineStatus:
-			headerName:   "State"
+			headerName:   "Status"
 			defaultValue: "offline"
 			columnIndex:  0
 			sortable:     false
 			filterable:   true
 			copyable:     false
 			getIn:        "onlineStatus"
-			format:       "online"
+			format:       "status"
 			filterFormat:
 				type:    "checkboxes"
 				options: [
@@ -136,7 +136,7 @@ module.exports =
 			editable:     false
 			headerStyle:
 				width: "150px"
-			entryInTable: true
+			entryInTable: false
 
 		appVersion:
 			headerName:   "App Version"

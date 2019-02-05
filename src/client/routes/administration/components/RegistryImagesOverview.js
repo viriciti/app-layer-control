@@ -1,7 +1,9 @@
 import React, { PureComponent, Fragment } from 'react'
-import { connect } from 'react-redux'
+import axios from 'axios'
 import { Map } from 'immutable'
+import { connect } from 'react-redux'
 import { partial } from 'lodash'
+import { toast } from 'react-toastify'
 
 import AsyncButton from '/components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'
@@ -32,13 +34,13 @@ const RegistryImage = ({ name, image, onRemoveImage }) => {
 class RegistryImagesOverview extends PureComponent {
 	state = {
 		configuredHost: undefined,
+		isRefreshing:   false,
 	}
 
 	async componentWillMount () {
-		const response = await fetch('/api/versioning')
-		const json = await response.json()
+		const { data } = await axios.get('/api/versioning')
 
-		this.setState({ configuredHost: json.data.host })
+		this.setState({ configuredHost: data.data.host })
 	}
 
 	withRegistryUrl = repository => {
@@ -48,8 +50,13 @@ class RegistryImagesOverview extends PureComponent {
 		return `${registryUrl}${repository}`
 	}
 
-	onRefresh = () => {
-		this.props.refreshRegistryImages()
+	onRefresh = async () => {
+		this.setState({ isRefreshing: true })
+
+		const { data } = await axios.put('/api/v1/administration/registry')
+		toast.success(data.message)
+
+		this.setState({ isRefreshing: false })
 	}
 
 	onRemoveImage = ({ name, image }) => {
@@ -76,7 +83,7 @@ class RegistryImagesOverview extends PureComponent {
 							<AsyncButton
 								className="btn btn-sm btn-light btn--no-underline"
 								onClick={this.onRefresh}
-								busy={this.props.isFetchingVersions}
+								busy={this.state.isRefreshing}
 								busyText="Fetching ..."
 							>
 								<Fragment>

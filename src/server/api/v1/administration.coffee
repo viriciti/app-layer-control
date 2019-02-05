@@ -1,7 +1,7 @@
-debug                   = (require "debug") "app:api"
-filter                  = require "p-filter"
-{ Router }              = require "express"
-{ isArray, first, map } = require "lodash"
+debug                          = (require "debug") "app:api"
+filter                         = require "p-filter"
+{ Router }                     = require "express"
+{ isArray, first, map, size  } = require "lodash"
 
 log                    = (require "../../lib/Logger") "administration"
 Store                  = require "../../Store"
@@ -319,7 +319,28 @@ router.delete "/registry/:name", ({ app, params, body }, res, next) ->
 	catch error
 		next error
 
-router.get "/registry", ({ app }, res, next) ->
+router.get "/registry", ({ query }, res, next) ->
+	only         = query.only or ""
+	queryOptions = only.split ","
+
+	data                = {}
+	data.allowedImages  = await store.getAllowedImages()  if queryOptions.includes "allowed"
+	data.registryImages = await store.getRegistryImages() if queryOptions.includes "images"
+
+	# If only one part has been requested
+	# put the data on root level instead
+	data                = data[first Object.keys data]    if 1 is size data
+
+	try
+		res
+			.status 200
+			.json
+				status: "success"
+				data:   data
+	catch error
+		next error
+
+router.put "/registry", ({ app }, res, next) ->
 	{ db, broadcastRegistry } = app.locals
 
 	try
@@ -328,18 +349,19 @@ router.get "/registry", ({ app }, res, next) ->
 			.find()
 			.select "name"
 			.lean()
+
 		names  = map images, "name"
 		images = await getRegistryImages names
 
-		store.storeRegistryImages images
+		await store.storeRegistryImages images
 
 		broadcastRegistry()
 
 		res
 			.status 200
 			.json
-				status: "success"
-				data:   images
+				status:  "success"
+				message: "Registry refreshed"
 	catch error
 		next error
 

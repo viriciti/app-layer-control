@@ -6,59 +6,56 @@ import classNames from 'classnames'
 import LastSeenInterval from '/components/common/LastSeenInterval'
 
 const formats = {
-	default: (value, title) => {
+	default: ({ value, title }) => {
 		if (List.isList(value)) {
 			value = value.join(', ')
 		}
 
 		return (
-			<span
-				onClick={e => {
-					e.stopPropagation()
-				}}
-				title={title}
-			>
+			<span onClick={e => e.stopPropagation()} title={title}>
 				{value}
 			</span>
 		)
 	},
 
-	updateState: (state, title) => {
-		if (state.match(/error/i)) {
+	updateState: ({ value, title }) => {
+		if (value.match(/error/i)) {
 			return (
 				<span className="text-danger" title={title}>
-					<span className="fas fa-exclamation-circle pr-2" /> {state}
+					<span className="fas fa-exclamation-circle pr-2" /> {value}
 				</span>
 			)
-		} else if (state.match(/updating/i)) {
+		} else if (value.match(/updating/i)) {
 			return (
 				<span className="text-info" title={title}>
-					<span className="fas fa-cloud-download-alt pr-2 pulsate" /> {state}
+					<span className="fas fa-cloud-download-alt pr-2 pulsate" /> {value}
 				</span>
 			)
 		} else {
-			return <span>{state}</span>
+			return <span>{value}</span>
 		}
 	},
 
-	fromNow: lastSeen => {
-		if (lastSeen > 1e5) {
-			const title = moment(lastSeen).format('ddd MMM d - HH:mm')
+	fromNow: ({ value, info }) => {
+		if (value > 1e5) {
+			const title = moment(value).format('ddd MMM d - HH:mm')
 
 			return (
 				<LastSeenInterval
-					startFrom={lastSeen}
-					updateComponent={() => {
-						return <span title={title}>{moment(lastSeen).fromNow()}</span>
-					}}
+					startFrom={value}
+					updateComponent={() => (
+						<span key={info.get('deviceId')} title={title}>
+							{moment(value).fromNow()}
+						</span>
+					)}
 				/>
 			)
 		}
 	},
 
-	alerts: alerts => {
-		if (alerts && alerts.size) {
-			return alerts
+	alerts: ({ value }) => {
+		if (value && value.size) {
+			return value
 				.filter(body => {
 					return body && body.length
 				})
@@ -78,11 +75,15 @@ const formats = {
 		}
 	},
 
-	online: state => {
-		if (state === 'online') {
-			return <span className="fas fa-microchip status-icon text-success" title="Online" />
+	status: ({ value }) => {
+		const defaultClassName = classNames('fas', 'fa-circle', 'text-center', 'd-block')
+
+		if (value === 'online') {
+			return <span className={classNames(defaultClassName, 'text-success')} title="Online" />
+		} else if (value === 'offline') {
+			return <span className={classNames(defaultClassName, 'text-danger')} title="Offline" />
 		} else {
-			return <span className="fas fa-microchip status-icon text-danger" title="Offline" />
+			return <span className={classNames(defaultClassName, 'text-muted')} title="Unknown" />
 		}
 	},
 }
@@ -90,8 +91,7 @@ const formats = {
 export default format => {
 	const formatter = formats[format]
 	if (!formatter) {
-		console.error(`You pancake! No format specified for '${format}'!`)
-		return formats['default']
+		throw new Error(`Format '${format}' not found`)
 	}
 
 	return formatter

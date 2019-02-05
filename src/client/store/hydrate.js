@@ -2,11 +2,12 @@ import map from 'p-map'
 
 export default ws => {
 	const endpoints = [
-		{ action: 'DEVICES_STATE', url: '/api/devices' },
-		{ action: 'CONFIGURATIONS', url: '/api/v1/administration/applications' },
-		{ action: 'DEVICE_SOURCES', url: '/api/v1/administration/sources' },
-		{ action: 'GROUPS', url: '/api/v1/administration/groups' },
-		{ action: 'REGISTRY_IMAGES', url: '/api/v1/administration/registry' },
+		// { action: 'DEVICES_STATE', url: '/api/devices' },
+		// { action: 'CONFIGURATIONS', url: '/api/v1/administration/applications' },
+		// { action: 'DEVICE_SOURCES', url: '/api/v1/administration/sources' },
+		// { action: 'GROUPS', url: '/api/v1/administration/groups' },
+		// { action: 'REGISTRY_IMAGES', url: '/api/v1/administration/registry?only=images' },
+		// { action: 'ALLOWED_IMAGES', url: '/api/v1/administration/registry?only=allowed' },
 	]
 
 	return async dispatch => {
@@ -36,7 +37,7 @@ export default ws => {
 					throw new Error('No action found in WebSocket message:')
 				}
 
-				dispatch({ type: action, data: data })
+				dispatch({ type: action, payload: data })
 			} catch (error) {
 				console.error(error.message)
 			}

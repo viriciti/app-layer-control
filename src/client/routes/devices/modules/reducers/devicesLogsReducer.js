@@ -10,7 +10,7 @@ const ACTION_HANDLERS = {
 		// state is an object with all deviceIds each containing an array of logs
 		// action contains the type of action 'DEVICE_LOGS' and a logs object { message, time, type }
 
-		const { deviceId, logs } = action.data
+		const { deviceId, logs } = action.payload
 		let logsArrayForDevice = state.get(deviceId)
 
 		// Create the initial immutable list for this device if it does not exist yet
