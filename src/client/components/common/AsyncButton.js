@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { Fragment } from 'react'
 import classNames from 'classnames'
-import { noop, isFunction } from 'lodash'
+import { noop } from 'lodash'
 
 function AsyncButton ({ busy, busyText, children, onClick, white, ...buttonProps }) {
 	return (

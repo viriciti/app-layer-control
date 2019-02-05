@@ -4,14 +4,19 @@ const getDevices = state => {
 	return state.get('devices')
 }
 
-const getSelectedDevice = devices => {
-	if (devices) {
-		return devices
-			.filter(device => {
-				return device.get('selected')
-			})
-			.first()
+const getSelectedDevice = state => {
+	return state.getIn(['userInterface', 'selectedDevice'])
+}
+
+const getDevice = (devices, selectedDevice) => {
+	if (selectedDevice) {
+		return devices.get(selectedDevice)
+	} else {
+		return undefined
 	}
 }
 
-export default createSelector(getDevices, getSelectedDevice)
+export default createSelector(
+	[getDevices, getSelectedDevice],
+	getDevice
+)

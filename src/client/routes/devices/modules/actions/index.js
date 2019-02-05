@@ -1,7 +1,9 @@
 import axios from 'axios'
 import { get } from 'lodash'
+import { toast } from 'react-toastify'
 
 import { DEVICE_SOURCES } from '/store/globalReducers/actions'
+import { SELECT_DEVICE } from '/store/constants'
 import { updateDeviceAsyncState } from '/store/globalReducers/userInterface'
 
 export const MULTISELECT_DEVICE = 'MULTISELECT_DEVICE'
@@ -13,8 +15,6 @@ export const ADD_FILTER = 'ADD_FILTER'
 export const SET_FILTER = 'SET_FILTER'
 export const APPLY_FILTERS = 'APPLY_FILTERS'
 export const CLEAR_FILTERS = 'CLEAR_FILTERS'
-
-export const SELECT_DEVICE = 'SELECT_DEVICE'
 
 export const DEVICE_STATE = 'DEVICE_STATE'
 export const DEVICES_STATE = 'DEVICES_STATE'
@@ -114,10 +114,10 @@ export function clearMultiSelect () {
 	}
 }
 
-export function selectDevice (payload) {
+export function selectDevice (deviceId) {
 	return {
-		type: SELECT_DEVICE,
-		payload,
+		type:    SELECT_DEVICE,
+		payload: deviceId,
 	}
 }
 
@@ -132,9 +132,15 @@ export function asyncRefreshState (deviceId) {
 	return async dispatch => {
 		dispatch(updateDeviceAsyncState('isRefreshingState', deviceId, true))
 
-		await axios.put(`/api/devices/${deviceId}/state`)
+		try {
+			const { data } = await axios.put(`/api/devices/${deviceId}/state`)
 
-		dispatch(updateDeviceAsyncState('isRefreshingState', deviceId, false))
+			toast.success(data.message)
+		} catch ({ response }) {
+			toast.error(response.data.message)
+		} finally {
+			dispatch(updateDeviceAsyncState('isRefreshingState', deviceId, false))
+		}
 	}
 }
 

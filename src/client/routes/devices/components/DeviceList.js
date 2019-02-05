@@ -29,6 +29,7 @@ import {
 	fetchDevices,
 	fetchSources,
 } from '/routes/devices/modules/actions'
+import { fetchGroups } from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'
 
 class DeviceList extends PureComponent {
@@ -53,6 +54,7 @@ class DeviceList extends PureComponent {
 	componentDidMount () {
 		this.props.fetchDevices()
 		this.props.fetchSources()
+		this.props.fetchGroups()
 	}
 
 	onSort = field => {
@@ -284,6 +286,7 @@ class DeviceList extends PureComponent {
 
 										<DeviceDetail
 											open={!!selectedDevice}
+											selectedDevice={selectedDevice}
 											onModalClose={this.onModalClose}
 											deviceSources={this.props.deviceSources}
 										/>
@@ -330,5 +333,6 @@ export default connect(
 		resetPagination,
 		fetchDevices,
 		fetchSources,
+		fetchGroups,
 	}
 )(DeviceList)

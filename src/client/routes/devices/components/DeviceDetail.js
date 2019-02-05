@@ -91,6 +91,7 @@ class DeviceDetail extends PureComponent {
 										onClick={this.onRefreshState}
 										busy={this.props.isRefreshingState.includes(deviceId)}
 										busyText="Refreshing ..."
+										white
 									>
 										<span className="fas fa-cloud-download-alt" /> Refresh State
 									</AsyncButton>

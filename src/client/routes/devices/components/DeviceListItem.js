@@ -25,7 +25,7 @@ class DeviceListItem extends PureComponent {
 	}
 
 	onSelectDevice = () => {
-		this.props.selectDevice(this.props.info)
+		this.props.selectDevice(this.props.info.get('deviceId'))
 	}
 
 	stopPropagation = event => {

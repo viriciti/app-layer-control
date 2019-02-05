@@ -1,29 +1,11 @@
 import { Map, fromJS } from 'immutable'
 
-import {
-	DEVICE_STATE,
-	DEVICES_BATCH_STATE,
-	DEVICES_STATE,
-	CONTAINER_LOGS,
-	SELECT_DEVICE,
-} from '/routes/devices/modules/actions'
+import { DEVICE_STATE, DEVICES_BATCH_STATE, DEVICES_STATE, CONTAINER_LOGS } from '/routes/devices/modules/actions'
 
 // ------------------------------------
 // Action Handlers
 // ------------------------------------
 const ACTION_HANDLERS = {
-	[SELECT_DEVICE]: (devices, action) => {
-		const newDevices = devices.map(d => {
-			return d.set('selected', false)
-		})
-
-		if (!action.payload) {
-			return newDevices
-		}
-
-		return devices.setIn([action.payload.get('deviceId'), 'selected'], true)
-	},
-
 	[DEVICES_STATE]: (_, action) => {
 		return fromJS(action.payload)
 	},
