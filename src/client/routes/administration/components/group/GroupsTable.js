@@ -113,17 +113,22 @@ class GroupsTable extends PureComponent {
 			<Fragment>
 				<div className="card mb-3">
 					<div className="card-header">Groups</div>
+
+					<div className="card-controls card-controls--transparent">
+						<button
+							className="btn btn-light btn-sm  float-right"
+							disabled={this.props.isFetchingGroups}
+							onClick={this.onAddGroup}
+						>
+							<span className="fas fa-plus-circle mr-1" /> Add Group
+						</button>
+					</div>
+
 					<div className="card-body">
 						{this.props.isFetchingGroups ? (
 							<div className="loader" />
 						) : (
 							<Fragment>
-								<div className="float-right mt-1 mb-3">
-									<button className="btn btn-primary" onClick={this.onAddGroup}>
-										<span className="fas fa-layer-group" /> Add Group
-									</button>
-								</div>
-
 								{this.props.groups.size ? (
 									<table className="table">
 										<thead className="thead-light">

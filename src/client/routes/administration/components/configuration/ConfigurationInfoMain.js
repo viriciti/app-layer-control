@@ -54,32 +54,33 @@ class ConfigurationInfoMain extends PureComponent {
 			<Fragment>
 				<div className="card mb-3">
 					<div className="card-header">Applications</div>
+
+					<div className="card-controls card-controls--transparent">
+						<button
+							className="btn btn-light btn-sm  float-right"
+							disabled={this.props.isFetchingApplications}
+							onClick={this.onAddApplication}
+						>
+							<span className="fas fa-plus-circle mr-1" /> Add Application
+						</button>
+					</div>
+
 					<div className="card-body">
 						{this.props.isFetchingApplications ? (
 							<div className="loader" />
 						) : (
-							<Fragment>
-								<div className="row">
-									<div className="mt-1 mb-3 ml-auto col-3">
-										<button className="btn btn-primary float-right " onClick={this.onAddApplication}>
-											<span className="fas fa-window-maximize" /> Add Application
-										</button>
-									</div>
-								</div>
+							<div className="row pl-3">
+								<ConfigurationsList
+									configurations={this.props.configurations}
+									onConfigurationSelected={this.onConfigurationSelected}
+									selectedConfiguration={this.state.selectedConfiguration}
+								/>
 
-								<div className="row pl-3">
-									<ConfigurationsList
-										configurations={this.props.configurations}
-										onConfigurationSelected={this.onConfigurationSelected}
-										selectedConfiguration={this.state.selectedConfiguration}
-									/>
-
-									<ConfigurationInfo
-										selectedConfiguration={this.state.selectedConfiguration}
-										onEditApplication={this.onEditApplication}
-									/>
-								</div>
-							</Fragment>
+								<ConfigurationInfo
+									selectedConfiguration={this.state.selectedConfiguration}
+									onEditApplication={this.onEditApplication}
+								/>
+							</div>
 						)}
 					</div>
 				</div>
