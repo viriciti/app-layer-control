@@ -2,12 +2,12 @@ import { createSelector } from 'reselect'
 import { List } from 'immutable'
 import { first, last } from 'lodash'
 
-const isFetchingLogs = state => state.getIn(['userInterface', 'isFetchingLogs'], List())
-const selectedDevice = state => state.getIn(['userInterface', 'selectedDevice'])
+const getActivity = name => state => state.getIn(['ui', name], List())
+const getSelectedDevice = state => state.getIn(['ui', 'selectedDevice'])
 const createPairs = entry => entry.split('|')
 
-export default createSelector(
-	[isFetchingLogs, selectedDevice],
+export default name => createSelector(
+	[getActivity(name), getSelectedDevice],
 	(applications, selectedDevice) =>
 		applications.filter(entry => first(createPairs(entry)) === selectedDevice).map(entry => last(createPairs(entry)))
 )

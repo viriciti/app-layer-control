@@ -11,10 +11,6 @@ import AsyncButton from '/components/common/AsyncButton'
 import { SystemInfo, Logs, Applications, DeviceImages, DeviceGroups, Queue } from './widgets'
 
 class DeviceDetail extends PureComponent {
-	state = {
-		isRefreshing: false,
-	}
-
 	getDeviceSources () {
 		return this.props.deviceSources.filter(deviceSource => {
 			return deviceSource.get('entryInDetail')
@@ -156,7 +152,7 @@ export default connect(
 	state => {
 		return {
 			selectedDevice:    getSelectedDevice(state),
-			isRefreshingState: state.getIn(['userInterface', 'isRefreshingState']),
+			isRefreshingState: state.getIn(['ui', 'isRefreshingState']),
 		}
 	},
 	{

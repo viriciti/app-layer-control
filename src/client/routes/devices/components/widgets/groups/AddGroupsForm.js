@@ -164,7 +164,7 @@ export default connect(
 		return {
 			selectedDevice:  selectedDeviceSelector(state),
 			groups:          state.get('groups'),
-			isStoringGroups: state.getIn(['userInterface', 'isStoringGroups']),
+			isStoringGroups: state.getIn(['ui', 'isStoringGroups']),
 		}
 	},
 	{ storeGroups }

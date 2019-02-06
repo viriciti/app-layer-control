@@ -2,7 +2,7 @@ import axios from 'axios'
 import { get } from 'lodash'
 import { Promise } from 'q'
 import { REGISTRY_IMAGES, ALLOWED_IMAGES } from '/store/globalReducers/actions'
-import { updateAsyncState } from '/store/globalReducers/userInterface'
+import { updateAsyncState } from '/store/globalReducers/ui'
 
 export const CONFIGURATIONS = 'CONFIGURATIONS'
 export const CREATE_CONFIGURATION = 'CREATE_CONFIGURATION'

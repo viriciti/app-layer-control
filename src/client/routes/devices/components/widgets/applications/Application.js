@@ -6,8 +6,8 @@ import { List } from 'immutable'
 import { first } from 'lodash'
 
 import AsyncButton from '/components/common/AsyncButton'
-import fetchingLogs from '/routes/devices/modules/selectors/fetchingLogs'
-import { removeContainer, restartContainer, fetchApplicationLogs } from '/routes/devices/modules/actions'
+import getAsyncState from '/routes/devices/modules/selectors/getAsyncState'
+import { asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs } from '/routes/devices/modules/actions'
 import toReactKey from '/utils/toReactKey'
 
 const convert = new Convert()
@@ -19,24 +19,12 @@ class Application extends PureComponent {
 		})
 	}
 
-	onRestartButtonClick = () => {
-		if (confirm('The app will be restarted. Are you sure?')) {
-			this.props.restartContainer({
-				dest:    this.props.deviceId,
-				payload: { id: this.props.selectedContainer.get('name') },
-			})
-		}
+	onRestart = () => {
+		this.props.asyncRestartApplication(this.props.deviceId, this.props.selectedContainer.get('name'))
 	}
 
-	onDeleteButtonClick = () => {
-		if (confirm('The app will be deleted. Are you sure?')) {
-			this.props.removeContainer({
-				dest:    this.props.deviceId,
-				payload: {
-					id: this.props.selectedContainer.get('name'),
-				},
-			})
-		}
+	onRemove = () => {
+		this.props.asyncRemoveApplication(this.props.deviceId, this.props.selectedContainer.get('name'))
 	}
 
 	onRequestContainerLogs = () => {
@@ -77,6 +65,7 @@ class Application extends PureComponent {
 	}
 
 	render () {
+		console.log(this.props.isRestartingApplication)
 		return (
 			<Fragment>
 				<div className="row">
@@ -86,7 +75,7 @@ class Application extends PureComponent {
 					<div className="col-6">
 						<div className="btn-group float-right">
 							<AsyncButton
-								busy={this.props.fetchingLogs.includes(this.props.selectedContainer.get('name'))}
+								busy={this.props.isFetchingLogs}
 								busyText="Fetching ..."
 								className="btn btn-light btn-sm btn--icon"
 								type="button"
@@ -96,14 +85,16 @@ class Application extends PureComponent {
 								<span className="fas fa-file-alt" /> Logs
 							</AsyncButton>
 
-							<button
+							<AsyncButton
+								busy={this.props.isRestartingApplication}
+								busyText="Restarting ..."
 								className="btn btn-warning btn-sm btn--icon"
 								type="button"
-								onClick={this.onRestartButtonClick}
+								onClick={this.onRestart}
 								title="Restart this app"
 							>
 								<span className="fas fa-power-off" /> Restart
-							</button>
+							</AsyncButton>
 						</div>
 					</div>
 				</div>
@@ -115,14 +106,16 @@ class Application extends PureComponent {
 				</div>
 				<div className="row">
 					<div className="col-3 offset-9">
-						<button
+						<AsyncButton
+							busy={this.props.isRemovingApplication}
+							busyText="Deleting ..."
 							className="btn btn-danger btn--icon btn-sm float-right"
 							type="button"
-							onClick={this.onDeleteButtonClick}
+							onClick={this.onRemove}
 							title="Delete this application"
 						>
 							<span className="fas fa-trash" /> Delete
-						</button>
+						</AsyncButton>
 					</div>
 				</div>
 			</Fragment>
@@ -132,13 +125,14 @@ class Application extends PureComponent {
 
 export default connect(
 	(state, ownProps) => {
+		const name = ownProps.selectedContainer.get('name')
+
 		return {
-			applicationLogs: state.getIn(
-				['devicesLogs', ownProps.deviceId, 'containers', ownProps.selectedContainer.get('name')],
-				List()
-			),
-			fetchingLogs: fetchingLogs(state),
+			applicationLogs:         state.getIn(['devicesLogs', ownProps.deviceId, 'containers', name], List()),
+			isFetchingLogs:          getAsyncState('isFetchingLogs')(state).includes(name),
+			isRestartingApplication: getAsyncState('isRestartingApplication')(state).includes(name),
+			isRemovingApplication:   getAsyncState('isRemovingApplication')(state).includes(name),
 		}
 	},
-	{ removeContainer, restartContainer, fetchApplicationLogs }
+	{ asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs }
 )(Application)

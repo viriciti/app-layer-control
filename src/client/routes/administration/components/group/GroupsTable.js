@@ -166,7 +166,7 @@ export default connect(
 			groups:           state.get('groups'),
 			configurations:   state.get('configurations'),
 			devices:          selectorDevicesDeviceId(state),
-			isFetchingGroups: state.getIn(['userInterface', 'isFetchingGroups']),
+			isFetchingGroups: state.getIn(['ui', 'isFetchingGroups']),
 		}
 	},
 	{ fetchGroups }

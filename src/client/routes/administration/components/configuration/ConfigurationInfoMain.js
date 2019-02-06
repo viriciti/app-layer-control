@@ -99,7 +99,7 @@ class ConfigurationInfoMain extends PureComponent {
 const mapStateToProps = state => {
 	return {
 		configurations:         state.get('configurations'),
-		isFetchingApplications: state.getIn(['userInterface', 'isFetchingApplications']),
+		isFetchingApplications: state.getIn(['ui', 'isFetchingApplications']),
 	}
 }
 

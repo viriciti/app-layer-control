@@ -23,16 +23,16 @@ export function updateDeviceAsyncState (name, target, status) {
 }
 
 const actionHandlers = {
-	[SELECT_DEVICE] (state, action) {
-		return state.set('selectedDevice', action.payload)
+	[SELECT_DEVICE] (state, { payload }) {
+		return state.set('selectedDevice', payload)
 	},
-	[UPDATE_ASYNC_STATE] (state, action) {
-		const [name, status] = action.payload
+	[UPDATE_ASYNC_STATE] (state, { payload }) {
+		const [name, status] = payload
 		return state.set(name, status)
 	},
-	[UPDATE_DEVICE_ASYNC_STATE] (state, action) {
-		const { name, status } = action.payload
-		const target = isArray(action.payload.target) ? action.payload.target : [action.payload.target]
+	[UPDATE_DEVICE_ASYNC_STATE] (state, { payload }) {
+		const { name, status } = payload
+		const target = isArray(payload.target) ? payload.target : [payload.target]
 		const currentStatuses = state.get(name, List())
 
 		if (status) {
@@ -40,7 +40,7 @@ const actionHandlers = {
 		} else {
 			return state.set(name, currentStatuses.filterNot(device => target.includes(device)))
 		}
-	},
+	}
 }
 
 const initialState = Map({
@@ -53,7 +53,7 @@ const initialState = Map({
 	isFetchingRegistry:     true,
 })
 
-export default function userInterfaceReducer (state = initialState, action) {
+export default function uiReducer (state = initialState, action) {
 	if (actionHandlers[action.type]) {
 		return actionHandlers[action.type](state, action)
 	} else {

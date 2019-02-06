@@ -1,10 +1,10 @@
 import axios from 'axios'
-import { get } from 'lodash'
+import { get, pick } from 'lodash'
 import { toast } from 'react-toastify'
 
 import { DEVICE_SOURCES } from '/store/globalReducers/actions'
 import { SELECT_DEVICE } from '/store/constants'
-import { updateDeviceAsyncState } from '/store/globalReducers/userInterface'
+import { updateDeviceAsyncState } from '/store/globalReducers/ui'
 
 export const MULTISELECT_DEVICE = 'MULTISELECT_DEVICE'
 export const MULTISELECT_DEVICES = 'MULTISELECT_DEVICES'
@@ -128,6 +128,42 @@ export function cleanLogs (payload) {
 	}
 }
 
+export function asyncRestartApplication (deviceId, application) {
+	const id = [deviceId, application].join('|')
+
+	return async dispatch => {
+		dispatch(updateDeviceAsyncState('isRestartingApplication', id, true))
+
+		try {
+			const { data } = await axios.put(`/api/devices/${deviceId}/restart/${application}`)
+
+			toast.success(data.message)
+		} catch ({ response }) {
+			toast.error(response.data.message)
+		} finally {
+			dispatch(updateDeviceAsyncState('isRestartingApplication', id, false))
+		}
+	}
+}
+
+export function asyncRemoveApplication (deviceId, application) {
+	const id = [deviceId, application].join('|')
+
+	return async dispatch => {
+		dispatch(updateDeviceAsyncState('isRemovingApplication', id, true))
+
+		try {
+			const { data } = await axios.delete(`/api/devices/${deviceId}/${application}`)
+
+			toast.success(data.message)
+		} catch ({ response }) {
+			toast.error(response.data.message)
+		} finally {
+			dispatch(updateDeviceAsyncState('isRemovingApplication', id, false))
+		}
+	}
+}
+
 export function asyncRefreshState (deviceId) {
 	return async dispatch => {
 		dispatch(updateDeviceAsyncState('isRefreshingState', deviceId, true))
@@ -145,8 +181,10 @@ export function asyncRefreshState (deviceId) {
 }
 
 export function fetchApplicationLogs (deviceId, application) {
+	const id = [deviceId, application].join('|')
+
 	return async dispatch => {
-		dispatch(updateDeviceAsyncState('isFetchingLogs', [deviceId, application].join('|'), true))
+		dispatch(updateDeviceAsyncState('isFetchingLogs', id, true))
 
 		try {
 			const { data } = await axios.get(`/api/devices/${deviceId}/logs/${application}`)
@@ -164,7 +202,7 @@ export function fetchApplicationLogs (deviceId, application) {
 		} catch ({ response }) {
 			toast.error(response.data.message)
 		} finally {
-			dispatch(updateDeviceAsyncState('isFetchingLogs', [deviceId, application].join('|'), false))
+			dispatch(updateDeviceAsyncState('isFetchingLogs', id, false))
 		}
 	}
 }

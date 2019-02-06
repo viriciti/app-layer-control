@@ -145,8 +145,8 @@ export default connect(
 		return {
 			allowedImages:      state.get('allowedImages'),
 			registryImages:     state.get('registryImages'),
-			isFetchingVersions: state.getIn(['userInterface', 'isFetchingVersions']),
-			isFetchingRegistry: state.getIn(['userInterface', 'isFetchingRegistry']),
+			isFetchingVersions: state.getIn(['ui', 'isFetchingVersions']),
+			isFetchingRegistry: state.getIn(['ui', 'isFetchingRegistry']),
 		}
 	},
 	{ fetchRegistry }

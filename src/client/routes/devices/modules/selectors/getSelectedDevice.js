@@ -5,7 +5,7 @@ const getDevices = state => {
 }
 
 const getSelectedDevice = state => {
-	return state.getIn(['userInterface', 'selectedDevice'])
+	return state.getIn(['ui', 'selectedDevice'])
 }
 
 const getDevice = (devices, selectedDevice) => {
