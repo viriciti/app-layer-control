@@ -1,6 +1,6 @@
-export { default as DeviceLogs } from './DeviceLogs'
+export { default as Logs } from './Logs'
 export { default as SystemInfo } from './SystemInfo'
 export { default as Queue } from './Queue'
-export { default as DeviceContainers } from './containers'
+export { default as Applications } from './applications/Applications'
 export { default as DeviceImages } from './images'
 export { default as DeviceGroups } from './groups'

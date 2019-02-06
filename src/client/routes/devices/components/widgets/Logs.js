@@ -5,12 +5,12 @@ import { connect } from 'react-redux'
 
 import { cleanLogs } from '/routes/devices/modules/actions'
 
-class DeviceLogs extends Component {
+class Logs extends Component {
 	shouldComponentUpdate (nextProps) {
 		return this.props.logs.get(this.props.deviceId) !== nextProps.logs.get(this.props.deviceId)
 	}
 
-	getIcon (type) {
+	getIconForType (type) {
 		if (type === 'error') {
 			return <span className="fas fa-exclamation-circle fa-fw text-danger" />
 		} else if (type === 'warning') {
@@ -25,12 +25,14 @@ class DeviceLogs extends Component {
 	}
 
 	renderLogs () {
-		const logs = this.props.logs.get(this.props.deviceId, List())
-
-		if (logs.isEmpty()) {
-			return <span className="card-message">No output</span>
+		if (this.props.logs.isEmpty()) {
+			return (
+				<span className="card-message">
+					<span className="fas fa-broom" /> No output
+				</span>
+			)
 		} else {
-			return logs
+			return this.props.logs
 				.reverse()
 				.filter(log => {
 					return log.get('message')
@@ -38,7 +40,7 @@ class DeviceLogs extends Component {
 				.map((log, index) => {
 					return (
 						<li key={`logs${this.props.deviceId}${index}`} className="p-1">
-							{this.getIcon(log.get('type'))}
+							{this.getIconForType(log.get('type'))}
 
 							<span className="pl-2">
 								{moment(log.get('time')).format('HH:mm:ss')} <b>-</b> {log.get('message')}
@@ -78,10 +80,10 @@ class DeviceLogs extends Component {
 }
 
 export default connect(
-	state => {
+	(state, ownProps) => {
 		return {
-			logs: state.get('devicesLogs'),
+			logs: state.getIn(['devicesLogs', ownProps.deviceId, 'self'], List()),
 		}
 	},
 	{ cleanLogs }
-)(DeviceLogs)
+)(Logs)

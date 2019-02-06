@@ -4,9 +4,9 @@ import naturalCompare from 'natural-compare-lite'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
 
-import ContainerOverview from './ContainerOverview'
+import Application from './Application'
 
-class DeviceContainers extends Component {
+class Applications extends Component {
 	state = {
 		selectedContainer: null,
 	}
@@ -72,66 +72,6 @@ class DeviceContainers extends Component {
 		}
 	}
 
-	renderContainers = () => {
-		const { selectedDevice, containers, configurations } = this.props
-		const statusToTitle = {
-			running:    'Started',
-			exited:     'Stopped',
-			restarting: 'Restarting',
-		}
-
-		if (!containers || containers.isEmpty()) {
-			return <span className="card-message card-message--vertical-only">No applications installed on this device</span>
-		} else {
-			return (
-				<ul className="list-group">
-					{containers
-						.valueSeq()
-						.sort((previous, next) => {
-							return naturalCompare(previous.get('name'), next.get('name'))
-						})
-						.map(container => {
-							const selectedContainer = this.state.selectedContainer && this.state.selectedContainer.get('name')
-							const isActive = container.get('name') === selectedContainer
-							const frontEndPort = configurations.getIn([container.get('name'), 'frontEndPort'])
-							const deviceIp = selectedDevice.getIn(
-								['systemInfo', 'tun0'],
-								selectedDevice.getIn(['systemInfo', 'tun0IP'])
-							)
-
-							return (
-								<li className="mb-2" key={`${container.get('Id')}`}>
-									<button
-										title={statusToTitle[container.getIn(['state', 'status'])]}
-										onClick={partial(this.onContainerSelected, container)}
-										className={classNames('btn', 'btn--select', { active: isActive })}
-									>
-										{this.renderContainerIcon(container.getIn(['state', 'status']))}
-										{this.renderContainerHeader(container)}
-									</button>
-
-									{frontEndPort ? this.renderFrontEndButton({ frontEndPort, deviceIp }) : null}
-								</li>
-							)
-						})}
-				</ul>
-			)
-		}
-	}
-
-	renderContainerOverview () {
-		if (this.state.selectedContainer) {
-			return (
-				<ContainerOverview
-					selectedContainer={this.state.selectedContainer}
-					deviceId={this.props.selectedDevice.get('deviceId')}
-				/>
-			)
-		} else {
-			return <span className="card-message">No application selected</span>
-		}
-	}
-
 	render () {
 		return (
 			<div>
@@ -142,10 +82,51 @@ class DeviceContainers extends Component {
 				<hr />
 
 				<div className="row">
-					<div className="col-md-6">{this.renderContainers()}</div>
+					<div className="col-md-6">
+						<ul className="list-group">
+							{this.props.containers
+								.valueSeq()
+								.sort((previous, next) => {
+									return naturalCompare(previous.get('name'), next.get('name'))
+								})
+								.map(container => {
+									const selectedContainer = this.state.selectedContainer && this.state.selectedContainer.get('name')
+									const frontEndPort = this.props.configurations.getIn([container.get('name'), 'frontEndPort'])
+									const deviceIp = this.props.selectedDevice.getIn(
+										['systemInfo', 'tun0'],
+										this.props.selectedDevice.getIn(['systemInfo', 'tun0IP'])
+									)
+
+									return (
+										<li className="mb-2" key={`${container.get('Id')}`}>
+											<button
+												onClick={partial(this.onContainerSelected, container)}
+												className={classNames('btn', 'btn--select', {
+													active: container.get('name') === selectedContainer,
+												})}
+											>
+												{this.renderContainerIcon(container.getIn(['state', 'status']))}
+												{this.renderContainerHeader(container)}
+											</button>
+
+											{frontEndPort ? this.renderFrontEndButton({ frontEndPort, deviceIp }) : null}
+										</li>
+									)
+								})}
+						</ul>
+					</div>
 					<div className="col-md-6">
 						<div className="row">
-							<div className="col-12">{this.renderContainerOverview()}</div>
+							<div className="col-12">
+								{this.state.selectedContainer ? (
+									<Application
+										selectedContainer={this.state.selectedContainer}
+										deviceId={this.props.selectedDevice.get('deviceId')}
+									/>
+								) : (
+									<span className="card-message">No application selected</span>
+								)}
+							</div>
 						</div>
 					</div>
 				</div>
@@ -159,4 +140,4 @@ export default connect(state => {
 		configurations: state.get('configurations'),
 		devices:        state.get('devices'),
 	}
-})(DeviceContainers)
+})(Applications)

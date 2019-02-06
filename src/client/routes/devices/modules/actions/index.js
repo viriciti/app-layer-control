@@ -144,6 +144,31 @@ export function asyncRefreshState (deviceId) {
 	}
 }
 
+export function fetchApplicationLogs (deviceId, application) {
+	return async dispatch => {
+		dispatch(updateDeviceAsyncState('isFetchingLogs', [deviceId, application].join('|'), true))
+
+		try {
+			const { data } = await axios.get(`/api/devices/${deviceId}/logs/${application}`)
+
+			dispatch({
+				type:    CONTAINER_LOGS,
+				payload: data.data,
+				meta:    {
+					deviceId: deviceId,
+					name:     application,
+				},
+			})
+
+			toast.success(data.message)
+		} catch ({ response }) {
+			toast.error(response.data.message)
+		} finally {
+			dispatch(updateDeviceAsyncState('isFetchingLogs', [deviceId, application].join('|'), false))
+		}
+	}
+}
+
 export function fetchDevices () {
 	return async dispatch =>
 		dispatch({

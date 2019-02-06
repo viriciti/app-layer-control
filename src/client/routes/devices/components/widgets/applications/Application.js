@@ -2,14 +2,17 @@ import React, { PureComponent, Fragment } from 'react'
 import JSONPretty from 'react-json-pretty'
 import { connect } from 'react-redux'
 import Convert from 'ansi-to-html'
-import { Map } from 'immutable'
+import { List } from 'immutable'
 import { first } from 'lodash'
 
-import { removeContainer, restartContainer, getContainerLogs } from '/routes/devices/modules/actions/index'
+import AsyncButton from '/components/common/AsyncButton'
+import fetchingLogs from '/routes/devices/modules/selectors/fetchingLogs'
+import { removeContainer, restartContainer, fetchApplicationLogs } from '/routes/devices/modules/actions'
+import toReactKey from '/utils/toReactKey'
 
 const convert = new Convert()
 
-class ContainerOverview extends PureComponent {
+class Application extends PureComponent {
 	protectEnvironmentVariables (variables) {
 		return variables.map(variable => {
 			return first(variable.split('='))
@@ -37,13 +40,7 @@ class ContainerOverview extends PureComponent {
 	}
 
 	onRequestContainerLogs = () => {
-		this.props.getContainerLogs({
-			dest:    this.props.deviceId,
-			payload: {
-				id:        this.props.selectedContainer.get('name'),
-				numOfLogs: 100,
-			},
-		})
+		this.props.fetchApplicationLogs(this.props.deviceId, this.props.selectedContainer.get('name'))
 	}
 
 	renderContainerInfo () {
@@ -65,39 +62,17 @@ class ContainerOverview extends PureComponent {
 	}
 
 	renderContainerLogs () {
-		const { selectedContainer, devices, deviceId } = this.props
-		const logs = devices.getIn([deviceId, 'containerLogs', selectedContainer.get('name')])
-		const render = data => {
+		if (!this.props.applicationLogs.isEmpty()) {
 			return (
-				<div
-					style={{
-						backgroundColor: '#282828',
-						color:           '#FFF',
-						height:          '20em',
-						overflow:        'scroll',
-					}}
-				>
-					{data.map((l, i) => {
-						return <div key={`container-log-${i}`} dangerouslySetInnerHTML={{ __html: convert.toHtml(l) }} />
-					})}
-				</div>
+				<ul className="list-unstyled application-logs mb-3">
+					{this.props.applicationLogs.map((message, index) => (
+						<li
+							key={toReactKey('applicationLog', index)}
+							dangerouslySetInnerHTML={{ __html: convert.toHtml(message) }}
+						/>
+					))}
+				</ul>
 			)
-		}
-
-		if (Map.isMap(logs)) {
-			if (logs.get('status').toLowerCase() === 'error') {
-				return (
-					<p className="text-danger">
-						<span className="fas fa-exclamation-triangle" /> {logs.get('data')}
-					</p>
-				)
-			} else {
-				return render(logs.get('data'))
-			}
-		} else {
-			if (logs) {
-				return render(logs)
-			}
 		}
 	}
 
@@ -110,14 +85,16 @@ class ContainerOverview extends PureComponent {
 					</div>
 					<div className="col-6">
 						<div className="btn-group float-right">
-							<button
+							<AsyncButton
+								busy={this.props.fetchingLogs.includes(this.props.selectedContainer.get('name'))}
+								busyText="Fetching ..."
 								className="btn btn-light btn-sm btn--icon"
 								type="button"
 								onClick={this.onRequestContainerLogs}
 								title="Request container logs"
 							>
 								<span className="fas fa-file-alt" /> Logs
-							</button>
+							</AsyncButton>
 
 							<button
 								className="btn btn-warning btn-sm btn--icon"
@@ -142,7 +119,7 @@ class ContainerOverview extends PureComponent {
 							className="btn btn-danger btn--icon btn-sm float-right"
 							type="button"
 							onClick={this.onDeleteButtonClick}
-							title="Delete this app"
+							title="Delete this application"
 						>
 							<span className="fas fa-trash" /> Delete
 						</button>
@@ -154,10 +131,14 @@ class ContainerOverview extends PureComponent {
 }
 
 export default connect(
-	state => {
+	(state, ownProps) => {
 		return {
-			devices: state.get('devices'),
+			applicationLogs: state.getIn(
+				['devicesLogs', ownProps.deviceId, 'containers', ownProps.selectedContainer.get('name')],
+				List()
+			),
+			fetchingLogs: fetchingLogs(state),
 		}
 	},
-	{ removeContainer, restartContainer, getContainerLogs }
-)(ContainerOverview)
+	{ removeContainer, restartContainer, fetchApplicationLogs }
+)(Application)

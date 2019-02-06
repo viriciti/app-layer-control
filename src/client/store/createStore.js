@@ -33,8 +33,6 @@ export default (initialState = Map({})) => {
 					'@@redux-form/TOUCH',
 					'@@redux-form/UNREGISTER_FIELD',
 					'@@redux-form/UPDATE_SYNC_ERRORS',
-					'DEVICES_STATE',
-					'DEVICE_SOURCES',
 				],
 			})
 		}

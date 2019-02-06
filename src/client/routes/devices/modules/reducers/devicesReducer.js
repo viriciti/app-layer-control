@@ -1,40 +1,32 @@
 import { Map, fromJS } from 'immutable'
 
-import { DEVICE_STATE, DEVICES_BATCH_STATE, DEVICES_STATE, CONTAINER_LOGS } from '/routes/devices/modules/actions'
+import { DEVICE_STATE, DEVICES_BATCH_STATE, DEVICES_STATE } from '/routes/devices/modules/actions'
 
 // ------------------------------------
 // Action Handlers
 // ------------------------------------
 const ACTION_HANDLERS = {
-	[DEVICES_STATE]: (_, action) => {
-		return fromJS(action.payload)
+	[DEVICES_STATE]: (_, { payload }) => {
+		return fromJS(payload)
 	},
 
-	[DEVICES_BATCH_STATE]: (devices, action) => {
+	[DEVICES_BATCH_STATE]: (devices, { payload }) => {
 		return devices.reduce((updatedDevices, device) => {
 			const deviceId = device.get('deviceId')
 
-			if (action.payload[deviceId]) {
-				return updatedDevices.mergeIn([deviceId], fromJS(action.payload[deviceId]))
+			if (payload[deviceId]) {
+				return updatedDevices.mergeIn([deviceId], fromJS(payload[deviceId]))
 			} else {
 				return updatedDevices
 			}
 		}, devices)
 	},
 
-	[DEVICE_STATE]: (devices, action) => {
-		const deviceId = action.payload.deviceId
-		const deviceState = fromJS(action.payload)
+	[DEVICE_STATE]: (devices, { payload }) => {
+		const deviceId = payload.deviceId
+		const deviceState = fromJS(payload)
 
 		return devices.mergeIn([deviceId], deviceState)
-	},
-
-	[CONTAINER_LOGS]: (devices, action) => {
-		const containerLogs = fromJS({
-			[action.payload.containerId]: action.payload.logs,
-		})
-
-		return devices.setIn([action.payload.device, 'containerLogs'], containerLogs)
 	},
 }
 

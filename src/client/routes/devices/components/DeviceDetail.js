@@ -8,7 +8,7 @@ import { asyncRefreshState, selectDevice } from '/routes/devices/modules/actions
 import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
 import AsyncButton from '/components/common/AsyncButton'
 
-import { SystemInfo, DeviceLogs, DeviceContainers, DeviceImages, DeviceGroups, Queue } from './widgets'
+import { SystemInfo, Logs, Applications, DeviceImages, DeviceGroups, Queue } from './widgets'
 
 class DeviceDetail extends PureComponent {
 	state = {
@@ -104,7 +104,7 @@ class DeviceDetail extends PureComponent {
 						<div className="col-md-8">
 							<div className="row">
 								<div className="col-lg-12 mb-4">
-									<DeviceContainers containers={selectedDevice.get('containers')} selectedDevice={selectedDevice} />
+									<Applications containers={selectedDevice.get('containers')} selectedDevice={selectedDevice} />
 								</div>
 							</div>
 							<div className="row">
@@ -117,7 +117,7 @@ class DeviceDetail extends PureComponent {
 						<div className="col-lg-4 mb-4">
 							<div className="row">
 								<div className="col-12">
-									<DeviceLogs deviceId={deviceId} />
+									<Logs deviceId={deviceId} />
 								</div>
 							</div>
 						</div>

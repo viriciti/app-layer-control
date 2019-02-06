@@ -1,5 +1,5 @@
 import { Map, List } from 'immutable'
-import { isArray, reject } from 'lodash'
+import { isArray } from 'lodash'
 
 import { UPDATE_ASYNC_STATE, UPDATE_DEVICE_ASYNC_STATE } from '/store/globalReducers/actions'
 import { SELECT_DEVICE } from '/store/constants'
@@ -22,10 +22,7 @@ export function updateDeviceAsyncState (name, target, status) {
 	}
 }
 
-// ------------------------------------
-// Specialized Action Creator
-// ------------------------------------
-const ACTION_HANDLERS = {
+const actionHandlers = {
 	[SELECT_DEVICE] (state, action) {
 		return state.set('selectedDevice', action.payload)
 	},
@@ -57,6 +54,9 @@ const initialState = Map({
 })
 
 export default function userInterfaceReducer (state = initialState, action) {
-	const handler = ACTION_HANDLERS[action.type]
-	return handler ? handler(state, action) : state
+	if (actionHandlers[action.type]) {
+		return actionHandlers[action.type](state, action)
+	} else {
+		return state
+	}
 }

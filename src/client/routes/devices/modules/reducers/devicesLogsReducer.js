@@ -1,31 +1,27 @@
 import { Map, List, fromJS } from 'immutable'
 
-import { DEVICE_LOGS, CLEAN_LOGS } from '/routes/devices/modules/actions'
+import { DEVICE_LOGS, CONTAINER_LOGS, CLEAN_LOGS } from '/routes/devices/modules/actions'
 
 // ------------------------------------
 // Action Handlers
 // ------------------------------------
 const ACTION_HANDLERS = {
-	[DEVICE_LOGS]: (state, action) => {
-		// state is an object with all deviceIds each containing an array of logs
-		// action contains the type of action 'DEVICE_LOGS' and a logs object { message, time, type }
+	[DEVICE_LOGS] (state, { payload }) {
+		const { deviceId, logs } = payload
 
-		const { deviceId, logs } = action.payload
-		let logsArrayForDevice = state.get(deviceId)
+		return state.setIn(
+			[deviceId, 'self'],
+			state
+				.getIn([deviceId, 'self'], List())
+				.push(fromJS(logs))
+				.slice(0, 20)
+		)
+	},
 
-		// Create the initial immutable list for this device if it does not exist yet
-		if (!logsArrayForDevice) {
-			return state.set(deviceId, List().push(fromJS(logs)))
-		}
+	[CONTAINER_LOGS] (state, { payload, meta }) {
+		const { deviceId, name } = meta
 
-		logsArrayForDevice = logsArrayForDevice.push(fromJS(logs))
-
-		// Don't allow very long list
-		if (logsArrayForDevice.size >= 20) {
-			logsArrayForDevice = logsArrayForDevice.shift()
-		}
-
-		return state.set(deviceId, logsArrayForDevice)
+		return state.setIn([deviceId, 'containers', name], List(payload))
 	},
 
 	[CLEAN_LOGS]: (state, action) => {
