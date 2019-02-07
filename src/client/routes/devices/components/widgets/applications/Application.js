@@ -6,7 +6,6 @@ import { List } from 'immutable'
 import { first } from 'lodash'
 
 import AsyncButton from '/components/common/AsyncButton'
-import getAsyncState from '/routes/devices/modules/selectors/getAsyncState'
 import { asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs } from '/routes/devices/modules/actions'
 import toReactKey from '/utils/toReactKey'
 
@@ -33,7 +32,7 @@ class Application extends PureComponent {
 
 	renderContainerInfo () {
 		const environmentVariables = this.props.selectedContainer.get('environment').toJS()
-		const informationToShow = Object.assign({}, this.props.selectedContainer.toJS(), {
+		const informationToShow    = Object.assign({}, this.props.selectedContainer.toJS(), {
 			environment: this.protectEnvironmentVariables(environmentVariables),
 		})
 
@@ -65,7 +64,6 @@ class Application extends PureComponent {
 	}
 
 	render () {
-		console.log(this.props.isRestartingApplication)
 		return (
 			<Fragment>
 				<div className="row">
@@ -125,13 +123,15 @@ class Application extends PureComponent {
 
 export default connect(
 	(state, ownProps) => {
-		const name = ownProps.selectedContainer.get('name')
+		const { deviceId } = ownProps
+		const name         = ownProps.selectedContainer.get('name')
+		const getActivity  = activity => state.getIn(['ui', activity, deviceId], List()).includes(name)
 
 		return {
-			applicationLogs:         state.getIn(['devicesLogs', ownProps.deviceId, 'containers', name], List()),
-			isFetchingLogs:          getAsyncState('isFetchingLogs')(state).includes(name),
-			isRestartingApplication: getAsyncState('isRestartingApplication')(state).includes(name),
-			isRemovingApplication:   getAsyncState('isRemovingApplication')(state).includes(name),
+			applicationLogs:         state.getIn(['devicesLogs', deviceId, 'containers', name], List()),
+			isRestartingApplication: getActivity('isRestartingApplication'),
+			isRemovingApplication:   getActivity('isRemovingApplication'),
+			isFetchingLogs:          getActivity('isFetchingLogs'),
 		}
 	},
 	{ asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs }

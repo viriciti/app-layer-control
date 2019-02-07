@@ -1,8 +1,8 @@
 import { Map, List } from 'immutable'
-import { isArray } from 'lodash'
+import { isArray, partial, eq } from 'lodash'
 
-import { UPDATE_ASYNC_STATE, UPDATE_DEVICE_ASYNC_STATE } from '/store/globalReducers/actions'
-import { SELECT_DEVICE } from '/store/constants'
+import { UPDATE_ASYNC_STATE, UPDATE_DEVICE_ACTIVITY } from '/store/globalReducers/actions'
+import { SELECT_DEVICE, UPDATE_APPLICATION_ACTIVITY } from '/store/constants'
 
 export function updateAsyncState (name, status) {
 	return {
@@ -13,11 +13,23 @@ export function updateAsyncState (name, status) {
 
 export function updateDeviceAsyncState (name, target, status) {
 	return {
-		type:    UPDATE_DEVICE_ASYNC_STATE,
+		type:    UPDATE_DEVICE_ACTIVITY,
 		payload: {
 			name,
 			status,
 			target,
+		},
+	}
+}
+
+export function updateApplicationActivity ({ name, deviceId, status, application }) {
+	return {
+		type:    UPDATE_APPLICATION_ACTIVITY,
+		payload: status,
+		meta:    {
+			application,
+			name,
+			deviceId,
 		},
 	}
 }
@@ -30,7 +42,7 @@ const actionHandlers = {
 		const [name, status] = payload
 		return state.set(name, status)
 	},
-	[UPDATE_DEVICE_ASYNC_STATE] (state, { payload }) {
+	[UPDATE_DEVICE_ACTIVITY] (state, { payload }) {
 		const { name, status } = payload
 		const target = isArray(payload.target) ? payload.target : [payload.target]
 		const currentStatuses = state.get(name, List())
@@ -40,7 +52,17 @@ const actionHandlers = {
 		} else {
 			return state.set(name, currentStatuses.filterNot(device => target.includes(device)))
 		}
-	}
+	},
+	[UPDATE_APPLICATION_ACTIVITY] (state, { payload, meta }) {
+		const { name, application, deviceId } = meta
+		const currentStatuses = state.getIn([name, deviceId], List())
+
+		if (payload) {
+			return state.setIn([name, deviceId], currentStatuses.push(application))
+		} else {
+			return state.setIn([name, deviceId], currentStatuses.filterNot(partial(eq, application)))
+		}
+	},
 }
 
 const initialState = Map({
