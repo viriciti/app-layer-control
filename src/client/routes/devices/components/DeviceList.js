@@ -22,8 +22,8 @@ import {
 	multiSelectDevices,
 	multiSelectAction,
 	clearMultiSelect,
-	multiStoreGroups,
-	multiRemoveGroups,
+	asyncMultiStoreGroup,
+	asyncMultiRemoveGroup,
 	paginateTo,
 	resetPagination,
 	fetchDevices,
@@ -68,40 +68,22 @@ class DeviceList extends PureComponent {
 	}
 
 	onStoreGroup = async label => {
-		const devices = this.props.multiSelectedDevices.filterNot(deviceId =>
-			this.props.devices.getIn([deviceId, 'groups'], List()).includes(label)
-		)
+		const devices = this.props.multiSelectedDevices
+			.filterNot(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
+			.toArray()
 
-		if (confirm(`Add group '${label}' to ${devices.size} device(s)?`)) {
-			this.setState({ isSubmitting: true })
-
-			await axios.post('/api/v1/administration/group/devices', {
-				operation: 'store',
-				target:    devices.toArray(),
-				groups:    [label],
-			})
-
-			this.props.clearMultiSelect()
-			this.setState({ isSubmitting: false })
+		if (confirm(`Add group '${label}' to ${devices.length} device(s)?`)) {
+			this.props.asyncMultiStoreGroup(devices, label)
 		}
 	}
 
 	onRemoveGroup = async label => {
-		const devices = this.props.multiSelectedDevices.filter(deviceId =>
-			this.props.devices.getIn([deviceId, 'groups'], List()).includes(label)
-		)
+		const devices = this.props.multiSelectedDevices
+			.filter(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
+			.toArray()
 
 		if (confirm(`Remove group '${label}' from ${devices.size} device(s)?`)) {
-			this.setState({ isSubmitting: true })
-
-			await axios.post('/api/v1/administration/group/devices', {
-				operation: 'remove',
-				target:    devices.toArray(),
-				groups:    [label],
-			})
-
-			this.props.clearMultiSelect()
-			this.setState({ isSubmitting: false })
+			this.props.asyncMultiRemoveGroup(devices, label)
 		}
 	}
 
@@ -236,7 +218,11 @@ class DeviceList extends PureComponent {
 									<button
 										className="btn btn-light btn-sm dropdown-toggle mr-2"
 										data-toggle="dropdown"
-										disabled={this.props.multiSelectedDevices.size === 0}
+										disabled={
+											this.props.multiSelectedDevices.size === 0 ||
+											this.props.isStoringMultiGroups ||
+											this.props.isRemovingMultiGroups
+										}
 										type="button"
 									>
 										<span className="fas fa-plus-circle" /> Add Group ({this.props.multiSelectedDevices.size})
@@ -259,7 +245,11 @@ class DeviceList extends PureComponent {
 									<button
 										className="btn btn-danger btn-sm dropdown-toggle mr-2"
 										data-toggle="dropdown"
-										disabled={this.props.multiSelectedDevices.size === 0}
+										disabled={
+											this.props.multiSelectedDevices.size === 0 ||
+											this.props.isStoringMultiGroups ||
+											this.props.isRemovingMultiGroups
+										}
 										type="button"
 									>
 										<span className="fas fa-minus-circle" /> Remove Group ({this.props.multiSelectedDevices.size})
@@ -308,12 +298,14 @@ class DeviceList extends PureComponent {
 export default connect(
 	state => {
 		return {
-			devices:              state.get('devices'),
-			groups:               state.get('groups'),
-			multiSelectedDevices: state.getIn(['multiSelect', 'selected']),
-			multiSelectedAction:  state.getIn(['multiSelect', 'action']),
-			deviceSources:        state.get('deviceSources'),
-			configurations:       state.get('configurations'),
+			devices:               state.get('devices'),
+			groups:                state.get('groups'),
+			multiSelectedDevices:  state.getIn(['multiSelect', 'selected']),
+			multiSelectedAction:   state.getIn(['multiSelect', 'action']),
+			deviceSources:         state.get('deviceSources'),
+			configurations:        state.get('configurations'),
+			isStoringMultiGroups:  state.getIn(['ui', 'isStoringMultiGroups']),
+			isRemovingMultiGroups: state.getIn(['ui', 'isRemovingMultiGroups']),
 
 			selectedDevice: selectedDeviceSelector(state),
 			filteredItems:  filterSelector(state),
@@ -327,8 +319,8 @@ export default connect(
 		multiSelectDevices,
 		multiSelectAction,
 		clearMultiSelect,
-		multiStoreGroups,
-		multiRemoveGroups,
+		asyncMultiStoreGroup,
+		asyncMultiRemoveGroup,
 		paginateTo,
 		resetPagination,
 		fetchDevices,

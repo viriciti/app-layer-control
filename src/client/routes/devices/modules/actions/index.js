@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 
 import { DEVICE_SOURCES } from '/store/globalReducers/actions'
 import { SELECT_DEVICE } from '/store/constants'
-import { updateDeviceActivity, updateApplicationActivity } from '/store/globalReducers/ui'
+import { updateAsyncState, updateDeviceActivity, updateApplicationActivity } from '/store/globalReducers/ui'
 
 export const MULTISELECT_DEVICE = 'MULTISELECT_DEVICE'
 export const MULTISELECT_DEVICES = 'MULTISELECT_DEVICES'
@@ -125,6 +125,34 @@ export function cleanLogs (payload) {
 	return {
 		type: CLEAN_LOGS,
 		payload,
+	}
+}
+
+export function asyncMultiStoreGroup (devices, group) {
+	return async dispatch => {
+		dispatch(updateAsyncState('isStoringMultiGroups', true))
+
+		await axios.post('/api/v1/administration/group/devices', {
+			operation: 'store',
+			target:    devices,
+			groups:    [group],
+		})
+
+		dispatch(updateAsyncState('isStoringMultiGroups', false))
+	}
+}
+
+export function asyncMultiRemoveGroup (devices, group) {
+	return async dispatch => {
+		dispatch(updateAsyncState('isRemovingMultiGroups', true))
+
+		await axios.post('/api/v1/administration/group/devices', {
+			operation: 'remove',
+			target:    devices,
+			groups:    [group],
+		})
+
+		dispatch(updateAsyncState('isRemovingMultiGroups', false))
 	}
 }
 

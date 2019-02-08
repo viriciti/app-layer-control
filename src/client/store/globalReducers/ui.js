@@ -11,7 +11,7 @@ export function updateAsyncState (name, status) {
 	}
 }
 
-export function updateDeviceAsyncState (name, target, status) {
+export function updateDeviceActivity (name, target, status) {
 	return {
 		type:    UPDATE_DEVICE_ACTIVITY,
 		payload: {
@@ -44,8 +44,8 @@ const actionHandlers = {
 	},
 	[UPDATE_DEVICE_ACTIVITY] (state, { payload }) {
 		const { name, status } = payload
-		const target = isArray(payload.target) ? payload.target : [payload.target]
-		const currentStatuses = state.get(name, List())
+		const target           = isArray(payload.target) ? payload.target : [payload.target]
+		const currentStatuses  = state.get(name, List())
 
 		if (status) {
 			return state.set(name, currentStatuses.concat(target))
@@ -55,7 +55,7 @@ const actionHandlers = {
 	},
 	[UPDATE_APPLICATION_ACTIVITY] (state, { payload, meta }) {
 		const { name, application, deviceId } = meta
-		const currentStatuses = state.getIn([name, deviceId], List())
+		const currentStatuses                 = state.getIn([name, deviceId], List())
 
 		if (payload) {
 			return state.setIn([name, deviceId], currentStatuses.push(application))
