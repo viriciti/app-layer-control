@@ -1,9 +1,9 @@
-debug  = (require "debug") "app:helpers:enrich-for-mqtt"
+debug  = (require "debug") "app:helpers:enrichAppsForMqtt"
 map    = require "p-map"
 reduce = require "p-reduce"
 semver = require "semver"
 
-Database = require "../db"
+Database = require "../db/Database"
 
 db = new Database autoConnect: true
 

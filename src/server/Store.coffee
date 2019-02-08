@@ -4,7 +4,7 @@ map                            = require "p-map"
 { object, pluck }              = require "underscore"
 { toPairs, mapValues, reduce } = require "lodash"
 
-Database = require "./db"
+Database = require "./db/Database"
 log      = (require "./lib/Logger") "store"
 
 class Store

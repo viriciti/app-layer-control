@@ -23,7 +23,7 @@ mqtt                  = require "async-mqtt"
 	DockerRegistry
 	externals
 }                            = require "./sources"
-Database                     = require "./db"
+Database                     = require "./db/Database"
 Store                        = require "./Store"
 bundle                       = require "./bundle"
 getContainersNotRunning      = require "./lib/getContainersNotRunning"
@@ -32,12 +32,12 @@ populateMqttWithDeviceGroups = require "./helpers/populateMqttWithDeviceGroups"
 populateMqttWithGroups       = require "./helpers/populateMqttWithGroups"
 runUpdates                   = require "./updates"
 { cacheUpdate }              = require "./observables"
+Watcher                      = require "./db/Watcher"
 
 log = (require "./lib/Logger") "main"
 
 # Server initialization
 app     = express()
-
 server  = http.createServer app
 port    = process.env.PORT or config.server.port
 ws      = new WebSocket.Server server: server
@@ -46,7 +46,6 @@ store   = new Store db
 
 rpc               = null
 mqttClient        = null
-legacy_sendToMqtt = null
 deviceStates      = Map()
 getDeviceStates   = -> deviceStates
 
@@ -93,11 +92,16 @@ containersNotRunningToString = (containers) ->
 		.join "\n"
 
 initMqtt = ->
-	options           = { ...config.mqtt.connectionOptions, ...config.mqtt }
-	client            = mqttClient  = mqtt.connect options
-	client.publish    = noop if config.mqtt.readOnly
-	# legacy_sendToMqtt = sendMessageToMqtt mqttClient
-	rpc               = new RPC client._client, timeout: config.mqtt.responseTimeout
+	options        = { ...config.mqtt.connectionOptions, ...config.mqtt }
+	client         = mqttClient  = mqtt.connect options
+	client.publish = noop if config.mqtt.readOnly
+	rpc            = new RPC client._client, timeout: config.mqtt.responseTimeout
+	watcher        = new Watcher
+		db:    db
+		store: store
+		mqtt:  client
+
+	watcher.watch()
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
@@ -364,18 +368,6 @@ do ->
 	app.locals.broadcastRegistry     = broadcastRegistry
 	app.locals.broadcastGroups       = broadcastGroups
 	app.locals.broadcastSources      = broadcastSources
-
-	db
-		.DeviceGroup
-		.watch [], fullDocument: "updateLookup"
-		.on "change", ({ fullDocument }) ->
-			{ deviceId, groups } = fullDocument
-
-			topic   = "devices/#{deviceId}/groups"
-			groups  = JSON.stringify groups
-			options = retain: true
-
-			mqttClient.publish topic, groups, options
 
 	server.listen port, ->
 		log.info "Server listening on :#{@address().port}"

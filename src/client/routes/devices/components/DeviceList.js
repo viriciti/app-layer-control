@@ -106,7 +106,7 @@ class DeviceList extends PureComponent {
 	}
 
 	sortDevices () {
-		const field = this.state.sortBy.field.split('.')
+		const field   = this.state.sortBy.field.split('.')
 		const devices = this.props.filteredItems
 			.filter(device => device.get('deviceId'))
 			.sortBy(device => device.getIn(field, ''))

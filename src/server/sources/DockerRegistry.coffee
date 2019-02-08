@@ -18,4 +18,5 @@ module.exports = (config, db) ->
 	initRegistry$
 		.concat registry$
 		.distinctUntilChanged isEqual
-		.catch (error, caught) -> Observable.empty()
+		.catch (error, caught) ->
+			Observable.empty()

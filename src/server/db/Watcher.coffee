@@ -1,86 +1,46 @@
 { EventEmitter } = require "events"
+{ invokeMap }    = require "lodash"
 debug            = (require "debug") "app:Watcher"
 
+populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
+
 class Watcher extends EventEmitter
-	constructor: ({ @db, @store }) ->
+	constructor: ({ @db, @store, @mqtt }) ->
 		super()
 
-	start: ->
-		@db
-			.Configuration
-			.watch()
-			.on "change", @onApplicationChange
+		@changeStreams = []
 
-		@db
-			.RegistryImages
-			.watch()
-			.on "change", @onRegistryChange
+	unwatch: ->
+		invokeMap @changeStreams, "close"
 
-		@db
-			.AllowedImage
-			.watch()
-			.on "change", @onRegistryChange
+	watch: ->
+		@unwatch()
 
-		@db
-			.Group
-			.watch()
-			.on "change", @onGroupChange
+		applicationChangeStream = @db.Configuration.watch()
+		groupChangeStream       = @db.Group.watch()
+		deviceGroupChangeStream = @db.DeviceGroup.watch [], fullDocument: "updateLookup"
 
-		@db
-			.DeviceSource
-			.watch()
-			.on "change", @onSourceChange
+		applicationChangeStream.on "change", @onCollectionChange
+		groupChangeStream.on       "change", @onCollectionChange
+		deviceGroupChangeStream.on "change", @onDeviceGroupChange
 
-		@db
-			.DeviceGroup
-			.watch()
-			.on "change", @onDeviceGroupChange
-
-	onApplicationChange: (fields) =>
-		{ operationType } = fields
-		debug "onApplicationChange: #{operationType}"
-
-		return unless operationType in ["update", "delete", "insert"]
-
-		configurations = await @store.getConfigurations()
-
-		@store.set "configurations", configurations
-		@emit "applications", { ...fields, data: configurations }
-
-	onRegistryChange: (fields) =>
-		{ operationType }               = fields
-		[registryImages, allowedImages] = await Promise.all [
-			@store.getRegistryImages()
-			@store.getAllowedImages()
+		@changeStreams = [
+			applicationChangeStream
+			groupChangeStream
+			deviceGroupChangeStream
 		]
 
-		debug "onRegistryChange: #{operationType}"
+	onCollectionChange: ({ ns }) =>
+		debug "Collection change - #{ns.db}.#{ns.coll} changed"
 
-		@store.set "registry", registryImages
-		@emit "registry", Object.assign {},
-			fields
-			data:
-				allowedImages:  allowedImages
-				registryImages: registryImages
+		populateMqttWithGroups @db, @mqtt
 
-	onGroupChange: (fields) =>
-		{ operationType } = fields
-		groups            = await @store.getGroups()
+	onDeviceGroupChange: ({ fullDocument }) =>
+		{ deviceId, groups } = fullDocument
+		topic                = "devices/#{deviceId}/groups"
+		groups               = JSON.stringify groups
+		options              = retain: true
 
-		debug "onGroupChange: #{operationType}"
-
-		@store.set "groups", groups
-		@emit "groups", { ...fields, data: groups }
-
-	onDeviceGroupChange: (fields) =>
-		# console.log fields
-
-	onSourceChange: (fields) =>
-		{ operationType } = fields
-		sources           = await @store.getDeviceSources()
-
-		debug "onSourceChange: #{operationType}"
-
-		@emit "sources", { ...fields, data: sources }
+		@mqtt.publish topic, groups, options
 
 module.exports = Watcher
