@@ -1,16 +1,18 @@
 { Observable } = require "rxjs"
+{ fromJS }     = require "immutable"
 
 createTopicListener = require "../helpers/createTopicListener"
 
 module.exports =
 	observable: (socket) ->
 		createTopicListener socket, "devices/+id/nsState/+key"
+			.filter ({ match }) ->
+				match.id
 			.map ({ topic, message, match }) ->
-				deviceId: match.id
-				key:      match.key
-				value:    JSON.parse message
-			.filter ({ deviceId }) ->
-				deviceId
-			.takeUntil Observable.fromEvent socket, "disconnected"
+				fromJS
+					deviceId: match.id
+					key:      match.key
+					value:    JSON.parse message
+			.takeUntil Observable.fromEvent socket, "close"
 
 	topic: "devices/+/nsState/+"

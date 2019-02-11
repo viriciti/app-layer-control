@@ -41,6 +41,8 @@ class Watcher extends EventEmitter
 		groups               = JSON.stringify groups
 		options              = retain: true
 
+		console.log "Device group change"
+
 		@mqtt.publish topic, groups, options
 
 module.exports = Watcher

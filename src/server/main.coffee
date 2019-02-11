@@ -3,7 +3,6 @@ WebSocket                     = require "ws"
 bodyParser                    = require "body-parser"
 compression                   = require "compression"
 config                        = require "config"
-constantCase                  = require "constant-case"
 cors                          = require "cors"
 debug                         = (require "debug") "app:main"
 express                       = require "express"
@@ -12,7 +11,7 @@ morgan                        = require "morgan"
 mqtt                          = require "async-mqtt"
 { Map, List, fromJS }         = require "immutable"
 { Observable }                = require "rxjs"
-{ each, size, noop, groupBy } = require "lodash"
+{ each, size, noop, isEqual, isEmpty, groupBy, negate } = require "lodash"
 
 {
 	DevicesLogs
@@ -33,6 +32,10 @@ populateMqttWithGroups       = require "./helpers/populateMqttWithGroups"
 runUpdates                   = require "./updates"
 { cacheUpdate }              = require "./observables"
 Watcher                      = require "./db/Watcher"
+Broadcaster                  = require "./Broadcaster"
+
+versionsMismatchToString     = require "./utils/versionsMismatchToString"
+containersNotRunningToString = require "./utils/containersNotRunningToString"
 
 log = (require "./lib/Logger") "main"
 
@@ -56,266 +59,253 @@ main = ->
 
 	await store.ensureDefaultDeviceSources()
 
-	registry$ = DockerRegistry config.versioning, db
-	registry$.subscribe(
-		(images) ->
-			debug "Getting images from registry..."
+	# registry$ = DockerRegistry config.versioning, db
+	# registry$.subscribe(
+	# 	(images) ->
+	# 		debug "Getting images from registry..."
 
-			await store.storeRegistryImages images
+	# 		await store.storeRegistryImages images
 
-			log.info "Images have been updated!"
-			_broadcastAction "registryImages", images
+	# 		log.info "Images have been updated!"
+	# 		_broadcastAction "registryImages", images
 
-		(error) -> log.error "Error in Docker Registry: #{error.message}"
-	)
+	# 	(error) -> log.error "Error in Docker Registry: #{error.message}"
+	# )
 
-convertDeviceGroupsToArrayMap = (deviceGroups = []) ->
-	deviceGroups.reduce (memo, groupName, index) ->
-		memo[index + 1] = groupName
-		memo
-	, {}
+# initMqtt = ->
+# 	options        = { ...config.mqtt.connectionOptions, ...config.mqtt }
+# 	client         = mqttClient  = mqtt.connect options
+# 	client.publish = noop if config.mqtt.readOnly
+# 	rpc            = new RPC client._client, timeout: config.mqtt.responseTimeout
+# 	watcher        = new Watcher
+# 		db:    db
+# 		store: store
+# 		mqtt:  client
 
-versionsMismatchToString = (mismatch) ->
-	mismatch
-		.map (version, name) ->
-			actual   = version.get "actual"
-			expected = version.get "expected"
+# 	watcher.watch()
 
-			"Expected #{name} to run #{expected}, currently running: #{actual or "not installed"}"
-		.valueSeq()
-		.join "\n"
+# 	onConnect = ->
+# 		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
 
-containersNotRunningToString = (containers) ->
-	containers
-		.map (container, name) ->
-			"#{name} is not running"
-		.join "\n"
+# 		await populateMqttWithGroups db, mqttClient
+# 		await populateMqttWithDeviceGroups db, mqttClient
 
-initMqtt = ->
-	options        = { ...config.mqtt.connectionOptions, ...config.mqtt }
-	client         = mqttClient  = mqtt.connect options
-	client.publish = noop if config.mqtt.readOnly
-	rpc            = new RPC client._client, timeout: config.mqtt.responseTimeout
-	watcher        = new Watcher
-		db:    db
-		store: store
-		mqtt:  client
+# 		[
+# 			configurations
+# 			registryImages
+# 			groups
+# 		] = await Promise.all [
+# 			store.getConfigurations()
+# 			store.getRegistryImages()
+# 			store.getGroups()
+# 		]
 
-	watcher.watch()
+# 		store.set "configurations", configurations
+# 		store.set "registry",       registryImages
+# 		store.set "groups",         groups
 
-	onConnect = ->
-		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
+# 		log.info "Cache succesfully populated with configurations, registry images and groups"
 
-		await populateMqttWithGroups db, mqttClient
-		await populateMqttWithDeviceGroups db, mqttClient
+# 		devicesLogs$    = DevicesLogs.observable    mqttClient
+# 		devicesNsState$ = DevicesNsState.observable mqttClient
+# 		devicesState$   = DevicesState.observable   mqttClient
+# 		devicesStatus$  = DevicesStatus.observable  mqttClient
+# 		deviceGroups$   = DeviceGroups.observable   mqttClient
+# 		cacheUpdate$    = cacheUpdate               store
 
-		[
-			configurations
-			registryImages
-			groups
-		] = await Promise.all [
-			store.getConfigurations()
-			store.getRegistryImages()
-			store.getGroups()
-		]
+# 		# each externals, (source) ->
+# 		# 	{
+# 		# 		observable
+# 		# 		mapFrom
+# 		# 		mapTo
+# 		# 		foreignKey
+# 		# 	} = source getDeviceStates
 
-		store.set "configurations", configurations
-		store.set "registry",       registryImages
-		store.set "groups",         groups
+# 		# 	observable
+# 		# 		.takeUntil Observable.fromEvent mqttClient, "disconnected"
+# 		# 		.bufferTime config.batchState.defaultInterval
+# 		# 		.subscribe (externalOutputs) ->
+# 		# 			return unless externalOutputs.length
 
-		log.info "Cache succesfully populated with configurations, registry images and groups"
+# 		# 			updatesToSend = externalOutputs.reduce (updates, externalOutput) ->
+# 		# 				data         = fromJS externalOutput
+# 		# 				value        = data.getIn mapFrom
+# 		# 				clientId     = data.getIn foreignKey
+# 		# 				keyPath      = [clientId].concat(mapTo)
+# 		# 				deviceStates = deviceStates.setIn keyPath, value
 
-		devicesLogs$    = DevicesLogs.observable    mqttClient
-		devicesNsState$ = DevicesNsState.observable mqttClient
-		devicesState$   = DevicesState.observable   mqttClient
-		devicesStatus$  = DevicesStatus.observable  mqttClient
-		deviceGroups$   = DeviceGroups.observable   mqttClient
-		cacheUpdate$    = cacheUpdate               store
+# 		# 				# getIn makes it harder to determine the updates
+# 		# 				# For now, just send the whole state and let Redux
+# 		# 				# on the client side determine the difference
+# 		# 				updates[clientId] = deviceStates.get clientId
+# 		# 				updates
+# 		# 			, {}
 
-		each externals, (source) ->
-			{
-				observable
-				mapFrom
-				mapTo
-				foreignKey
-			} = source getDeviceStates
+# 		# 			debug "Sending #{size updatesToSend} state updates after external source updates"
 
-			observable
-				.takeUntil Observable.fromEvent mqttClient, "disconnected"
-				.bufferTime config.batchState.defaultInterval
-				.subscribe (externalOutputs) ->
-					return unless externalOutputs.length
+# 		# 			_broadcastAction "devicesBatchState", deviceStates
 
-					updatesToSend = externalOutputs.reduce (updates, externalOutput) ->
-						data         = fromJS externalOutput
-						value        = data.getIn mapFrom
-						clientId     = data.getIn foreignKey
-						keyPath      = [clientId].concat(mapTo)
-						deviceStates = deviceStates.setIn keyPath, value
+# 		# cacheUpdate$
+# 		# 	.takeUntil Observable.fromEvent mqttClient, "disconnected"
+# 		# 	.subscribe ->
+# 		# 		log.info "Cache has been updated... Validating outdated software for devices"
 
-						# getIn makes it harder to determine the updates
-						# For now, just send the whole state and let Redux
-						# on the client side determine the difference
-						updates[clientId] = deviceStates.get clientId
-						updates
-					, {}
+# 		# 		deviceUpdates = deviceStates
+# 		# 			.reduce (updates, device) ->
+# 		# 				versionsNotMatching = getVersionsNotMatching
+# 		# 					store:             store
+# 		# 					deviceGroups:      convertDeviceGroupsToArrayMap device.get "groups"
+# 		# 					currentContainers: device.get "containers"
 
-					debug "Sending #{size updatesToSend} state updates after external source updates"
+# 		# 				deviceId        = device.get "deviceId"
+# 		# 				versionMismatch = versionsMismatchToString versionsNotMatching
+# 		# 				device          = device.setIn ["activeAlerts", "versionsNotMatching"], versionMismatch
+# 		# 				deviceStates    = deviceStates.mergeIn [deviceId], device
 
-					_broadcastAction "devicesBatchState", deviceStates
+# 		# 				updates[deviceId] = device
+# 		# 				updates
+# 		# 			, {}
 
-		cacheUpdate$
-			.takeUntil Observable.fromEvent mqttClient, "disconnected"
-			.subscribe ->
-				log.info "Cache has been updated... Validating outdated software for devices"
+# 		# 		_broadcastAction "devicesBatchState", deviceUpdates
 
-				deviceUpdates = deviceStates
-					.reduce (updates, device) ->
-						versionsNotMatching = getVersionsNotMatching
-							store:             store
-							deviceGroups:      convertDeviceGroupsToArrayMap device.get "groups"
-							currentContainers: device.get "containers"
+# 		devicesState$
+# 			.bufferTime config.batchState.defaultInterval
+# 			.filter negate isEmpty
+# 			.subscribe (updates) ->
+# 				deviceStates = updates.reduce (devices, update) ->
+# 					console.log "devices:", devices.size
+# 					deviceId = update.get "deviceId"
+# 					newState = update.merge Map
+# 						lastSeenTimestamp: Date.now()
 
-						deviceId        = device.get "deviceId"
-						versionMismatch = versionsMismatchToString versionsNotMatching
-						device          = device.setIn ["activeAlerts", "versionsNotMatching"], versionMismatch
-						deviceStates    = deviceStates.mergeIn [deviceId], device
+# 					devices.mergeIn [deviceId], newState
+# 				, deviceStates
 
-						updates[deviceId] = device
-						updates
-					, {}
+# 				broadcast
 
-				_broadcastAction "devicesBatchState", deviceUpdates
+# 		# devicesState$
+# 			# .bufferTime config.batchState.defaultInterval
+# 			# .subscribe (stateUpdates) ->
+# 			# 	return unless stateUpdates.length
 
-		devicesState$
-			.bufferTime config.batchState.defaultInterval
-			.subscribe (stateUpdates) ->
-				return unless stateUpdates.length
+# 			# 	newStates = stateUpdates.map (stateUpdate) ->
+# 			# 		debug "Getting state for device #{stateUpdate.get "deviceId"}"
 
-				newStates = stateUpdates.map (stateUpdate) ->
-					debug "Getting state for device #{stateUpdate.get "deviceId"}"
+# 			# 		clientId          = stateUpdate.get "deviceId"
+# 			# 		currentContainers = stateUpdate.get "containers"
+# 			# 		groups            = stateUpdate.get "groups"
 
-					clientId          = stateUpdate.get "deviceId"
-					currentContainers = stateUpdate.get "containers"
-					groups            = stateUpdate.get "groups"
+# 			# 		deviceGroups          = convertDeviceGroupsToArrayMap groups
+# 			# 		containersNotRunning  = getContainersNotRunning       currentContainersdeviceGroups
+# 			# 		versionsNotMatching   = getVersionsNotMatching
+# 			# 			store:             store
+# 			# 			deviceGroups:      deviceGroups
+# 			# 			currentContainers: currentContainers
 
-					deviceGroups          = convertDeviceGroupsToArrayMap groups
-					containersNotRunning  = getContainersNotRunning       currentContainers
-					versionsNotMatching   = getVersionsNotMatching
-						store:             store
-						deviceGroups:      deviceGroups
-						currentContainers: currentContainers
+# 			# 		extraState = fromJS
+# 			# 			deviceId:          clientId
+# 			# 			lastSeenTimestamp: Date.now()
+# 			# 			activeAlerts:
+# 			# 				versionsNotMatching:  versionsMismatchToString versionsNotMatching
+# 			# 				containersNotRunning: containersNotRunningToString containersNotRunning
 
-					extraState = fromJS
-						deviceId:          clientId
-						lastSeenTimestamp: Date.now()
-						activeAlerts:
-							versionsNotMatching:  versionsMismatchToString versionsNotMatching
-							containersNotRunning: containersNotRunningToString containersNotRunning
+# 			# 		newState     = stateUpdate.merge extraState
+# 			# 		deviceStates = deviceStates.mergeIn [ clientId ], newState
 
-					newState     = stateUpdate.merge extraState
-					deviceStates = deviceStates.mergeIn [ clientId ], newState
+# 			# 		newState
+# 			# 	.reduce (devices, deviceState) ->
+# 			# 		devices[deviceState.get "deviceId"] = deviceState
+# 			# 		devices
+# 			# 	, {}
 
-					newState
-				.reduce (devices, deviceState) ->
-					devices[deviceState.get "deviceId"] = deviceState
-					devices
-				, {}
+# 			# 	debug "Sending #{size newStates} state updates"
 
-				debug "Sending #{size newStates} state updates"
+# 			# 	_broadcastAction "devicesBatchState", newStates
 
-				_broadcastAction "devicesBatchState", newStates
+# 		# devicesNsState$
+# 		# 	.merge deviceGroups$
+# 		# 	.bufferTime config.batchState.nsStateInterval
+# 		# 	.subscribe (nsStateUpdates) ->
+# 		# 		return unless nsStateUpdates.length
 
-		devicesNsState$
-			.merge deviceGroups$
-			.bufferTime config.batchState.nsStateInterval
-			.subscribe (nsStateUpdates) ->
-				return unless nsStateUpdates.length
+# 		# 		newNsStates = nsStateUpdates.reduce (updates, nsStateUpdate) ->
+# 		# 			{ deviceId, key, value } = nsStateUpdate
+# 		# 			debug "devicesNsState is updating #{deviceId}"
 
-				newNsStates = nsStateUpdates.reduce (updates, nsStateUpdate) ->
-					{ deviceId, key, value } = nsStateUpdate
-					debug "devicesNsState is updating #{deviceId}"
+# 		# 			newState = fromJS
+# 		# 				deviceId:          deviceId
+# 		# 				"#{key}":          value
+# 		# 				lastSeenTimestamp: Date.now()
 
-					newState = fromJS
-						deviceId:          deviceId
-						"#{key}":          value
-						lastSeenTimestamp: Date.now()
+# 		# 			deviceStates      = deviceStates.mergeIn [ deviceId ], newState
+# 		# 			updates[deviceId] = newState
+# 		# 			updates
+# 		# 		, {}
 
-					deviceStates      = deviceStates.mergeIn [ deviceId ], newState
-					updates[deviceId] = newState
-					updates
-				, {}
+# 		# 		debug "Sending #{size newNsStates} namespace state updates"
 
-				debug "Sending #{size newNsStates} namespace state updates"
+# 		# 		_broadcastAction "devicesBatchState", newNsStates
 
-				_broadcastAction "devicesBatchState", newNsStates
+# 		# devicesStatus$
+# 		# 	.bufferTime config.batchState.defaultInterval
+# 		# 	.subscribe (statusUpdates) ->
+# 		# 		return unless statusUpdates.length
 
-		devicesStatus$
-			.bufferTime config.batchState.defaultInterval
-			.subscribe (statusUpdates) ->
-				return unless statusUpdates.length
+# 		# 		newStatuses = statusUpdates.reduce (updates, statusUpdate) ->
+# 		# 			{ deviceId, status } = statusUpdate
+# 		# 			newState             = fromJS
+# 		# 				deviceId:     deviceId
+# 		# 				onlineStatus: status
 
-				newStatuses = statusUpdates.reduce (updates, statusUpdate) ->
-					{ deviceId, status } = statusUpdate
-					newState             = fromJS
-						deviceId:     deviceId
-						onlineStatus: status
+# 		# 			deviceStates      = deviceStates.mergeIn [ deviceId ], newState
+# 		# 			updates[deviceId] = onlineStatus: status
+# 		# 			updates
+# 		# 		, {}
 
-					deviceStates      = deviceStates.mergeIn [ deviceId ], newState
-					updates[deviceId] = onlineStatus: status
-					updates
-				, {}
+# 		# 		debug "Sending #{size newStatuses} status updates"
 
-				debug "Sending #{size newStatuses} status updates"
+# 		# 		_broadcastAction "devicesBatchState", newStatuses
 
-				_broadcastAction "devicesBatchState", newStatuses
+# 		# devicesLogs$.subscribe (logs) ->
+# 		# 	_broadcastAction "deviceLogs", logs
 
-		devicesLogs$.subscribe (logs) ->
-			_broadcastAction "deviceLogs", logs
+# 		# Publish default groups for first time devices
+# 		# devicesStatus$
+# 		# 	.filter ({ deviceId, retained }) ->
+# 		# 		not retained and deviceStates
+# 		# 			.getIn [deviceId, "groups"], List()
+# 		# 			.isEmpty()
+# 		# 	.subscribe ({ deviceId }) ->
+# 		# 		log.warn "No groups found for #{deviceId}, setting default groups ..."
 
-		# Publish default groups for first time devices
-		devicesStatus$
-			.filter ({ deviceId, retained }) ->
-				not retained and deviceStates
-					.getIn [deviceId, "groups"], List()
-					.isEmpty()
-			.subscribe ({ deviceId }) ->
-				log.warn "No groups found for #{deviceId}, setting default groups ..."
+# 		# 		topic   = "devices/#{deviceId}/groups"
+# 		# 		message = JSON.stringify ["default"]
+# 		# 		options = retain: true
 
-				topic   = "devices/#{deviceId}/groups"
-				message = JSON.stringify ["default"]
-				options = retain: true
+# 		# 		client.publish topic, message, options
 
-				client.publish topic, message, options
+# 		client.subscribe [
+# 			DevicesState.topic
+# 			DevicesLogs.topic
+# 			DevicesNsState.topic
+# 			DevicesStatus.topic
+# 			DeviceGroups.topic
+# 		], (error, granted) ->
+# 			throw new Error "Error subscribing topics: #{error.message}" if error
 
-		client.subscribe [
-			DevicesState.topic
-			DevicesLogs.topic
-			DevicesNsState.topic
-			DevicesStatus.topic
-			DeviceGroups.topic
-		], (error, granted) ->
-			throw new Error "Error subscribing topics: #{error.message}" if error
+# 			log.info "Subscribed to MQTT"
+# 			log.info "Topics: #{granted.map(({ topic }) -> topic).join ", "}"
 
-			log.info "Subscribed to MQTT"
-			log.info "Topics: #{granted.map(({ topic }) -> topic).join ", "}"
+# 	onError = (error) ->
+# 		log.error error.message
 
-	onError = (error) ->
-		log.error error.message
+# 	onClose = ->
+# 		log.warn "Connection to the MQTT broker closed"
 
-	onClose = ->
-		log.warn "Connection to the MQTT broker closed"
-
-	client
-		.on "connect", onConnect
-		.on "error",   onError
-		.on "close",   onClose
-
-_broadcastAction = (type, data) ->
-	ws.clients.forEach (socket) ->
-		socket.send JSON.stringify
-			action: constantCase type
-			data:   data
+# 	client
+# 		.on "connect", onConnect
+# 		.on "error",   onError
+# 		.on "close",   onClose
 
 app.use cors()
 app.use compression()
@@ -333,50 +323,183 @@ unless process.env.NODE_ENV is "production"
 app.use "/api",         require "./api"
 app.use "/api/devices", (require "./api/devices") getDeviceStates
 
+# required to support await operations
 do ->
 	await bundle app
 	await db.connect()
 	await runUpdates db: db, store: store
 
-	main()
+	socket         = mqtt.connect config.mqtt
+	rpc            = new RPC socket, timeout: config.mqtt.responseTimeout
+	broadcaster    = new Broadcaster ws
+	watcher        = new Watcher
+		db:    db
+		store: store
+		mqtt:  socket
 
-	broadcast = (type, data) ->
-		debug "Broadcasting '#{type}' to #{size ws.clients} client(s)"
+	onConnect = ->
+		log.info "Connected to MQTT Broker at #{config.mqtt.host}:#{config.mqtt.port}"
 
-		ws.clients.forEach (client) ->
-			client.send JSON.stringify
-				action: constantCase type
-				data:   data.toJS()
+		await populateMqttWithGroups db, socket
+		await populateMqttWithDeviceGroups db, socket
 
-	broadcastApplications = ->
-		broadcast "configurations", await store.getConfigurations()
+		[
+			configurations
+			registryImages
+			groups
+		] = await Promise.all [
+			store.getConfigurations()
+			store.getRegistryImages()
+			store.getGroups()
+		]
 
-	broadcastRegistry = ->
-		broadcast "allowedImages",  await store.getAllowedImages()
-		broadcast "registryImages", await store.getRegistryImages()
+		store.set "configurations", configurations
+		store.set "registry",       registryImages
+		store.set "groups",         groups
 
-	broadcastGroups = ->
-		broadcast "groups", await store.getGroups()
+		log.info "Cache succesfully populated with configurations, registry images and groups"
 
-	broadcastSources = ->
-		broadcast "deviceSources", await store.getDeviceSources()
+		# devicesLogs$    = DevicesLogs.observable    mqttClient
+		devicesNsState$ = DevicesNsState.observable socket
+		devicesState$   = DevicesState.observable   socket
+		devicesStatus$  = DevicesStatus.observable  socket
+		# deviceGroups$   = DeviceGroups.observable   mqttClient
+		# cacheUpdate$    = cacheUpdate               store
 
-	broadcastDeviceGroups = (deviceIds) ->
-		deviceGroups = await store.getDeviceGroups deviceIds
-		deviceGroups = deviceGroups.reduce (devices, device) ->
-			devices.setIn [device.get("deviceId"), "groups"], device.get "groups"
-		, Map()
+		# state updates
+		devicesState$
+			.bufferTime config.batchState.defaultInterval
+			.filter negate isEmpty
+			.subscribe (updates) ->
+				deviceStates = updates.reduce (devices, update) ->
+					deviceId = update.get "deviceId"
+					newState = update.merge Map
+						lastSeenTimestamp: Date.now()
 
-		broadcast "devicesBatchState", deviceGroups
+					devices.mergeIn [deviceId], newState
+				, deviceStates
 
-	app.locals.rpc  = rpc
-	app.locals.mqtt = mqttClient
-	app.locals.db   = db
-	app.locals.broadcastApplications = broadcastApplications
-	app.locals.broadcastRegistry     = broadcastRegistry
-	app.locals.broadcastGroups       = broadcastGroups
-	app.locals.broadcastSources      = broadcastSources
-	app.locals.broadcastDeviceGroups = broadcastDeviceGroups
+				broadcaster.broadcast "devicesBatchState", deviceStates
+
+		# specific state updates
+		# these updates are broadcasted more frequently
+		devicesNsState$
+			.bufferTime config.batchState.nsStateInterval
+			.filter negate isEmpty
+			.subscribe (updates) ->
+				deviceStates = updates.reduce (devices, update) ->
+					key      = update.get "key"
+					deviceId = update.get "deviceId"
+					newState = update.merge Map
+						"#{key}":          update.get "value"
+						lastSeenTimestamp: Date.now()
+
+					devices.mergeIn [deviceId], newState
+				, deviceStates
+
+				broadcaster.broadcast "devicesBatchState", deviceStates
+
+		# status updates
+		devicesStatus$
+			.bufferTime config.batchState.defaultInterval
+			.filter negate isEmpty
+			.subscribe (updates) ->
+				deviceStates = updates.reduce (devices, update) ->
+					deviceId  = update.get "deviceId"
+					newStatus = update.merge Map
+						connected: update.status is "online"
+
+					devices.mergeIn [deviceId], newStatus
+				, deviceStates
+
+				broadcaster.broadcast "devicesBatchState", deviceStates
+
+		# external sources
+		# ? API could be made simpler. For now, the source remains untouched
+		each externals, (source) ->
+			{
+				observable
+				mapFrom
+				mapTo
+				foreignKey
+			} = source getDeviceStates
+
+			observable
+				.bufferTime config.batchState.defaultInterval
+				.filter negate isEmpty
+				.subscribe (externalOutputs) ->
+					updatesToSend = externalOutputs.reduce (updates, externalOutput) ->
+						data         = fromJS externalOutput
+						value        = data.getIn mapFrom
+						clientId     = data.getIn foreignKey
+						keyPath      = [clientId].concat(mapTo)
+						deviceStates = deviceStates.setIn keyPath, value
+
+						# getIn makes it harder to determine the updates
+						# For now, just send the whole state and let Redux
+						# on the client side determine the difference
+						updates[clientId] = deviceStates.get clientId
+						updates
+					, {}
+
+					debug "Sending #{size updatesToSend} state updates after external source updates"
+
+					broadcaster.broadcast "devicesBatchState", deviceStates
+
+		socket.subscribe [
+			DevicesState.topic
+			DevicesLogs.topic
+			DevicesNsState.topic
+			DevicesStatus.topic
+			DeviceGroups.topic
+		], (error, granted) ->
+			throw new Error "Error subscribing topics: #{error.message}" if error
+
+			log.info "Subscribed to MQTT"
+			log.info "Topics: #{granted.map(({ topic }) -> topic).join ", "}"
+
+	onError = (error) ->
+		log.error error.message
+
+	onClose = ->
+		log.warn "Connection to the MQTT broker closed"
+
+	socket
+		.on "connect", onConnect
+		.on "error",   onError
+		.on "close",   onClose
+
+	# start watching on database changes
+	watcher.watch()
+
+	# provide tools for routes
+	app.locals.rpc         = rpc
+	app.locals.mqtt        = socket
+	app.locals.db          = db
+	app.locals.broadcaster = broadcaster
 
 	server.listen port, ->
 		log.info "Server listening on :#{@address().port}"
+
+# inspect state of a device through CLI
+process
+	.stdin
+	.on "data", (data) ->
+		return if process.env.NODE_ENV is "production"
+
+		input = data.toString().trim()
+		return unless input.startsWith ".inspect"
+
+		deviceId = input
+			.split " "
+			.slice 1
+			.join ""
+		return console.warn "device '#{deviceId}' not found" unless deviceStates.get deviceId
+
+		file  = require("path").join ".local", deviceId
+		state = deviceStates
+			.get deviceId
+			.toJS()
+
+		require("fs").writeFileSync file, JSON.stringify state, null, 4
+		console.log "state stored in #{file}"

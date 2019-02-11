@@ -1,8 +1,6 @@
 os = require "os"
 
 module.exports =
-	readOnly: true
-
 	batchState:
 		nsStateInterval: 500
 		defaultInterval: 3000
@@ -12,12 +10,9 @@ module.exports =
 		skipUpdates: false
 
 	mqtt:
-		clientId: "app-layer-control-#{os.hostname()}"
-		connectionOptions:
-			keepalive: 300
+		clientId:        "app-layer-control-#{os.hostname()}"
 		host:            "localhost"
 		port:            1883
-		readOnly:        true
 		responseTimeout: 5000
 
 

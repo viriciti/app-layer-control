@@ -1,3 +1,5 @@
+{ Map } = require "immutable"
+
 createTopicListener = require "../helpers/createTopicListener"
 
 module.exports =
@@ -7,6 +9,9 @@ module.exports =
 				deviceId = match.id
 				status   = message
 
-				{ deviceId, status, retained }
+				Map
+					deviceId: deviceId
+					status:   status
+					retained: retained
 
 	topic: "devices/+/status"

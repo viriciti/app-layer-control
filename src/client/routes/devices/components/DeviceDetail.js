@@ -29,7 +29,7 @@ class DeviceDetail extends PureComponent {
 		}
 
 		const deviceId    = selectedDevice.get('deviceId')
-		const status      = selectedDevice.get('onlineStatus', 'unknown')
+		const connected   = selectedDevice.get('connected')
 		const statusLabel = classNames('label', 'label--inline', 'label--no-hover', 'float-right')
 
 		return (
@@ -69,7 +69,7 @@ class DeviceDetail extends PureComponent {
 								<div className="col-lg-3 mb-4">
 									<h5>
 										<span className="fas fa-sliders-h pr-1" /> Control
-										{status === 'online' ? (
+										{connected ? (
 											<span className={classNames(statusLabel, 'label--success')}>
 												<span className="fas fa-wifi" /> Online
 											</span>
@@ -130,7 +130,7 @@ class DeviceDetail extends PureComponent {
 	}
 
 	render () {
-		const status          = this.props.selectedDevice ? this.props.selectedDevice.get('onlineStatus', 'offline') : 'offline'
+		const status          = this.props.selectedDevice ? this.props.selectedDevice.get('connected') ? 'online' : 'offline' : 'offline'
 		const title           = this.props.selectedDevice ? `Device: ${this.props.selectedDevice.get('deviceId')}` : ''
 		const headerClassName = `device-${status}`
 

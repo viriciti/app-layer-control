@@ -1,5 +1,6 @@
-debug      = (require "debug") "app:sources:DevicesState"
-{ fromJS } = require "immutable"
+debug          = (require "debug") "app:sources:DevicesState"
+{ Observable } = require "rxjs"
+{ fromJS }     = require "immutable"
 
 createTopicListener = require "../helpers/createTopicListener"
 
@@ -19,5 +20,6 @@ module.exports =
 				throw new Error "Topic ID did not match payload ID (topic: #{deviceId}, payload: #{data.deviceId})"
 			.map ({ data }) ->
 				fromJS data
+			.takeUntil Observable.fromEvent socket, "close"
 
 	topic: "devices/+/state"

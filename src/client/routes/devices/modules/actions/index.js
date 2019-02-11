@@ -133,7 +133,7 @@ export function asyncStoreGroups (device, groups) {
 		dispatch(updateDeviceActivity('isStoringGroups', device, true))
 
 		await axios.post('/api/v1/administration/group/devices', {
-			operation: 'set',
+			operation: 'store',
 			target:    [device],
 			groups,
 		})

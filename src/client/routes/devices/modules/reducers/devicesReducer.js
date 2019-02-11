@@ -23,7 +23,7 @@ const ACTION_HANDLERS = {
 	},
 
 	[DEVICE_STATE]: (devices, { payload }) => {
-		const deviceId = payload.deviceId
+		const deviceId    = payload.deviceId
 		const deviceState = fromJS(payload)
 
 		return devices.mergeIn([deviceId], deviceState)

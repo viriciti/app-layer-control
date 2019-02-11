@@ -92,7 +92,7 @@ class DeviceList extends PureComponent {
 		const devices = this.props.filteredItems
 			.filter(device => device.get('deviceId'))
 			.sortBy(device => device.getIn(field, ''))
-			.sortBy(device => device.get('onlineStatus') !== 'online')
+			.sortBy(device => device.get('connected'))
 
 		if (!this.state.sortBy.asc) {
 			return devices.reverse()
