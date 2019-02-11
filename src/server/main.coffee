@@ -1,18 +1,18 @@
-RPC                   = require "mqtt-json-rpc"
-WebSocket             = require "ws"
-bodyParser            = require "body-parser"
-compression           = require "compression"
-config                = require "config"
-constantCase          = require "constant-case"
-cors                  = require "cors"
-debug                 = (require "debug") "app:main"
-express               = require "express"
-http                  = require "http"
-morgan                = require "morgan"
-mqtt                  = require "async-mqtt"
-{ Map, List, fromJS } = require "immutable"
-{ Observable }        = require "rxjs"
-{ each, size, noop }  = require "lodash"
+RPC                           = require "mqtt-json-rpc"
+WebSocket                     = require "ws"
+bodyParser                    = require "body-parser"
+compression                   = require "compression"
+config                        = require "config"
+constantCase                  = require "constant-case"
+cors                          = require "cors"
+debug                         = (require "debug") "app:main"
+express                       = require "express"
+http                          = require "http"
+morgan                        = require "morgan"
+mqtt                          = require "async-mqtt"
+{ Map, List, fromJS }         = require "immutable"
+{ Observable }                = require "rxjs"
+{ each, size, noop, groupBy } = require "lodash"
 
 {
 	DevicesLogs
@@ -361,6 +361,14 @@ do ->
 	broadcastSources = ->
 		broadcast "deviceSources", await store.getDeviceSources()
 
+	broadcastDeviceGroups = (deviceIds) ->
+		deviceGroups = await store.getDeviceGroups deviceIds
+		deviceGroups = deviceGroups.reduce (devices, device) ->
+			devices.setIn [device.get("deviceId"), "groups"], device.get "groups"
+		, Map()
+
+		broadcast "devicesBatchState", deviceGroups
+
 	app.locals.rpc  = rpc
 	app.locals.mqtt = mqttClient
 	app.locals.db   = db
@@ -368,6 +376,7 @@ do ->
 	app.locals.broadcastRegistry     = broadcastRegistry
 	app.locals.broadcastGroups       = broadcastGroups
 	app.locals.broadcastSources      = broadcastSources
+	app.locals.broadcastDeviceGroups = broadcastDeviceGroups
 
 	server.listen port, ->
 		log.info "Server listening on :#{@address().port}"

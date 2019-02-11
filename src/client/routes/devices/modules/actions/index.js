@@ -128,6 +128,34 @@ export function cleanLogs (payload) {
 	}
 }
 
+export function asyncStoreGroups (device, groups) {
+	return async dispatch => {
+		dispatch(updateDeviceActivity('isStoringGroups', device, true))
+
+		await axios.post('/api/v1/administration/group/devices', {
+			operation: 'set',
+			target:    [device],
+			groups,
+		})
+
+		dispatch(updateDeviceActivity('isStoringGroups', device, false))
+	}
+}
+
+export function asyncRemoveGroup (device, group) {
+	return async dispatch => {
+		dispatch(updateDeviceActivity('isRemovingGroups', device, true))
+
+		await axios.post('/api/v1/administration/group/devices', {
+			operation: 'remove',
+			target:    [device],
+			groups:    [group],
+		})
+
+		dispatch(updateDeviceActivity('isRemovingGroups', device, false))
+	}
+}
+
 export function asyncMultiStoreGroup (devices, group) {
 	return async dispatch => {
 		dispatch(updateAsyncState('isStoringMultiGroups', true))
@@ -160,10 +188,10 @@ export function asyncRestartApplication (deviceId, application) {
 	return async dispatch => {
 		dispatch(
 			updateApplicationActivity({
-				deviceId:    deviceId,
-				status:      true,
-				name:        'isRestartingApplication',
-				application: application,
+				deviceId,
+				status: true,
+				name:   'isRestartingApplication',
+				application,
 			})
 		)
 
@@ -176,10 +204,10 @@ export function asyncRestartApplication (deviceId, application) {
 		} finally {
 			dispatch(
 				updateApplicationActivity({
-					deviceId:    deviceId,
-					status:      false,
-					name:        'isRestartingApplication',
-					application: application,
+					deviceId,
+					status: false,
+					name:   'isRestartingApplication',
+					application,
 				})
 			)
 		}

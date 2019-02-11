@@ -1,8 +1,8 @@
 import { Map, List } from 'immutable'
 import { isArray, partial, eq } from 'lodash'
 
-import { UPDATE_ASYNC_STATE, UPDATE_DEVICE_ACTIVITY } from '/store/globalReducers/actions'
-import { SELECT_DEVICE, UPDATE_APPLICATION_ACTIVITY } from '/store/constants'
+import { UPDATE_ASYNC_STATE } from '/store/globalReducers/actions'
+import { SELECT_DEVICE, UPDATE_APPLICATION_ACTIVITY, UPDATE_DEVICE_ACTIVITY } from '/store/constants'
 
 export function updateAsyncState (name, status) {
 	return {

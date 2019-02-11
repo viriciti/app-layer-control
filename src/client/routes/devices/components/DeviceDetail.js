@@ -28,8 +28,8 @@ class DeviceDetail extends PureComponent {
 			return
 		}
 
-		const deviceId = selectedDevice.get('deviceId')
-		const status = selectedDevice.get('onlineStatus', 'offline')
+		const deviceId    = selectedDevice.get('deviceId')
+		const status      = selectedDevice.get('onlineStatus', 'unknown')
 		const statusLabel = classNames('label', 'label--inline', 'label--no-hover', 'float-right')
 
 		return (
@@ -130,8 +130,8 @@ class DeviceDetail extends PureComponent {
 	}
 
 	render () {
-		const status = this.props.selectedDevice ? this.props.selectedDevice.get('onlineStatus', 'offline') : 'offline'
-		const title = this.props.selectedDevice ? `Device: ${this.props.selectedDevice.get('deviceId')}` : ''
+		const status          = this.props.selectedDevice ? this.props.selectedDevice.get('onlineStatus', 'offline') : 'offline'
+		const title           = this.props.selectedDevice ? `Device: ${this.props.selectedDevice.get('deviceId')}` : ''
 		const headerClassName = `device-${status}`
 
 		return (

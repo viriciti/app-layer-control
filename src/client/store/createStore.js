@@ -9,7 +9,7 @@ import hydrate from '/store/hydrate'
 
 export default (initialState = Map({})) => {
 	const middleware = [createDebounce(), thunk]
-	const enhancers = []
+	const enhancers  = []
 
 	let composeEnhancers = compose
 
@@ -38,7 +38,7 @@ export default (initialState = Map({})) => {
 		}
 	}
 
-	const ws = new WebSocket(`ws://${window.location.host}`)
+	const ws    = new WebSocket(`ws://${window.location.host}`)
 	const store = createStore(
 		makeRootReducer(),
 		initialState,

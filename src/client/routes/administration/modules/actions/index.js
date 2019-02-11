@@ -3,6 +3,7 @@ import { get } from 'lodash'
 import { Promise } from 'q'
 import { REGISTRY_IMAGES, ALLOWED_IMAGES } from '/store/globalReducers/actions'
 import { updateAsyncState } from '/store/globalReducers/ui'
+import { toast } from 'react-toastify'
 
 export const CONFIGURATIONS = 'CONFIGURATIONS'
 export const CREATE_CONFIGURATION = 'CREATE_CONFIGURATION'
@@ -24,6 +25,19 @@ export function configurationSelected (configuration) {
 	return {
 		type:    CONFIGURATION_SELECTED,
 		payload: configuration,
+	}
+}
+
+export function asyncRemoveGroup (label) {
+	return async dispatch => {
+		dispatch(updateAsyncState('isRemovingGroup', true))
+
+		const { status } = await axios.delete(`/api/v1/administration/group/${label}`)
+		if (status === 204) {
+			toast.success('Group deleted')
+		}
+
+		dispatch(updateAsyncState('isRemovingGroup', true))
 	}
 }
 

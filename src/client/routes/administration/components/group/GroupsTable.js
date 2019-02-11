@@ -1,11 +1,9 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 import { Map } from 'immutable'
-import axios from 'axios'
-import { toast } from 'react-toastify'
 
 import GroupsForm from './GroupsForm'
-import { fetchGroups } from '/routes/administration/modules/actions'
+import { fetchGroups, asyncRemoveGroup } from '/routes/administration/modules/actions'
 import selectorDevicesDeviceId from '/routes/administration/modules/selectors/getDevicesSerial'
 
 class GroupsTable extends PureComponent {
@@ -94,14 +92,7 @@ class GroupsTable extends PureComponent {
 			return
 		}
 
-		this.setState({ deleting: true })
-
-		const { status } = await axios.delete(`/api/v1/administration/group/${label}`)
-		if (status === 204) {
-			toast.success('Group deleted')
-		}
-
-		this.setState({ deleting: false })
+		this.props.asyncRemoveGroup(label)
 	}
 
 	onRequestClose = () => {
@@ -169,5 +160,5 @@ export default connect(
 			isFetchingGroups: state.getIn(['ui', 'isFetchingGroups']),
 		}
 	},
-	{ fetchGroups }
+	{ fetchGroups, asyncRemoveGroup }
 )(GroupsTable)

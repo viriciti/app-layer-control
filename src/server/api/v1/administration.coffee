@@ -224,7 +224,7 @@ router.delete "/group/:label", ({ app, params, body }, res, next) ->
 # Device Groups
 # Supported operations are "store" and "remove"
 router.post "/group/devices", ({ app, body }, res) ->
-	{ db }                        = app.locals
+	{ db, broadcastDeviceGroups } = app.locals
 	{ operation, groups, target } = body
 	target                        = [target] unless isArray target
 
@@ -236,6 +236,8 @@ router.post "/group/devices", ({ app, body }, res) ->
 		message       = "Removed groups #{groups.join ', '} for #{nModified} device(s)"
 
 		debug message
+
+		broadcastDeviceGroups target
 
 		res
 			.status 200
@@ -253,6 +255,8 @@ router.post "/group/devices", ({ app, body }, res) ->
 		message       = "Added groups #{groups.join ', '} to #{nModified} device(s)"
 
 		debug message
+
+		broadcastDeviceGroups target
 
 		res
 			.status 200

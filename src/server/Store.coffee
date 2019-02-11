@@ -75,13 +75,22 @@ class Store
 		fromJS configurations
 
 	getGroups: ->
-		groups = await @db.Group.find {}
+		groups = await @db.Group.find()
 		groups = reduce groups, (memo, { label, applications }) ->
 			memo[label] = applications
 			memo
 		, {}
 
 		fromJS groups
+
+	getDeviceGroups: (devices) ->
+		deviceGroups = await @db
+			.DeviceGroup
+			.find deviceId: $in: devices
+			.select "-_id -__v"
+			.lean()
+
+		fromJS deviceGroups
 
 	getDeviceSources: ->
 		sources = await @db
