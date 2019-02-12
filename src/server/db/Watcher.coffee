@@ -40,11 +40,11 @@ class Watcher extends EventEmitter
 		return if operationType is "delete"
 
 		{ deviceId, groups } = fullDocument
+		debug "Groups for #{deviceId} updated: #{groups.join ', '}"
+
 		topic                = "devices/#{deviceId}/groups"
 		groups               = JSON.stringify groups
 		options              = retain: true
-
-		debug "Groups for #{deviceId} updated: #{groups.join ', '}"
 
 		@mqtt.publish topic, groups, options
 

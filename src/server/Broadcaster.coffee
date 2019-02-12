@@ -1,6 +1,7 @@
 { size }     = require "lodash"
 debug        = (require "debug") "app:Broadcaster"
 constantCase = require "constant-case"
+{ Map }      = require "immutable"
 
 Store = require "./Store"
 

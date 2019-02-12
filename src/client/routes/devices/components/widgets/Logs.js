@@ -52,17 +52,17 @@ class Logs extends Component {
 	}
 
 	render () {
-		const isLogsEmpty = this.props.logs.get(this.props.deviceId, List()).isEmpty()
+		const isLogsEmpty = this.props.logs.isEmpty()
 
 		return (
 			<Fragment>
 				<button
-					className="btn btn-danger btn-sm btn--icon float-right"
+					className="btn btn-warning btn-sm btn--icon float-right"
 					onClick={this.onCleanLogs}
 					disabled={isLogsEmpty}
 					title={isLogsEmpty ? 'Nothing to clean' : 'Clean'}
 				>
-					<span className="fas fa-trash" />
+					<span className="fas fa-broom" />
 				</button>
 
 				<h5>
