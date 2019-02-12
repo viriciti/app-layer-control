@@ -2,6 +2,7 @@ debug                         = (require "debug") "app:api"
 filter                        = require "p-filter"
 { Router }                    = require "express"
 { isArray, first, map, size } = require "lodash"
+config                        = require "config"
 
 Store                  = require "../../Store"
 getRegistryImages      = require "../../lib/getRegistryImages"
@@ -299,7 +300,11 @@ router.post "/registry", ({ app, params, body }, res, next) ->
 router.delete "/registry/:name", ({ app, params, body }, res, next) ->
 	{ db, broadcaster } = app.locals
 	{ name }            = params
-	{ image }           = body
+	name                = decodeURIComponent name
+
+	host   = config.versioning.docker.host
+	host  += "/" unless host.endsWith "/"
+	image  = "#{host}#{name}"
 
 	try
 		if isRegistryImageDependentOn image, await store.getConfigurations()

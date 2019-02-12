@@ -46,10 +46,9 @@ ws      = new WebSocket.Server server: server
 db      = new Database
 store   = new Store db
 
-rpc               = null
-mqttClient        = null
-deviceStates      = Map()
-getDeviceStates   = -> deviceStates
+rpc             = null
+deviceStates    = Map()
+getDeviceStates = -> deviceStates
 
 log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
 
@@ -191,6 +190,7 @@ do ->
 		registry$
 			.subscribe (images) ->
 				await store.storeRegistryImages images
+
 				broadcaster.broadcastRegistry()
 
 		# external sources

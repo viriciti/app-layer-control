@@ -28,6 +28,22 @@ export function configurationSelected (configuration) {
 	}
 }
 
+export function asyncRemoveRegistryImage ({ name, image }) {
+	return async dispatch => {
+		dispatch(updateAsyncState('isRemovingRegistryImage', true))
+
+		try {
+			await axios.delete(`/api/v1/administration/registry/${encodeURIComponent(name)}`)
+
+			toast.success('Registry image removed')
+		} catch ({ response }) {
+			toast.error(response.data.message)
+		} finally {
+			dispatch(updateAsyncState('isRemovingRegistryImage', false))
+		}
+	}
+}
+
 export function asyncRemoveGroup (label) {
 	return async dispatch => {
 		dispatch(updateAsyncState('isRemovingGroup', true))

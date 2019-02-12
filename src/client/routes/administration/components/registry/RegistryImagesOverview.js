@@ -7,9 +7,9 @@ import { toast } from 'react-toastify'
 
 import AsyncButton from '/components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'
-import { fetchRegistry } from '/routes/administration/modules/actions'
+import { fetchRegistry, asyncRemoveRegistryImage } from '/routes/administration/modules/actions'
 
-const RegistryImage = ({ name, image, onRemoveImage }) => {
+const RegistryImage = ({ name, image, onRemoveImage, isRemovingAny }) => {
 	return (
 		<tr>
 			<td>{name}</td>
@@ -23,7 +23,12 @@ const RegistryImage = ({ name, image, onRemoveImage }) => {
 			)}
 
 			<td className="text-right">
-				<button className="btn btn--text btn--icon" onClick={onRemoveImage} title={`Remove image ${name}`}>
+				<button
+					className="btn btn--text btn--icon"
+					onClick={onRemoveImage}
+					title={`Remove image ${name}`}
+					disabled={isRemovingAny}
+				>
 					<span className="fas fa-trash" />
 				</button>
 			</td>
@@ -49,7 +54,7 @@ class RegistryImagesOverview extends PureComponent {
 
 	withRegistryUrl = repository => {
 		const configuredHost = this.state.configuredHost
-		const registryUrl = configuredHost.endsWith('/') ? configuredHost : configuredHost.concat('/')
+		const registryUrl    = configuredHost.endsWith('/') ? configuredHost : configuredHost.concat('/')
 
 		return `${registryUrl}${repository}`
 	}
@@ -65,7 +70,7 @@ class RegistryImagesOverview extends PureComponent {
 
 	onRemoveImage = ({ name, image }) => {
 		if (confirm(`Remove registry image ${name}?`)) {
-			this.props.removeRegistryImage({ name, image })
+			this.props.asyncRemoveRegistryImage({ name, image })
 		}
 	}
 
@@ -122,6 +127,7 @@ class RegistryImagesOverview extends PureComponent {
 															name={this.withRegistryUrl(name)}
 															image={this.props.registryImages.get(this.withRegistryUrl(name), Map())}
 															onRemoveImage={partial(this.onRemoveImage, { name, image: this.withRegistryUrl(name) })}
+															isRemovingAny={this.props.isRemovingRegistryImage}
 														/>
 													)
 												})}
@@ -143,11 +149,12 @@ class RegistryImagesOverview extends PureComponent {
 export default connect(
 	state => {
 		return {
-			allowedImages:      state.get('allowedImages'),
-			registryImages:     state.get('registryImages'),
-			isFetchingVersions: state.getIn(['ui', 'isFetchingVersions']),
-			isFetchingRegistry: state.getIn(['ui', 'isFetchingRegistry']),
+			allowedImages:           state.get('allowedImages'),
+			registryImages:          state.get('registryImages'),
+			isFetchingVersions:      state.getIn(['ui', 'isFetchingVersions']),
+			isFetchingRegistry:      state.getIn(['ui', 'isFetchingRegistry']),
+			isRemovingRegistryImage: state.getIn(['ui', 'isRemovingRegistryImage']),
 		}
 	},
-	{ fetchRegistry }
+	{ fetchRegistry, asyncRemoveRegistryImage }
 )(RegistryImagesOverview)
