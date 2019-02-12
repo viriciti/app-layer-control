@@ -134,7 +134,7 @@ do ->
 
 					# * App Layer Agent sends out 'groups' as part of the state
 					# * however, this attribute ought to be set by App Layer Control instead
-					keys     = ["groups"]
+					keys     = ["groups", "status"]
 					newState = (newState.remove key) for key in keys
 
 					devices.mergeIn [deviceId], newState

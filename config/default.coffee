@@ -32,12 +32,11 @@ module.exports =
 	defaultColumns:
 		onlineStatus:
 			headerName:   "Status"
-			defaultValue: "offline"
+			defaultValue: false
 			columnIndex:  0
 			sortable:     false
 			filterable:   true
 			copyable:     false
-			getIn:        "onlineStatus"
 			format:       "status"
 			filterFormat:
 				type:    "checkboxes"

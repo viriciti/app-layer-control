@@ -51,7 +51,7 @@ class Applications extends Component {
 
 	renderFrontEndButton ({ frontEndPort, deviceIp }) {
 		const className = 'btn btn-secondary btn--reset-icon float-right'
-		const child = (
+		const child     = (
 			<Fragment>
 				Go to
 				<span className="fas fa-paper-plane pl-2" />
@@ -92,8 +92,8 @@ class Applications extends Component {
 								})
 								.map(container => {
 									const selectedContainer = this.state.selectedContainer && this.state.selectedContainer.get('name')
-									const frontEndPort = this.props.configurations.getIn([container.get('name'), 'frontEndPort'])
-									const deviceIp = this.props.selectedDevice.getIn(
+									const frontEndPort      = this.props.configurations.getIn([container.get('name'), 'frontEndPort'])
+									const deviceIp          = this.props.selectedDevice.getIn(
 										['systemInfo', 'tun0'],
 										this.props.selectedDevice.getIn(['systemInfo', 'tun0IP'])
 									)
@@ -138,6 +138,6 @@ class Applications extends Component {
 
 export default connect(state => {
 	return {
-		configurations: state.get('configurations')
+		configurations: state.get('configurations'),
 	}
 })(Applications)

@@ -75,15 +75,20 @@ const formats = {
 		}
 	},
 
-	status: ({ value }) => {
-		const defaultClassName = classNames('fas', 'fa-circle', 'text-center', 'd-block')
+	status: ({ info }) => {
+		const defaultClassName = classNames('fas', 'text-center', 'd-block')
 
-		if (value === 'online') {
-			return <span className={classNames(defaultClassName, 'text-success')} title="Online" />
-		} else if (value === 'offline') {
-			return <span className={classNames(defaultClassName, 'text-danger')} title="Offline" />
+		if (!info.has('connected')) {
+			return (
+				<span
+					className={classNames(defaultClassName, 'fa-exclamation-circle', 'text-muted')}
+					title="Unknown (state is incomplete)"
+				/>
+			)
+		} else if (info.get('connected')) {
+			return <span className={classNames(defaultClassName, 'fa-circle', 'text-success')} title="Online" />
 		} else {
-			return <span className={classNames(defaultClassName, 'text-muted')} title="Unknown" />
+			return <span className={classNames(defaultClassName, 'fa-circle', 'text-danger')} title="Offline" />
 		}
 	},
 }

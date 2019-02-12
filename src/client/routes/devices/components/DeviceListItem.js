@@ -58,13 +58,13 @@ class DeviceListItem extends PureComponent {
 					.valueSeq()
 					.filter(options => options.get('entryInTable'))
 					.map(options => {
-						const getIn = options.get('getIn').split('.')
+						const getIn         = options.get('getIn').split('.')
 						const fallbackGetIn = options.get('fallbackGetIn', '').split('.')
-						const getInTitle = options.get('getInTitle').split('.')
+						const getInTitle    = options.get('getInTitle').split('.')
 
-						const value = info.getIn(getIn, info.getIn(fallbackGetIn, options.get('defaultValue')))
+						const value     = info.getIn(getIn, info.getIn(fallbackGetIn, options.get('defaultValue')))
 						const formatter = formats(options.get('format', 'default'))
-						const span = formatter({
+						const span      = formatter({
 							value: value,
 							title: info.getIn(getInTitle),
 							info:  info,
