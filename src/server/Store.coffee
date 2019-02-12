@@ -1,8 +1,9 @@
-config                         = require "config"
-map                            = require "p-map"
-{ Map, fromJS, Iterable }      = require "immutable"
-{ object, pluck }              = require "underscore"
-{ toPairs, mapValues, reduce } = require "lodash"
+config                                    = require "config"
+debug                                     = (require "debug") "app:Store"
+pMap                                      = require "p-map"
+{ Map, fromJS, Iterable }                 = require "immutable"
+{ object, pluck }                         = require "underscore"
+{ toPairs, mapValues, map, reduce, without } = require "lodash"
 
 Database = require "./db/Database"
 log      = (require "./lib/Logger") "store"
@@ -35,7 +36,7 @@ class Store
 			allowedImages:  allowedImages
 
 	storeRegistryImages: (images) ->
-		map toPairs(images), ([name, { versions, access, exists }]) =>
+		pMap toPairs(images), ([name, { versions, access, exists }]) =>
 			await @db.RegistryImages.findOneAndUpdate { name },
 				{ name, versions, access, exists }
 				{ upsert: true }
@@ -92,6 +93,7 @@ class Store
 
 		fromJS deviceGroups
 
+
 	getDeviceSources: ->
 		sources = await @db
 			.DeviceSource
@@ -101,6 +103,20 @@ class Store
 		sources = object (pluck sources, "getIn"), sources
 
 		fromJS sources
+
+	ensureDefaultGroups: (devices) ->
+		devicesWithGroups = map (await @db
+			.DeviceGroup
+			.find deviceId: $in: devices
+			.select "deviceId"
+			.lean()
+		), "deviceId"
+		insertFor = without devices, ...devicesWithGroups
+		insert    = insertFor.map (deviceId) ->
+			deviceId: deviceId
+			groups:   ["default"]
+
+		@db.DeviceGroup.insertMany insert, rawResult: true
 
 	ensureDefaultDeviceSources: ->
 		Promise.all toPairs(config.defaultColumns).map ([name, column]) =>

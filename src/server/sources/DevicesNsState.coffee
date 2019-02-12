@@ -1,5 +1,4 @@
-{ Observable } = require "rxjs"
-{ fromJS }     = require "immutable"
+{ fromJS } = require "immutable"
 
 createTopicListener = require "../helpers/createTopicListener"
 
@@ -13,6 +12,5 @@ module.exports =
 					deviceId: match.id
 					key:      match.key
 					value:    JSON.parse message
-			.takeUntil Observable.fromEvent socket, "close"
 
 	topic: "devices/+/nsState/+"

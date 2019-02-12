@@ -35,13 +35,16 @@ class Watcher extends EventEmitter
 
 		populateMqttWithGroups @db, @mqtt
 
-	onDeviceGroupChange: ({ fullDocument }) =>
+	onDeviceGroupChange: ({ fullDocument, operationType }) =>
+		# todo: we currently don't know how to handle "delete" operations
+		return if operationType is "delete"
+
 		{ deviceId, groups } = fullDocument
 		topic                = "devices/#{deviceId}/groups"
 		groups               = JSON.stringify groups
 		options              = retain: true
 
-		console.log "Device group change"
+		debug "Groups for #{deviceId} updated: #{groups.join ', '}"
 
 		@mqtt.publish topic, groups, options
 
