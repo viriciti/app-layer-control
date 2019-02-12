@@ -110,7 +110,7 @@ class DeviceList extends PureComponent {
 	}
 
 	renderDevicesTable = () => {
-		if (this.props.devices.isEmpty()) {
+		if (this.props.isFetchingDevices) {
 			return <div className="loader" />
 		} else {
 			return (
@@ -306,6 +306,7 @@ export default connect(
 			configurations:        state.get('configurations'),
 			isStoringMultiGroups:  state.getIn(['ui', 'isStoringMultiGroups']),
 			isRemovingMultiGroups: state.getIn(['ui', 'isRemovingMultiGroups']),
+			isFetchingDevices:     state.getIn(['ui', 'isFetchingDevices']),
 
 			selectedDevice: selectedDeviceSelector(state),
 			filteredItems:  filterSelector(state),

@@ -75,6 +75,8 @@ do ->
 	await db.connect()
 	await runUpdates db: db, store: store
 
+	await store.ensureDefaultDeviceSources()
+
 	socket         = mqtt.connect config.mqtt
 	rpc            = new RPC socket, timeout: config.mqtt.responseTimeout
 	broadcaster    = new Broadcaster ws
@@ -82,6 +84,7 @@ do ->
 		db:    db
 		store: store
 		mqtt:  socket
+
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{config.mqtt.host}:#{config.mqtt.port}"
@@ -110,6 +113,7 @@ do ->
 		devicesState$   = DevicesState.observable   socket
 		devicesStatus$  = DevicesStatus.observable  socket
 		deviceGroups$   = DeviceGroups.observable   socket
+		registry$       = DockerRegistry            config.versioning, db
 		# cacheUpdate$    = cacheUpdate               store
 
 		# device logs
@@ -136,7 +140,7 @@ do ->
 					devices.mergeIn [deviceId], newState
 				, deviceStates
 
-				broadcaster.broadcast "devicesBatchState", deviceStates
+				broadcaster.broadcast "devicesState", deviceStates
 
 		# specific state updates
 		# these updates are broadcasted more frequently
@@ -154,7 +158,7 @@ do ->
 						.setIn [deviceId, "lastSeenTimestamp"], Date.now()
 				, deviceStates
 
-				broadcaster.broadcast "devicesBatchState", deviceStates
+				broadcaster.broadcast "devicesState", deviceStates
 
 		# first time online devices
 		devicesStatus$
@@ -181,7 +185,13 @@ do ->
 					devices.setIn [deviceId, "connected"], status is "online"
 				, deviceStates
 
-				broadcaster.broadcast "devicesBatchState", deviceStates
+				broadcaster.broadcast "devicesState", deviceStates
+
+		# docker registry
+		registry$
+			.subscribe (images) ->
+				await store.storeRegistryImages images
+				broadcaster.broadcastRegistry()
 
 		# external sources
 		# ? API could be made simpler.
@@ -213,7 +223,7 @@ do ->
 
 					debug "Sending #{size updatesToSend} state updates after external source updates"
 
-					broadcaster.broadcast "devicesBatchState", deviceStates
+					broadcaster.broadcast "devicesState", deviceStates
 
 
 		socket.subscribe [

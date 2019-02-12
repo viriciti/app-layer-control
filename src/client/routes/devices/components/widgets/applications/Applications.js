@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
+import { Map } from 'immutable'
 import { connect } from 'react-redux'
-import { partial } from 'lodash'
+import { partial, defaultTo } from 'lodash'
 
 import Application from './Application'
 
@@ -84,7 +85,7 @@ class Applications extends Component {
 				<div className="row">
 					<div className="col-md-6">
 						<ul className="list-group">
-							{this.props.containers
+							{defaultTo(this.props.containers, Map())
 								.valueSeq()
 								.sort((previous, next) => {
 									return naturalCompare(previous.get('name'), next.get('name'))
@@ -137,7 +138,6 @@ class Applications extends Component {
 
 export default connect(state => {
 	return {
-		configurations: state.get('configurations'),
-		devices:        state.get('devices'),
+		configurations: state.get('configurations')
 	}
 })(Applications)

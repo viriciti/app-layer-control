@@ -1,28 +1,19 @@
 import { Map, fromJS } from 'immutable'
 
-import { DEVICE_STATE, DEVICES_BATCH_STATE, DEVICES_STATE } from '/routes/devices/modules/actions'
+import { DEVICE_STATE, DEVICES_STATE } from '/routes/devices/modules/actions'
 
 // ------------------------------------
 // Action Handlers
 // ------------------------------------
 const ACTION_HANDLERS = {
-	[DEVICES_STATE]: (_, { payload }) => {
-		return fromJS(payload)
+	[DEVICES_STATE] (devices, { payload }) {
+		return fromJS(payload).reduce(
+			(devices, update, deviceId) => devices.mergeIn([deviceId], update).setIn([deviceId, 'deviceId'], deviceId),
+			devices
+		)
 	},
 
-	[DEVICES_BATCH_STATE]: (devices, { payload }) => {
-		return devices.reduce((updatedDevices, device) => {
-			const deviceId = device.get('deviceId')
-
-			if (payload[deviceId]) {
-				return updatedDevices.mergeIn([deviceId], fromJS(payload[deviceId]))
-			} else {
-				return updatedDevices
-			}
-		}, devices)
-	},
-
-	[DEVICE_STATE]: (devices, { payload }) => {
+	[DEVICE_STATE] (devices, { payload }) {
 		const deviceId    = payload.deviceId
 		const deviceState = fromJS(payload)
 

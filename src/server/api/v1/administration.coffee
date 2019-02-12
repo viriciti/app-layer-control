@@ -39,9 +39,9 @@ router.get "/applications", ({ app }, res, next) ->
 		next error
 
 router.put "/application/:name", ({ app, params, body }, res, next) ->
-	{ db, broadcastApplications } = app.locals
-	{ name }                      = params
-	query                         = applicationName: name
+	{ db, broadcaster } = app.locals
+	{ name }            = params
+	query               = applicationName: name
 
 	try
 		body = { ...body, applicationName: name }
@@ -49,7 +49,7 @@ router.put "/application/:name", ({ app, params, body }, res, next) ->
 			upsert:              true
 			setDefaultsOnInsert: true
 
-		broadcastApplications()
+		broadcaster.broadcastApplications()
 
 		res
 			.status 200
@@ -65,8 +65,8 @@ router.put "/application/:name", ({ app, params, body }, res, next) ->
 		next error
 
 router.delete "/application/:name", ({ app, params }, res, next) ->
-	{ db, broadcastApplications } = app.locals
-	{ name }                      = params
+	{ db, broadcaster } = app.locals
+	{ name }            = params
 
 	try
 		groups     = await store.getGroups()
@@ -82,7 +82,7 @@ router.delete "/application/:name", ({ app, params }, res, next) ->
 
 		await db.Configuration.deleteMany applicationName: name
 
-		broadcastApplications()
+		broadcaster.broadcastApplications()
 
 		res
 			.status 204
@@ -102,17 +102,17 @@ router.get "/sources", ({ app }, res, next) ->
 		next error
 
 router.put "/source/:name", ({ app, params, body }, res, next) ->
-	{ db, broadcastSources } = app.locals
-	{ name }                 = params
-	query                    = name           : name
-	update                   = { ...body, name: name }
+	{ db, broadcaster } = app.locals
+	{ name }            = params
+	query               = name: name
+	update              = { ...body, name: name }
 
 	try
 		doc = await db.DeviceSource.findOneAndUpdate query, update,
 			upsert:              true
 			setDefaultsOnInsert: true
 
-		broadcastSources()
+		broadcaster.broadcastSources()
 
 		res
 			.status 200
@@ -128,13 +128,13 @@ router.put "/source/:name", ({ app, params, body }, res, next) ->
 		next error
 
 router.delete "/source/:name", ({ app, params }, res, next) ->
-	{ db, broadcastSources } = app.locals
-	{ name }                 = params
+	{ db, broadcaster } = app.locals
+	{ name }            = params
 
 	try
 		await db.DeviceSource.deleteMany headerName: name
 
-		broadcastSources()
+		broadcaster.broadcastSources()
 
 		res
 			.status 204
@@ -154,9 +154,9 @@ router.get "/groups", ({ app }, res, next) ->
 		next error
 
 router.put "/group/:label", ({ app, params, body }, res, next) ->
-	{ db, broadcastGroups } = app.locals
-	{ label }               = params
-	applications            = Object.keys body.applications
+	{ db, broadcaster } = app.locals
+	{ label }           = params
+	applications        = Object.keys body.applications
 
 	try
 		unless label is "default"
@@ -190,7 +190,7 @@ router.put "/group/:label", ({ app, params, body }, res, next) ->
 			upsert:              true
 			setDefaultsOnInsert: true
 
-		broadcastGroups()
+		broadcaster.broadcastGroups()
 
 		res
 			.status 200
@@ -201,8 +201,8 @@ router.put "/group/:label", ({ app, params, body }, res, next) ->
 		next error
 
 router.delete "/group/:label", ({ app, params, body }, res, next) ->
-	{ db, broadcastGroups } = app.locals
-	{ label }               = params
+	{ db, broadcaster } = app.locals
+	{ label }           = params
 
 	try
 		query         = groups: label
@@ -213,7 +213,7 @@ router.delete "/group/:label", ({ app, params, body }, res, next) ->
 		await db.Group.findOneAndDelete { label }
 		debug "Deleted group #{label}"
 
-		broadcastGroups()
+		broadcaster.broadcastGroups()
 
 		res
 			.status 204
@@ -224,7 +224,7 @@ router.delete "/group/:label", ({ app, params, body }, res, next) ->
 # Device Groups
 # Supported operations are "store" and "remove"
 router.post "/group/devices", ({ app, body }, res) ->
-	{ db, broadcastDeviceGroups } = app.locals
+	{ db, broadcaster }           = app.locals
 	{ operation, groups, target } = body
 	target                        = [target] unless isArray target
 
@@ -237,7 +237,7 @@ router.post "/group/devices", ({ app, body }, res) ->
 
 		debug message
 
-		broadcastDeviceGroups target
+		broadcaster.broadcastDeviceGroups target
 
 		res
 			.status 200
@@ -256,7 +256,7 @@ router.post "/group/devices", ({ app, body }, res) ->
 
 		debug message
 
-		broadcastDeviceGroups target
+		broadcaster.broadcastDeviceGroups target
 
 		res
 			.status 200
@@ -266,8 +266,8 @@ router.post "/group/devices", ({ app, body }, res) ->
 
 # Registry Images
 router.post "/registry", ({ app, params, body }, res, next) ->
-	{ db, broadcastRegistry } = app.locals
-	{ name }                  = body
+	{ db, broadcaster } = app.locals
+	{ name }            = body
 
 	try
 		await db.AllowedImage.create name: name
@@ -280,7 +280,7 @@ router.post "/registry", ({ app, params, body }, res, next) ->
 			name:     prependRegistryUrl name
 			versions: versions
 
-		broadcastRegistry()
+		broadcaster.broadcastRegistry()
 
 		res
 			.status 200
@@ -297,9 +297,9 @@ router.post "/registry", ({ app, params, body }, res, next) ->
 				message: "This registry image is already added"
 
 router.delete "/registry/:name", ({ app, params, body }, res, next) ->
-	{ db, broadcastRegistry } = app.locals
-	{ name }                  = params
-	{ image }                 = body
+	{ db, broadcaster } = app.locals
+	{ name }            = params
+	{ image }           = body
 
 	try
 		if isRegistryImageDependentOn image, await store.getConfigurations()
@@ -314,7 +314,7 @@ router.delete "/registry/:name", ({ app, params, body }, res, next) ->
 			db.RegistryImages.findOneAndDelete name: image
 		]
 
-		broadcastRegistry()
+		broadcaster.broadcastRegistry()
 
 		res
 			.status 204
@@ -344,7 +344,7 @@ router.get "/registry", ({ query }, res, next) ->
 		next error
 
 router.put "/registry", ({ app }, res, next) ->
-	{ db, broadcastRegistry } = app.locals
+	{ db, broadcaster } = app.locals
 
 	try
 		images = await db
@@ -358,7 +358,7 @@ router.put "/registry", ({ app }, res, next) ->
 
 		await store.storeRegistryImages images
 
-		broadcastRegistry()
+		broadcaster.broadcastRegistry()
 
 		res
 			.status 200

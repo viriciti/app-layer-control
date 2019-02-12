@@ -35,6 +35,6 @@ class Broadcaster
 			devices.setIn [device.get("deviceId"), "groups"], device.get "groups"
 		, Map()
 
-		@broadcast "devicesBatchState", deviceGroups
+		@broadcast "devicesState", deviceGroups
 
 module.exports = Broadcaster

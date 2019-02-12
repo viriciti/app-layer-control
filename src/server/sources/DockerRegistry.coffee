@@ -4,16 +4,13 @@
 getRegistryImages = require "../lib/getRegistryImages"
 
 module.exports = (config, db) ->
-	_getRegistryImages = (cb) ->
-		images = await db.AllowedImage.find {}
-		images = await getRegistryImages map images, "name"
+	fetchRegistryImages = ->
+		getRegistryImages map await db.AllowedImage.find(), "name"
 
-		cb null, images
-
-	initRegistry$ = (Observable.bindNodeCallback _getRegistryImages)()
+	initRegistry$ = Observable.fromPromise fetchRegistryImages()
 	registry$     = Observable
 		.timer config.checkingTimeout, config.checkingTimeout
-		.mergeMap -> (Observable.bindNodeCallback _getRegistryImages)()
+		.mergeMap -> Observable.fromPromise fetchRegistryImages()
 
 	initRegistry$
 		.concat registry$

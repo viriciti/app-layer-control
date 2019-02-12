@@ -300,11 +300,16 @@ export function fetchApplicationLogs (deviceId, application) {
 }
 
 export function fetchDevices () {
-	return async dispatch =>
+	return async dispatch => {
+		dispatch(updateAsyncState('isFetchingDevices', true))
+
 		dispatch({
 			type:    DEVICES_STATE,
 			payload: get(await axios.get('/api/devices'), 'data.data'),
 		})
+
+		dispatch(updateAsyncState('isFetchingDevices', false))
+	}
 }
 
 export function fetchSources () {
