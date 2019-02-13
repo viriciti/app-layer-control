@@ -8,7 +8,10 @@ module.exports =
 
 	portalApi:
 		api:
-			host: "portal"
+			host:       "portal"
+			port:       8080
+			apiVersion: "v2"
+		serviceName: "app-layer-control"
 
 	db:
 		hosts: [
@@ -17,3 +20,12 @@ module.exports =
 			{ host: "ndb-006", port: 27022 }
 		]
 		options: replicaSet: "uberdb0"
+
+	versioning:
+		git:
+			host: "git.viriciti.com"
+
+		docker:
+			host:     "docker.viriciti.com"
+			username: "device-user"
+			password: process.env.GITLAB_ACCESS_TOKEN
