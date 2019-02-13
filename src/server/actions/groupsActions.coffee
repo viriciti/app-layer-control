@@ -1,10 +1,25 @@
-async  = require "async"
-config = require "config"
+async                               = require "async"
+config                              = require "config"
+{ compact, uniq, without, isArray } = require "lodash"
+{ promisify }                       = require "util"
 
 debug = (require "debug") "app:actions:groupsActions"
 
 module.exports = (db, mqttSocket) ->
 	{ enrich } = (require "../helpers/enrichAppsForMqtt") db
+
+	publishGroupsForDevice = (deviceId) ->
+		query   = deviceId: deviceId
+		topic   = "devices/#{deviceId}/groups"
+		options = retain: true
+		groups  = JSON.stringify (await db
+			.DeviceGroup
+			.findOne query
+			.select "groups"
+			.lean()
+		).groups
+
+		promisify(mqttSocket.publish.bind mqttSocket) topic, groups, options
 
 	createGroup = ({ payload }, cb) ->
 		{ label } = payload
@@ -27,15 +42,42 @@ module.exports = (db, mqttSocket) ->
 			return cb error if error
 			cb null, "Group #{label} created correctly"
 
+	removeDeviceGroup = ({ payload }, cb) ->
+		{ payload, dest } = payload
+		dest              = [dest] unless isArray dest
+
+		debug "Removing #{payload.length} group(s) for #{dest.length} device(s)"
+
+		await Promise.all dest.map (deviceId) ->
+			query             = deviceId: deviceId
+			current           = await db.DeviceGroup.findOne(query).lean()
+			currentGroups     = current?.groups or ["default"]
+			newGroups         = without currentGroups, payload
+
+			await db.DeviceGroup.findOneAndUpdate query, groups: newGroups
+			await publishGroupsForDevice deviceId
+
+		cb()
+
 	removeGroup = ({ payload: label }, cb) ->
-		return cb new Error "It is not possible to remove the default group" if label is "default"
+		devices = await db
+			.DeviceGroup
+			.find groups: label
+			.lean()
 
-		db.Group.findOneAndRemove { label }, (error) ->
+		await Promise.all devices.map (device) ->
+			{ deviceId } = device
+			query        = deviceId: deviceId
+			update       = groups: without device.groups, label
+
+			await db.DeviceGroup.findOneAndUpdate query, update
+			await publishGroupsForDevice deviceId
+
+		await db.Group.findOneAndRemove { label }
+
+		publishGroups (error) ->
 			return cb error if error
-
-			publishGroups (error) ->
-				return cb error if error
-				cb null, "Group #{label} removed correctly"
+			cb null, "Group #{label} removed correctly"
 
 	publishGroups = (cb) ->
 		async.waterfall [
@@ -63,8 +105,27 @@ module.exports = (db, mqttSocket) ->
 				mqttSocket.publish topic, message, options, cb
 		], cb
 
+	storeGroups = ({ payload }, cb) ->
+		{ payload, dest } = payload
+		dest              = [dest] unless isArray dest
+
+		debug "Storing #{payload.length} group(s) for #{dest.length} device(s)"
+
+		await Promise.all dest.map (deviceId) ->
+			query         = deviceId: deviceId
+			current       = await db.DeviceGroup.findOne(query).select("groups").lean()
+			currentGroups = current?.groups or ["default"]
+			update        = groups: uniq compact [currentGroups..., payload...]
+
+			await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
+			await publishGroupsForDevice deviceId
+
+		cb()
+
 	return {
-		createGroup,
-		removeGroup,
+		createGroup
+		removeGroup
+		removeDeviceGroup
 		publishGroups
+		storeGroups
 	}

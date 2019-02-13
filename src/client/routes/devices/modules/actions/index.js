@@ -31,7 +31,7 @@ export const CONTAINER_LOGS = 'CONTAINER_LOGS'
 export const REMOVE_IMAGE = 'REMOVE_IMAGE'
 
 export const STORE_GROUPS = 'STORE_GROUPS'
-export const REMOVE_GROUP = 'REMOVE_GROUP'
+export const REMOVE_GROUP = 'REMOVE_DEVICE_GROUP'
 
 export const CLEAN_LOGS = 'CLEAN_LOGS'
 export const DEVICE_LOGS = 'DEVICE_LOGS'
@@ -40,168 +40,165 @@ export const PAGINATE = 'PAGINATE'
 export const ITEMS_PER_PAGE = 'ITEMS_PER_PAGE'
 export const RESET_PAGINATION = 'RESET_PAGINATION'
 
-export function addFilter (payload) {
+export function addFilter(payload) {
 	return {
 		type: ADD_FILTER,
-		payload,
+		payload
 	}
 }
 
-export function setFilter (payload) {
+export function setFilter(payload) {
 	return {
 		type: SET_FILTER,
-		payload,
+		payload
 	}
 }
 
-export function clearFilters () {
+export function clearFilters() {
 	return {
-		type: CLEAR_FILTERS,
+		type: CLEAR_FILTERS
 	}
 }
 
-export function applyFilters () {
+export function applyFilters() {
 	return {
-		type: APPLY_FILTERS,
+		type: APPLY_FILTERS
 	}
 }
 
-export function paginateTo ({ selected }) {
+export function paginateTo({ selected }) {
 	return {
-		type:    PAGINATE,
-		payload: selected,
+		type: PAGINATE,
+		payload: selected
 	}
 }
 
-export function setItemsPerPage (payload) {
+export function setItemsPerPage(payload) {
 	return {
 		type: ITEMS_PER_PAGE,
-		payload,
+		payload
 	}
 }
 
-export function resetPagination () {
+export function resetPagination() {
 	return {
-		type: RESET_PAGINATION,
+		type: RESET_PAGINATION
 	}
 }
 
-export function multiSelectDevice (payload) {
+export function multiSelectDevice(payload) {
 	return {
 		type: MULTISELECT_DEVICE,
-		payload,
+		payload
 	}
 }
 
-export function multiSelectDevices (payload) {
+export function multiSelectDevices(payload) {
 	return {
 		type: MULTISELECT_DEVICES,
-		payload,
+		payload
 	}
 }
 
-export function multiSelectAction (payload) {
+export function multiSelectAction(payload) {
 	return {
 		type: MULTISELECT_ACTION,
-		payload,
+		payload
 	}
 }
 
-export function clearMultiSelect () {
+export function clearMultiSelect() {
 	return {
-		type: MULTISELECT_ACTION_CLEAR,
+		type: MULTISELECT_ACTION_CLEAR
 	}
 }
 
-export function selectDevice (payload) {
+export function selectDevice(payload) {
 	return {
 		type: SELECT_DEVICE,
-		payload,
+		payload
 	}
 }
 
-export function refreshState (payload) {
+export function refreshState(payload) {
 	return {
 		type: DEVICE_NAMESPACE + REFRESH_STATE,
 		payload,
 		meta: {
-			async:    'isRefreshingState',
+			async: 'isRefreshingState',
 			debounce: {
-				time: 500,
-			},
-		},
+				time: 500
+			}
+		}
 	}
 }
 
-export function rebootDevices (payload) {
+export function rebootDevices(payload) {
 	return {
 		type: DEVICES_NAMESPACE + REBOOT,
-		payload,
+		payload
 	}
 }
 
-export function storeGroups (payload) {
+export function storeGroups(payload) {
 	return {
-		type: DEVICE_NAMESPACE + STORE_GROUPS,
-		payload,
-		meta: {
-			async: 'isStoringGroups',
-		},
+		type: DB_NAMESPACE + STORE_GROUPS,
+		payload
 	}
 }
 
-export function multiStoreGroups (payload) {
+export function multiStoreGroups(payload) {
 	return {
-		type: DEVICES_NAMESPACE + STORE_GROUPS,
-		payload,
+		type: DB_NAMESPACE + STORE_GROUPS,
+		payload
 	}
 }
 
-export function removeGroup (payload) {
+export function removeGroup(payload) {
 	return {
-		type: DEVICE_NAMESPACE + REMOVE_GROUP,
-		payload,
+		type: DB_NAMESPACE + REMOVE_GROUP,
+		payload
 	}
 }
 
-export function multiRemoveGroups (payload) {
+export function multiRemoveGroups(payload) {
 	return {
-		type: DEVICES_NAMESPACE + REMOVE_GROUP,
-		payload,
+		type: DB_NAMESPACE + REMOVE_GROUP,
+		payload
 	}
 }
 
-export function removeImage (payload) {
+export function removeImage(payload) {
 	return {
 		type: DEVICE_NAMESPACE + REMOVE_IMAGE,
-		payload,
+		payload
 	}
 }
 
-export function removeContainer (payload) {
+export function removeContainer(payload) {
 	return {
 		type: DEVICE_NAMESPACE + REMOVE_CONTAINER,
-		payload,
+		payload
 	}
 }
 
-export function restartContainer (payload) {
+export function restartContainer(payload) {
 	return {
 		type: DEVICE_NAMESPACE + RESTART_CONTAINER,
-		payload,
+		payload
 	}
 }
 
-export function getContainerLogs (payload) {
+export function getContainerLogs(payload) {
 	return {
 		type: DEVICE_GET_NAMESPACE + GET_CONTAINER_LOGS,
-		payload,
+		payload
 	}
 }
 
-export function cleanLogs (payload) {
+export function cleanLogs(payload) {
 	return {
 		type: CLEAN_LOGS,
-		payload,
+		payload
 	}
 }

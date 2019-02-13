@@ -1,49 +1,50 @@
-async                = require "async"
-compress             = require "compression"
-config               = require "config"
-constantCase         = require "constant-case"
-cookieParser         = require "cookie-parser"
-cors                 = require "cors"
-debug                = (require "debug") "app:main"
-express              = require "express"
-http                 = require "http"
-path                 = require "path"
-socketio             = require "socket.io"
-{ Map, fromJS }      = require "immutable"
-{ Observable }       = require "rxjs"
-{ each, size, noop } = require "underscore"
-mqtt                 = require "mqtt"
-RPC                  = require "mqtt-json-rpc"
-semver               = require "semver"
+async                 = require "async"
+compression           = require "compression"
+config                = require "config"
+constantCase          = require "constant-case"
+cookieParser          = require "cookie-parser"
+cors                  = require "cors"
+debug                 = (require "debug") "app:main"
+express               = require "express"
+http                  = require "http"
+path                  = require "path"
+socketio              = require "socket.io"
+{ Map, List, fromJS } = require "immutable"
+{ Observable }        = require "rxjs"
+{ each, size, noop }  = require "lodash"
+mqtt                  = require "mqtt"
+RPC                   = require "mqtt-json-rpc"
+semver                = require "semver"
 
 {
 	DevicesLogs
 	DevicesNsState
 	DevicesState
 	DevicesStatus
+	DeviceGroups
 	DockerRegistry
 	externals
-}                       = require "./sources"
-populateMqttWithGroups  = require "./helpers/populateMqttWithGroups"
-getVersionsNotMatching  = require "./lib/getVersionsNotMatching"
-getContainersNotRunning = require "./lib/getContainersNotRunning"
-runUpdates              = require "./updates"
-sendMessageToMqtt       = require "./updates/sendMessageToMqtt"
-{ cacheUpdate }         = require "./observables"
+}                            = require "./sources"
+Database                     = require "./db"
+populateMqttWithGroups       = require "./helpers/populateMqttWithGroups"
+populateMqttWithDeviceGroups = require "./helpers/populateMqttWithDeviceGroups"
+getVersionsNotMatching       = require "./lib/getVersionsNotMatching"
+getContainersNotRunning      = require "./lib/getContainersNotRunning"
+runUpdates                   = require "./updates"
+sendMessageToMqtt            = require "./updates/sendMessageToMqtt"
+{ cacheUpdate }              = require "./observables"
+apiRouter                    = require "./api"
+bundle                       = require "./bundle"
 
 log = (require "./lib/Logger") "main"
-db  = (require "./db") config.db
 
 # Server initialization
 app     = express()
 server  = http.createServer app
+port    = process.env.PORT or config.server.port
 io      = socketio server
 sockets = {}
-
-# Apply gzip compression and cors
-app.use cors()
-app.use compress()
-app.use cookieParser()
+db      = new Database
 
 rpc               = null
 mqttClient        = null
@@ -58,12 +59,7 @@ main = ->
 	initMqtt()
 	initSocketIO()
 
-	# HACK Wait for a while when populating local store with mqtt data. Currently all data is being proxied through
-	# immediately causing massive load on connected clients
-	# setTimeout initSocketIO, config.deferSocketConnectsAtStart
-
-	store.ensureDefaultDeviceSources ->
-		log.info "Saved default table columns"
+	await store.ensureDefaultDeviceSources()
 
 	registry$ = DockerRegistry config.versioning, db
 	registry$.subscribe(
@@ -117,7 +113,10 @@ initMqtt = ->
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{options.host}:#{options.port}"
 
-		populateMqttWithGroups db, mqttClient, (error) ->
+		async.parallel [
+			(cb) -> populateMqttWithGroups db, mqttClient, cb
+			(cb) -> populateMqttWithDeviceGroups db, mqttClient, cb
+		], (error) ->
 			return log.error if error
 
 			async.parallel
@@ -137,6 +136,7 @@ initMqtt = ->
 				devicesNsState$ = DevicesNsState.observable mqttClient
 				devicesState$   = DevicesState.observable   mqttClient
 				devicesStatus$  = DevicesStatus.observable  mqttClient
+				deviceGroups$   = DeviceGroups.observable   mqttClient
 				cacheUpdate$    = cacheUpdate               store
 
 				each externals, (source) ->
@@ -176,7 +176,7 @@ initMqtt = ->
 					.subscribe ->
 						log.info "Cache has been updated... Validating outdated software for devices"
 
-						deviceUpdates         = deviceStates
+						deviceUpdates = deviceStates
 							.reduce (updates, device) ->
 								versionsNotMatching = getVersionsNotMatching
 									store:             store
@@ -234,6 +234,7 @@ initMqtt = ->
 						_broadcastAction "devicesBatchState", newStates
 
 				devicesNsState$
+					.merge deviceGroups$
 					.bufferTime config.batchState.nsStateInterval
 					.subscribe (nsStateUpdates) ->
 						return unless nsStateUpdates.length
@@ -261,6 +262,7 @@ initMqtt = ->
 					.subscribe (statusUpdates) ->
 						return unless statusUpdates.length
 
+
 						newStatuses = statusUpdates.reduce (updates, statusUpdate) ->
 							{ deviceId, status } = statusUpdate
 							newState             = fromJS
@@ -279,6 +281,21 @@ initMqtt = ->
 				devicesLogs$.subscribe (logs) ->
 					_broadcastAction "deviceLogs", logs
 
+				# Takes care of publishing groups for devices which connect for the first time
+				devicesStatus$
+					.filter ({ deviceId, retained }) ->
+						not retained and deviceStates
+							.getIn [deviceId, "groups"], List()
+							.isEmpty()
+					.subscribe ({ deviceId }) ->
+						log.warn "No groups found for #{deviceId}, setting default groups ..."
+
+						topic   = "devices/#{deviceId}/groups"
+						message = JSON.stringify ["default"]
+						options = retain: true
+
+						client.publish topic, message, options
+
 				# After we have subscribed to all socket events. We subscribe to the mqtt topics.
 				# We do this so we do not miss any data that might come through when we are not listening for events yet.
 				client.subscribe [
@@ -286,6 +303,7 @@ initMqtt = ->
 					DevicesLogs.topic
 					DevicesNsState.topic
 					DevicesStatus.topic
+					DeviceGroups.topic
 				], (error, granted) ->
 					throw new Error "Error subscribing topics: #{error.message}" if error
 
@@ -306,6 +324,8 @@ initMqtt = ->
 initSocketIO = ->
 	log.info "Initializing socket.io"
 
+	io.set "transports", ["websocket"]
+
 	io.on "connection", (socket) ->
 		log.info "Client connected: #{socket.id}"
 		sockets[socket.id] = socket
@@ -322,6 +342,7 @@ initSocketIO = ->
 				allowedImages:         state.get "allowedImages"
 
 			each mapActionToValue, (data, type) ->
+				console.log "action", type
 				socket.emit "action",
 					type: constantCase type
 					data: data.toJS()
@@ -385,6 +406,7 @@ _onActionDeviceGet = (action, cb) ->
 _onActionDb = ({ action, payload, meta }, cb) ->
 	{ execute }  = (require "./actions") db, mqttClient, _broadcastAction, store
 	messageTable =
+		storeGroups:         "Groups updated for #{payload?.dest}"
 		createConfiguration: "Application updated"
 		removeConfiguration: "Application removed"
 		createGroup:         "Group updated"
@@ -399,48 +421,20 @@ _onActionDb = ({ action, payload, meta }, cb) ->
 		debug "Received result for action: #{action} - #{result}"
 		cb null, messageTable[action] or "Done"
 
-# Webpack section
-unless process.env.NODE_ENV is "production"
-	webpackHotMiddleware = require "webpack-hot-middleware"
-	webpackMiddleware    = require "webpack-dev-middleware"
-	webpackConfig        = require "../../webpack.config.js"
-	webpack              = require "webpack"
+app.use cors()
+app.use compression()
+app.use cookieParser()
+app.use "/api", apiRouter
 
-	compiler = webpack webpackConfig
-
-	# Middlewares for webpack
-	debug "Enabling webpack dev and HMR middlewares..."
-	app.use webpackMiddleware compiler,
-		hot: true
-		stats:
-			colors: true
-			chunks: false
-			chunksModules: false
-		historyApiFallback: true
-
-	app.use webpackHotMiddleware compiler, { path: "/__webpack_hmr" }
-
-	app.use "*", (req, res, next) ->
-		filename = path.join compiler.outputPath, "index.html"
-		compiler.outputFileSystem.readFile filename, (err, result) ->
-			if err
-				return next err
-			res.set "content-type", "text/html"
-			res.send result
-			res.end()
-
-else
-	app.use express.static path.resolve __dirname, "../client"
-	app.get "*", (req, res) ->
-		res.sendFile(path.resolve __dirname, "../client/index.html")
-
-# Run backwards compatible updates first
-runUpdates
-	db:    db
-	store: store
-, ->
-	port = config.server.port
-	server.listen process.env.PORT or port, ->
-		log.info "Server listening on :#{port}"
-
-	main()
+bundle app
+	.then ->
+		db.connect()
+	.then ->
+		runUpdates
+			db:    db
+			store: store
+	.then ->
+		main()
+	.then ->
+		server.listen port, ->
+			log.info "Server listening on :#{@address().port}"

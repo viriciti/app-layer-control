@@ -1,4 +1,4 @@
-{ omit } = require "underscore"
+{ omit } = require 'underscore'
 
 module.exports = (db) ->
 	editColumn = ({ payload, meta }, cb) ->

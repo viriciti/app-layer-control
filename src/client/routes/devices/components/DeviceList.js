@@ -1,4 +1,4 @@
-import { isEqual, find } from 'underscore'
+import { isEqual, find } from 'lodash'
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import { Map, List } from 'immutable'
@@ -10,9 +10,9 @@ import PaginationControl from './pagination/PaginationControl'
 import PaginationTableBody from './pagination/PaginationTableBody'
 import TableHead from './table/TableHead'
 
-import selectedDeviceSelector from 'routes/devices/modules/selectors/getSelectedDevice'
-import selectorDevicesSerial from 'routes/devices/modules/selectors/getDevicesSerial'
-import filterSelector from 'routes/devices/modules/selectors/getActiveFilters'
+import selectedDeviceSelector from '/routes/devices/modules/selectors/getSelectedDevice'
+import selectorDevicesSerial from '/routes/devices/modules/selectors/getDevicesSerial'
+import filterSelector from '/routes/devices/modules/selectors/getActiveFilters'
 import {
 	selectDevice,
 	storeGroups,
@@ -24,7 +24,7 @@ import {
 	multiRemoveGroups,
 	paginateTo,
 	resetPagination,
-} from 'routes/devices/modules/actions'
+} from '/routes/devices/modules/actions'
 
 class DeviceList extends PureComponent {
 	defaultFilters = {

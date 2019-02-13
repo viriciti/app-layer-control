@@ -5,6 +5,12 @@ ul,
 	list-style-type: none;
 }
 
+.list--striped {
+	li:nth-of-type(#{$table-striped-order}) {
+		background-color: $table-accent-bg;
+	}
+}
+
 dd {
 	margin-bottom: 0;
 }

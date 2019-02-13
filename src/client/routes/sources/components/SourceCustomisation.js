@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import classNames from 'classnames'
 
 import SourceCustomisationModal from './SourceCustomisationModal'
-import { editColumn, addColumn, removeColumn } from 'routes/sources/modules/actions'
+import { editColumn, addColumn, removeColumn } from '/routes/sources/modules/actions'
 
 const StateIcon = ({ value }) => {
 	if (value) {

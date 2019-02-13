@@ -1,27 +1,23 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import clipboard from 'clipboard-polyfill'
+import { partialRight } from 'lodash'
 
 import formats from './table/formats'
 
-import { selectDevice, multiSelectDevice } from 'routes/devices/modules/actions'
+import { selectDevice, multiSelectDevice } from '/routes/devices/modules/actions'
+import toReactKey from '/utils/toReactKey'
+
+const Clipboard = ({ onClick }) => (
+	<button className="btn btn--text btn--icon btn-sm float-right" title="Copy to clipboard" onClick={onClick}>
+		<span className="fas fa-clipboard" />
+	</button>
+)
 
 class DeviceListItem extends PureComponent {
-	copyToClipboardIcon = (columnName, value) => {
-		const onClickCopy = e => {
-			e.stopPropagation()
-			clipboard.writeText(value)
-		}
-
-		return (
-			<button
-				className="btn btn--text btn-sm btn--icon float-right"
-				title={`Copy ${columnName} to clipboard`}
-				onClick={onClickCopy}
-			>
-				<span className="far fa-clipboard" />
-			</button>
-		)
+	onCopy = (event, value) => {
+		event.stopPropagation()
+		clipboard.writeText(value)
 	}
 
 	onMultiSelect = () => {
@@ -55,21 +51,20 @@ class DeviceListItem extends PureComponent {
 
 				{deviceSources
 					.valueSeq()
-					.filter(options => {
-						return options.get('entryInTable')
-					})
-					.map((options, index) => {
+					.filter(options => options.get('entryInTable'))
+					.map(options => {
 						const getIn = options.get('getIn').split('.')
+						const fallbackGetIn = options.get('fallbackGetIn', '').split('.')
 						const getInTitle = options.get('getInTitle').split('.')
 
-						const value = info.getIn(getIn, options.get('defaultValue'))
+						const value = info.getIn(getIn, info.getIn(fallbackGetIn, options.get('defaultValue')))
 						const formatter = formats(options.get('format', 'default'))
 						const span = formatter(value, info.getIn(getInTitle))
 
 						return (
-							<td position={index} key={`${info.get('deviceId')}-${index}`}>
+							<td key={toReactKey(info.get('deviceId'), options.get('name'))}>
 								{span}
-								{options.get('copyable') && value ? this.copyToClipboardIcon(options.get('headerName'), value) : null}
+								{options.get('copyable') && value ? <Clipboard onClick={partialRight(this.onCopy, value)} /> : null}
 							</td>
 						)
 					})}

@@ -1,7 +1,7 @@
 async  = require "async"
 debug  = (require "debug") "app:helpers:enrich-for-mqtt"
 semver = require "semver"
-_      = require "underscore"
+_      = require 'underscore'
 
 module.exports = (db) ->
 	enrich = (label, applications, cb) ->

@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
 import { connect } from 'react-redux'
-import { partial } from 'underscore'
+import { partial } from 'lodash'
 
 import ContainerOverview from './ContainerOverview'
 
@@ -94,7 +94,10 @@ class DeviceContainers extends Component {
 							const selectedContainer = this.state.selectedContainer && this.state.selectedContainer.get('name')
 							const isActive = container.get('name') === selectedContainer
 							const frontEndPort = configurations.getIn([container.get('name'), 'frontEndPort'])
-							const deviceIp = selectedDevice.getIn(['systemInfo', 'tun0IP'])
+							const deviceIp = selectedDevice.getIn(
+								['systemInfo', 'tun0'],
+								selectedDevice.getIn(['systemInfo', 'tun0IP'])
+							)
 
 							return (
 								<li className="mb-2" key={`${container.get('Id')}`}>

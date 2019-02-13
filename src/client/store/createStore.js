@@ -8,20 +8,14 @@ import socketIOMiddleware from './middlewares/socket.io-middleware'
 import makeRootReducer from './reducers'
 
 export default (initialState = Map({})) => {
-	// ======================================================
-	// Middleware Configuration
-	// ======================================================
 	const middleware = [createDebounce(), thunk, socketIOMiddleware]
-
-	// ======================================================
-	// Store Enhancers
-	// ======================================================
 	const enhancers = []
 
 	let composeEnhancers = compose
 
 	if (process.env.NODE_ENV !== 'production') {
 		const composeWithDevToolsExtension = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
+
 		if (typeof composeWithDevToolsExtension === 'function') {
 			composeEnhancers = composeWithDevToolsExtension({ maxAge: 15 })
 		}

@@ -25,8 +25,8 @@ module.exports =
 		name: "app-layer-control"
 
 	versioning:
-		maxTokenAttempts:    3
-		checkingTimeout:     600000
+		maxTokenAttempts: 3
+		checkingTimeout:  600000
 
 	defaultColumns:
 		onlineStatus:
@@ -66,7 +66,8 @@ module.exports =
 					{ value: "error",    label: "Error" }
 					{ value: "updating", label: "Updating" }
 					{ value: "idle",     label: "Idle" }
-					]
+				]
+			format: "updateState"
 			headerStyle:
 				minWidth: "200px"
 			entryInTable:  true
@@ -84,8 +85,8 @@ module.exports =
 			filterFormat:
 				type:    "checkboxes"
 				options: [
-					{ value: "versionsNotMatching",  label: "Outdated software" }
 					{ value: "containersNotRunning", label: "Container is down" }
+					{ value: "versionsNotMatching",  label: "Outdated software" }
 				]
 			editable:     false
 			headerStyle:
@@ -154,7 +155,7 @@ module.exports =
 			sortable:     true
 			filterable:   false
 			copyable:     false
-			getIn:        "systemInfo.dmVersion"
+			getIn:        "systemInfo.appVersion"
 			editable:     false
 			headerStyle:
 				minWidth: "100px"

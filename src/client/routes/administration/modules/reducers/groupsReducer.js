@@ -1,6 +1,6 @@
 import { Map, fromJS } from 'immutable'
 
-import { GROUPS } from 'routes/administration/modules/actions'
+import { GROUPS } from '/routes/administration/modules/actions'
 
 // ------------------------------------
 // Action Handlers

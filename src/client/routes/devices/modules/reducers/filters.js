@@ -1,9 +1,9 @@
-import _ from 'underscore'
+import { isEmpty, defaultTo } from 'lodash'
 import { Map, List, fromJS } from 'immutable'
 
-import { ADD_FILTER, SET_FILTER, CLEAR_FILTERS, APPLY_FILTERS } from 'routes/devices/modules/actions'
+import { ADD_FILTER, SET_FILTER, CLEAR_FILTERS, APPLY_FILTERS } from '/routes/devices/modules/actions'
 
-import { DEVICE_SOURCES } from 'store/globalReducers/actions'
+import { DEVICE_SOURCES } from '/store/globalReducers/actions'
 
 const ACTION_HANDLERS = {
 	[DEVICE_SOURCES]: (filters = Map(), action) => {
@@ -16,11 +16,12 @@ const ACTION_HANDLERS = {
 			})
 			.reduce((acc, column) => {
 				const key = column.get('getIn')
+				const fallbackGetIn = column.get('fallbackGetIn')
 				const headerName = column.get('headerName', 'NO HEADERNAME')
 				const filterFormat = column.get('filterFormat')
 
 				const f = { headerName, filterFormat, value: '' }
-				return acc.set(key, Map(f))
+				return acc.set(defaultTo(key, fallbackGetIn), Map(f))
 			}, Map())
 
 		return filters.mergeIn(['columns'], columns)
@@ -47,7 +48,7 @@ const ACTION_HANDLERS = {
 			'appliedFilters',
 			filters.get('columns', Map()).filter((filter, columnName) => {
 				const val = filter.get('value')
-				if (_.isEmpty(val)) return false
+				if (isEmpty(val)) return false
 				if (List.isList(val) && val.size === 0) return false
 				return true
 			})
@@ -57,7 +58,7 @@ const ACTION_HANDLERS = {
 	// Clear all the filters
 	[CLEAR_FILTERS]: (filters = Map()) => {
 		let columns = filters.get('columns', Map())
-		columns = columns.map((filter, column) => {
+		columns = columns.map(filter => {
 			return filter.set('value', '')
 		})
 		return filters.set('columns', columns)

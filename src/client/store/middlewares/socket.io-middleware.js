@@ -2,11 +2,13 @@ import io from 'socket.io-client'
 import camelCase from 'camel-case'
 import { toast } from 'react-toastify'
 
-import { updateAsyncState, updateDeviceAsyncState } from 'store/globalReducers/userInterface'
+import { updateAsyncState, updateDeviceAsyncState } from '/store/globalReducers/userInterface'
 
-const socket = io(window.location.origin)
+const socket = io(window.location.origin, {
+	transports: ['websocket'],
+})
 
-export default function ({ dispatch }) {
+export default ({ dispatch }) => {
 	const notify = (type, ...message) => {
 		toast(message.join(' '), { type })
 	}

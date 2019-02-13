@@ -3,8 +3,8 @@ import { PureComponent } from 'react'
 const listeners = []
 
 setInterval(() => {
-	return listeners.forEach(fn => {
-		return fn()
+	listeners.forEach(fn => {
+		fn()
 	})
 }, 30 * 1000)
 

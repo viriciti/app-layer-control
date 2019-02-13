@@ -1,11 +1,11 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 import { Map } from 'immutable'
-import { partial } from 'underscore'
+import { partial } from 'lodash'
 
-import AsyncButton from 'components/common/AsyncButton'
+import AsyncButton from '/components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'
-import { refreshRegistryImages, addRegistryImage, removeRegistryImage } from 'routes/administration/modules/actions'
+import { refreshRegistryImages, addRegistryImage, removeRegistryImage } from '/routes/administration/modules/actions'
 
 const RegistryImage = ({ name, image, onRemoveImage }) => {
 	return (
@@ -30,8 +30,22 @@ const RegistryImage = ({ name, image, onRemoveImage }) => {
 }
 
 class RegistryImagesOverview extends PureComponent {
+	state = {
+		configuredHost: undefined,
+	}
+
+	componentWillMount () {
+		fetch('/api/versioning')
+			.then(response => {
+				return response.json()
+			})
+			.then(({ host: configuredHost }) => {
+				this.setState({ configuredHost })
+			})
+	}
+
 	withRegistryUrl = repository => {
-		const configuredHost = CONFIG.versioning.docker.host
+		const configuredHost = this.state.configuredHost
 		const registryUrl = configuredHost.endsWith('/') ? configuredHost : configuredHost.concat('/')
 
 		return `${registryUrl}${repository}`
@@ -54,57 +68,61 @@ class RegistryImagesOverview extends PureComponent {
 	}
 
 	render () {
-		return (
-			<div className="card">
-				<div className="card-header">
-					Registry Images
-					<div className="btn-group btn-group--toggle float-right">
-						<AsyncButton
-							className="btn btn-sm btn-light btn--no-underline"
-							onClick={this.onRefresh}
-							busy={this.props.isFetchingVersions}
-							busyText="Fetching ..."
-						>
-							<Fragment>
-								<span className="fas fa-download" /> Fetch versions
-							</Fragment>
-						</AsyncButton>
+		if (!this.state.configuredHost) {
+			return null
+		} else {
+			return (
+				<div className="card">
+					<div className="card-header">
+						Registry Images
+						<div className="btn-group btn-group--toggle float-right">
+							<AsyncButton
+								className="btn btn-sm btn-light btn--no-underline"
+								onClick={this.onRefresh}
+								busy={this.props.isFetchingVersions}
+								busyText="Fetching ..."
+							>
+								<Fragment>
+									<span className="fas fa-download" /> Fetch versions
+								</Fragment>
+							</AsyncButton>
+						</div>
+					</div>
+
+					<div className="card-body spacing-base">
+						<RegistryImageForm imageNames={this.props.allowedImages} onSubmit={this.onAddImage} />
+
+						{this.props.allowedImages.size ? (
+							<div className="table-responsive">
+								<table className="table">
+									<thead className="thead-light">
+										<tr>
+											<th style={{ width: '30%' }}>Image</th>
+											<th>Versions</th>
+											<th />
+										</tr>
+									</thead>
+									<tbody>
+										{this.props.allowedImages.sort().map(name => {
+											return (
+												<RegistryImage
+													key={name}
+													name={this.withRegistryUrl(name)}
+													image={this.props.registryImages.get(this.withRegistryUrl(name), Map())}
+													onRemoveImage={partial(this.onRemoveImage, { name, image: this.withRegistryUrl(name) })}
+												/>
+											)
+										})}
+									</tbody>
+								</table>
+							</div>
+						) : (
+							<div className="card-message">No registry images available, try to fetch versions first</div>
+						)}
 					</div>
 				</div>
-
-				<div className="card-body spacing-base">
-					<RegistryImageForm imageNames={this.props.allowedImages} onSubmit={this.onAddImage} />
-
-					{this.props.allowedImages.size ? (
-						<div className="table-responsive">
-							<table className="table">
-								<thead className="thead-light">
-									<tr>
-										<th style={{ width: '30%' }}>Image</th>
-										<th>Versions</th>
-										<th />
-									</tr>
-								</thead>
-								<tbody>
-									{this.props.allowedImages.sort().map(name => {
-										return (
-											<RegistryImage
-												key={name}
-												name={this.withRegistryUrl(name)}
-												image={this.props.registryImages.get(this.withRegistryUrl(name), Map())}
-												onRemoveImage={partial(this.onRemoveImage, { name, image: this.withRegistryUrl(name) })}
-											/>
-										)
-									})}
-								</tbody>
-							</table>
-						</div>
-					) : (
-						<div className="card-message">No registry images available, try to fetch versions first</div>
-					)}
-				</div>
-			</div>
-		)
+			)
+		}
 	}
 }
 

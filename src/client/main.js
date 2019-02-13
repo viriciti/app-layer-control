@@ -4,15 +4,14 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
 
-import App from './components/App'
+import createStore from '/store/createStore'
+import App from '/components/App'
 
-// ========================================================
-// Render Setup
-// ========================================================
+const store = createStore()
 const render = Component => {
 	ReactDOM.render(
 		<AppContainer>
-			<Component />
+			<Component store={store} />
 		</AppContainer>,
 		document.getElementById('root')
 	)
@@ -22,7 +21,7 @@ render(App)
 
 // Hot Module Replacement API
 if (module.hot) {
-	module.hot.accept('./components/App', () => {
+	module.hot.accept(() => {
 		render(App)
 	})
 }

@@ -6,7 +6,7 @@ import {
 	DEVICES_STATE,
 	CONTAINER_LOGS,
 	SELECT_DEVICE,
-} from 'routes/devices/modules/actions'
+} from '/routes/devices/modules/actions'
 
 // ------------------------------------
 // Action Handlers

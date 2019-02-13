@@ -1,5 +1,5 @@
 log   = (require "../lib/Logger") "Actions"
-_     = require "underscore"
+_     = require 'underscore'
 async = require "async"
 
 module.exports = (db, mqttClient, broadcastAction, store) ->

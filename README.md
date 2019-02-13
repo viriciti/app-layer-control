@@ -1,6 +1,9 @@
 # App Layer Control
 
-![Docker Build](https://img.shields.io/docker/build/viriciti/app-layer-control.svg)
+![](https://img.shields.io/badge/app--layer--agent-%5E1.19.0-lightgrey.svg)
+![](https://img.shields.io/github/last-commit/viriciti/app-layer-control.svg)
+![](https://img.shields.io/david/viriciti/app-layer-control.svg)
+![](https://img.shields.io/david/dev/viriciti/app-layer-control.svg)
 
 ## Dependencies
 
@@ -9,34 +12,26 @@
 - MQTT
 
 If you have [Docker Compose](https://docs.docker.com/compose/) installed, you can also run `docker-compose up -d`.  
-It is advised to _not_ use this in production (it is not secured), but configure the components separately instead.
+It is advised to _not_ use this in production (as it is not secure), but to configure the components separately instead.
 
 ## Getting started
 
 1. Clone (or fork) the project
 2. Run `npm install` to install the npm modules
-3. Run `npm start` to start developing. Server will be restarted upon changes.
+3. Run `npm start` to start developing. Server will be restarted upon changes
 
-## Customisation
+### Configuration
 
-The project comes with no branding by default. To add your own branding, a few files must be updated/replaced.
+While the default configuration provides a starting point, several settings are omitted for security reasons.  
+These settings include the GitLab endpoint and Docker Registry endpoint.  
+To configure those, add an extra configuration file (or update the default configuration, whatever floats your boat), and make sure the following settings are configured:
 
-### Logo
+- `git.host`
+- `docker.host`
+- `docker.username`
+- `docker.password`
 
-The component responsible for displaying the navigation expects the logo to exist at `client/assets/logo/logo.png`. Currently, it does not support other extensions besides `.png`. The filesize or image size does not matter, but we recommend a size of at least 30x30 or higher.
-
-### Loader
-
-Apart from the logo, the styling expects a loader to exist at `client/assets/loader/loader.svg` or `client/assets/loader/loader.gif`.
-
-### Favicon
-
-If you want to use your own favicon, add it at `client/assets/favicon.ico`.
-
-### Colors
-
-The styling has been made modular to the best of its extend. Thus, providing your own brand color is trivial.
-All you have to do is change the variable `$color-brand` to use your own color in `client/styles/base/_variables.scss`.
+**Note:** The dot represents a nested value. For example, the setting `username` is a setting within the setting `docker`.
 
 ### External sources
 

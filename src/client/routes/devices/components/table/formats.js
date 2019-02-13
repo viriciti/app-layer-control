@@ -3,7 +3,7 @@ import moment from 'moment'
 import { List } from 'immutable'
 import classNames from 'classnames'
 
-import LastSeenInterval from 'components/common/LastSeenInterval'
+import LastSeenInterval from '/components/common/LastSeenInterval'
 
 const formats = {
 	default: (value, title) => {
@@ -21,6 +21,24 @@ const formats = {
 				{value}
 			</span>
 		)
+	},
+
+	updateState: (state, title) => {
+		if (state.match(/error/i)) {
+			return (
+				<span className="text-danger" title={title}>
+					<span className="fas fa-exclamation-circle pr-2" /> {state}
+				</span>
+			)
+		} else if (state.match(/updating/i)) {
+			return (
+				<span className="text-info" title={title}>
+					<span className="fas fa-cloud-download-alt pr-2 pulsate" /> {state}
+				</span>
+			)
+		} else {
+			return <span>{state}</span>
+		}
 	},
 
 	fromNow: lastSeen => {

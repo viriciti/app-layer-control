@@ -1,5 +1,10 @@
 module.exports = (mongoose) ->
-	DeviceSource = mongoose.model "deviceSource",
+	mongoose.model "DeviceSource",
+		name:
+			type:     String
+			required: true
+			unique:   true
+
 		editable:
 			type:    Boolean
 			default: true
@@ -13,6 +18,10 @@ module.exports = (mongoose) ->
 		getIn:
 			type:     String
 			required: true
+
+		fallbackGetIn:
+			type:    String
+			default: ""
 
 		getInTitle:
 			type:    String
@@ -51,5 +60,3 @@ module.exports = (mongoose) ->
 		entryInDetail:
 			type:    Boolean
 			default: false
-
-	DeviceSource

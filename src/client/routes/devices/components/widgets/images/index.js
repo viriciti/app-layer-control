@@ -2,18 +2,18 @@ import React, { Component } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
 import { Map } from 'immutable'
-import { initial, last } from 'underscore'
+import { initial, last } from 'lodash'
 import { valid, gt } from 'semver'
 
 import ImageOverview from './ImageOverview'
 
 class DeviceImages extends Component {
 	state = {
-		selectedImage:   null,
-		selectedVersion: null,
+		selectedImage: null,
+		selectedVersion: null
 	}
 
-	shouldComponentUpdate (nextProps, nextState) {
+	shouldComponentUpdate(nextProps, nextState) {
 		return (
 			this.props.images !== nextProps.images ||
 			this.state.selectedImage !== nextState.selectedImage ||
@@ -34,12 +34,12 @@ class DeviceImages extends Component {
 			this.setState({ selectedVersion: null })
 		} else {
 			this.setState({
-				selectedVersion: version,
+				selectedVersion: version
 			})
 		}
 	}
 
-	groupImages () {
+	groupImages() {
 		if (!this.props.images) {
 			return
 		}
@@ -48,7 +48,7 @@ class DeviceImages extends Component {
 			.valueSeq()
 			.map(image => {
 				const parts = image.get('name').split(':')
-				const name = initial(parts, 1).join('')
+				const name = initial(parts).join('')
 				const version = last(parts)
 
 				return Map({ name, version })
@@ -61,7 +61,7 @@ class DeviceImages extends Component {
 			})
 	}
 
-	renderImages () {
+	renderImages() {
 		const images = this.groupImages()
 
 		if (!images || images.isEmpty()) {
@@ -87,7 +87,7 @@ class DeviceImages extends Component {
 		}
 	}
 
-	renderImageVersions () {
+	renderImageVersions() {
 		if (this.state.selectedImage) {
 			return this.state.selectedImage
 				.sort((previous, next) => {
@@ -145,7 +145,7 @@ class DeviceImages extends Component {
 		}
 	}
 
-	render () {
+	render() {
 		return (
 			<div>
 				<h5>

@@ -3,13 +3,25 @@ import moment from 'moment'
 import { List } from 'immutable'
 import { connect } from 'react-redux'
 
-import { cleanLogs } from 'routes/devices/modules/actions'
-
-const FORMAT = 'YYYY-MM-DD HH:mm:ss'
+import { cleanLogs } from '/routes/devices/modules/actions'
 
 class DeviceLogs extends Component {
 	shouldComponentUpdate (nextProps) {
 		return this.props.logs.get(this.props.deviceId) !== nextProps.logs.get(this.props.deviceId)
+	}
+
+	getIcon (type) {
+		if (type === 'error') {
+			return <span className="fas fa-exclamation-circle fa-fw text-danger" />
+		} else if (type === 'warning') {
+			return <span className="fas fa-exclamation-triangle fa-fw text-warning" />
+		} else {
+			return <span className="fas fa-info fa-fw text-info" />
+		}
+	}
+
+	onCleanLogs = () => {
+		this.props.cleanLogs(this.props.deviceId)
 	}
 
 	renderLogs () {
@@ -24,23 +36,17 @@ class DeviceLogs extends Component {
 					return log.get('message')
 				})
 				.map((log, index) => {
-					let className = ''
-					if (log.get('type') === 'error') className = 'bg-danger'
-					if (log.get('type') === 'warning') className = 'bg-warning'
-
 					return (
-						<li className={className} key={`${this.props.deviceId}-logs-${index}`}>
-							<span>{moment(log.get('time')).format(FORMAT)}</span>
-							<span> - </span>
-							<span>{`${log.get('message')}`}</span>
+						<li key={`logs${this.props.deviceId}${index}`} className="p-1">
+							{this.getIcon(log.get('type'))}
+
+							<span className="pl-2">
+								{moment(log.get('time')).format('HH:mm:ss')} <b>-</b> {log.get('message')}
+							</span>
 						</li>
 					)
 				})
 		}
-	}
-
-	onCleanLogs = () => {
-		this.props.cleanLogs(this.props.deviceId)
 	}
 
 	render () {
@@ -63,7 +69,7 @@ class DeviceLogs extends Component {
 
 				<hr />
 
-				<ul className="scroll-container" style={{ height: '51vh' }}>
+				<ul className="scroll-container list list--striped" style={{ height: '51vh' }}>
 					{this.renderLogs()}
 				</ul>
 			</Fragment>

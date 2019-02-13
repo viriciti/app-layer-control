@@ -1,0 +1,17 @@
+.pulsate {
+	animation: pulsate 2.5s infinite;
+}
+
+@keyframes pulsate {
+	0% {
+		opacity: 1;
+	}
+
+	30% {
+		opacity: 0.35;
+	}
+
+	55% {
+		opacity: 1;
+	}
+}
