@@ -47,7 +47,7 @@ const TextInputGroup = ({ async, helpText, input, type, placeholder, readOnly, s
 export default connect((state, ownProps) => {
 	return {
 		async: {
-			[ownProps.submit.reduxKey]: state.getIn(['userInterface', ownProps.submit && ownProps.submit.reduxKey]),
+			[ownProps.submit.reduxKey]: state.getIn(['ui', ownProps.submit && ownProps.submit.reduxKey]),
 		},
 	}
 })(TextInputGroup)

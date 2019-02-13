@@ -28,7 +28,7 @@ class ConfigurationsList extends PureComponent {
 	}
 
 	render () {
-		return this.props.configurations.toArray().length ? (
+		return this.props.configurations.size ? (
 			<ul className="list-group col-3">{this.renderConfigurationsList()}</ul>
 		) : null
 	}

@@ -34,13 +34,13 @@ class Sidebar extends Component {
 					</li>
 					<li className="sidebar__list-item">
 						<NavLink exact activeClassName="active" to="/administration">
-							<span className="sidebar__list-icon fas fa-boxes" />
+							<span className="sidebar__list-icon fas fa-user-tie" />
 							<span className="sidebar__list-label">Administration</span>
 						</NavLink>
 					</li>
 					<li className="sidebar__list-item">
 						<NavLink exact activeClassName="active" to="/sources">
-							<span className="sidebar__list-icon fas fa-folder" />
+							<span className="sidebar__list-icon fas fa-memory" />
 							<span className="sidebar__list-label">Sources</span>
 						</NavLink>
 					</li>

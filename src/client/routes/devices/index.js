@@ -1,9 +1,7 @@
 import DeviceList from './components/DeviceList'
 
-const route = {
+export default {
 	path:      '/',
 	exact:     true,
 	component: DeviceList,
 }
-
-export default route

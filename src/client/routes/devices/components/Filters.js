@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import { debounce, isEmpty } from 'lodash'
 import { List, Map } from 'immutable'
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
@@ -7,7 +7,7 @@ import { setFilter, clearFilters, applyFilters } from '/routes/devices/modules/a
 import isFilterEmpty from '/routes/devices/modules/selectors/getEmptyFilters'
 
 class Filters extends PureComponent {
-	debouncedApplyFilters = _.debounce(this.props.applyFilters, 200)
+	debouncedApplyFilters = debounce(this.props.applyFilters, 200)
 
 	renderInput = (headerName, key) => {
 		return (
@@ -72,7 +72,7 @@ class Filters extends PureComponent {
 		const value = event.target.value
 		let list = this.props.columns.getIn([key, 'value'], List())
 
-		if (_.isEmpty(list)) {
+		if (isEmpty(list)) {
 			list = List()
 		}
 
@@ -111,7 +111,6 @@ class Filters extends PureComponent {
 
 		return (
 			<div className="card">
-				<div className="card-header">Filters</div>
 				<div className="card-body spacing-md">
 					<form className="form-horizontal">
 						<div className="row">

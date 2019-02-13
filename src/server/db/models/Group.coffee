@@ -1,6 +1,10 @@
 mongoose = require "mongoose"
 
 module.exports = ->
-	mongoose.model "Group",
+	schema = new mongoose.Schema
 		label:        String
 		applications: Object
+	,
+		minimize: false
+
+	mongoose.model "Group", schema

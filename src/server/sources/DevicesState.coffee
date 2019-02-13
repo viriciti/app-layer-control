@@ -1,5 +1,5 @@
-debug      = (require "debug") "app:sources:DevicesState"
-{ fromJS } = require "immutable"
+debug           = (require "debug") "app:sources:DevicesState"
+{ fromJS, Map } = require "immutable"
 
 createTopicListener = require "../helpers/createTopicListener"
 
@@ -8,16 +8,11 @@ module.exports =
 		createTopicListener socket, "devices/+id/state"
 			.map ({ topic, message, match }) ->
 				try
-					deviceId: match.id
-					data:     JSON.parse message
+					fromJS
+						deviceId: match.id
+						data:     JSON.parse message
 				catch
 					debug "Unprocessable state passed: #{message or '(empty)'}"
-					{}
-			.filter ({ deviceId, data }) ->
-				return true if deviceId is data.deviceId
-
-				throw new Error "Topic ID did not match payload ID (topic: #{deviceId}, payload: #{data.deviceId})"
-			.map ({ data }) ->
-				fromJS data
+					Map()
 
 	topic: "devices/+/state"

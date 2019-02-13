@@ -7,7 +7,7 @@ import { REGISTRY_IMAGES } from './actions'
 // ------------------------------------
 const ACTION_HANDLERS = {
 	[REGISTRY_IMAGES]: (state, action) => {
-		return Map(fromJS(action.data))
+		return Map(fromJS(action.payload))
 	},
 }
 // ------------------------------------

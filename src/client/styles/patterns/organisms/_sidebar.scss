@@ -25,7 +25,7 @@
 		}
 
 		.sidebar__list-icon::before {
-			padding-left: 0.375rem;
+			padding-left: 0.25rem;
 		}
 
 		.sidebar__list-label {
@@ -108,10 +108,14 @@
 
 	&::before {
 		font-size: 1.25rem;
-		padding-left: $sidebar-width - 38px;
+		padding-left: $sidebar-width - 40px;
 		position: absolute;
 		transition: $transition-fast ease-in-out;
 		top: -0.9375rem;
+	}
+
+	&.fa-user-tie {
+		left: 3px;
 	}
 }
 

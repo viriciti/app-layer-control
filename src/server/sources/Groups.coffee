@@ -1,6 +1,4 @@
 { Observable } = require "rxjs"
 
 module.exports = (socket) ->
-	Observable
-		.fromEvent socket, "global/collections/groups"
-		.takeUntil socket, "close"
+	Observable.fromEvent socket, "global/collections/groups"

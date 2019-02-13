@@ -29,9 +29,9 @@ module.exports = ({ store, deviceGroups, currentContainers }) ->
 	, Map()
 
 	enrichedGroups = replaceVersionWithConfiguration
-		configurations: store.getCache "configurations"
-		groups:         store.getCache "groups"
-		images:         store.getCache "registryImages"
+		configurations: store.get "configurations"
+		groups:         store.get "groups"
+		images:         store.get "registry"
 	groupsMixin  = createGroupsMixin enrichedGroups.toJS(), deviceGroups
 	appsToChange = getAppsToChange groupsMixin, containers.toJS()
 

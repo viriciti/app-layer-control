@@ -1,3 +1,5 @@
+{ Schema } = require "mongoose"
+
 module.exports = (mongoose) ->
 	mongoose.model "DeviceSource",
 		name:
@@ -27,9 +29,7 @@ module.exports = (mongoose) ->
 			type:    String
 			default: ""
 
-		defaultValue:
-			type:    String
-			default: ""
+		defaultValue: Schema.Types.Mixed
 
 		columnIndex:
 			type:    Number

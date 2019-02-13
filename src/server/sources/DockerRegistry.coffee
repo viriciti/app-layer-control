@@ -1,21 +1,19 @@
-{ Observable }     = require "rxjs"
-{ isEqual, pluck } = require 'underscore'
+{ Observable }   = require "rxjs"
+{ isEqual, map } = require "lodash"
 
 getRegistryImages = require "../lib/getRegistryImages"
 
 module.exports = (config, db) ->
-	_getRegistryImages = (cb) ->
-		db.AllowedImage.find {}, (error, images) ->
-			return cb error if error
+	fetchRegistryImages = ->
+		getRegistryImages map await db.AllowedImage.find(), "name"
 
-			getRegistryImages pluck(images, "name"), cb
-
-	initRegistry$ = (Observable.bindNodeCallback _getRegistryImages)()
+	initRegistry$ = Observable.fromPromise fetchRegistryImages()
 	registry$     = Observable
 		.timer config.checkingTimeout, config.checkingTimeout
-		.mergeMap -> (Observable.bindNodeCallback _getRegistryImages)()
+		.mergeMap -> Observable.fromPromise fetchRegistryImages()
 
 	initRegistry$
 		.concat registry$
 		.distinctUntilChanged isEqual
-		.catch (error, caught) -> Observable.empty()
+		.catch (error, caught) ->
+			Observable.empty()

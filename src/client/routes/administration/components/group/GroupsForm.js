@@ -1,6 +1,8 @@
 import React, { PureComponent } from 'react'
+import axios from 'axios'
 import { connect } from 'react-redux'
 import { reduxForm, Field } from 'redux-form/immutable'
+import { toast } from 'react-toastify'
 
 import ApplicationsList from '/routes/administration/commons/ApplicationsList'
 import ApplicationsTextInput from '/routes/administration/commons/ApplicationsTextInput'
@@ -53,7 +55,7 @@ class GroupsForm extends PureComponent {
 		this.props.onRequestClose()
 	}
 
-	onSubmit = ({ label, applications }) => {
+	onSubmit = async ({ label, applications }) => {
 		if (this.props.isEditing) {
 			const affectingCount = this.props.devicesCountPerGroup.get(this.props.editing.get('label'))
 
@@ -62,8 +64,13 @@ class GroupsForm extends PureComponent {
 			}
 		}
 
-		this.props.createGroup({ label, applications })
-		this.onRequestClose()
+		const { status, data } = await axios.put(`/api/v1/administration/group/${label}`, { label, applications })
+		if (status !== 200) {
+			toast.error(data.message)
+		} else {
+			toast.success(data.message)
+			this.props.onRequestClose()
+		}
 	}
 
 	render () {
