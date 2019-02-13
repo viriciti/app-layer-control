@@ -28,6 +28,21 @@ export function configurationSelected (configuration) {
 	}
 }
 
+export function asyncRemoveApplication (name) {
+	return async dispatch => {
+		dispatch(updateAsyncState('isRemovingApplication', true))
+
+		try {
+			await axios.delete(`/api/v1/administration/application/${name}`)
+			toast.success('Application deleted')
+		} catch ({ response }) {
+			toast.success(response.data.message)
+		} finally {
+			dispatch(updateAsyncState('isRemovingApplication', false))
+		}
+	}
+}
+
 export function asyncAddRegistryImage (name) {
 	return async dispatch => {
 		dispatch(updateAsyncState('isAddingRegistryImage', true))
