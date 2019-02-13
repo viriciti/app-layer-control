@@ -19,11 +19,15 @@ class Application extends PureComponent {
 	}
 
 	onRestart = () => {
-		this.props.asyncRestartApplication(this.props.deviceId, this.props.selectedContainer.get('name'))
+		if (confirm('Are you sure you want to restart this application?')) {
+			this.props.asyncRestartApplication(this.props.deviceId, this.props.selectedContainer.get('name'))
+		}
 	}
 
 	onRemove = () => {
-		this.props.asyncRemoveApplication(this.props.deviceId, this.props.selectedContainer.get('name'))
+		if (confirm('Are you sure you want to remove this application?')) {
+			this.props.asyncRemoveApplication(this.props.deviceId, this.props.selectedContainer.get('name'))
+		}
 	}
 
 	onRequestContainerLogs = () => {
