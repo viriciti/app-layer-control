@@ -28,6 +28,21 @@ export function configurationSelected (configuration) {
 	}
 }
 
+export function asyncRemoveApplication (name) {
+	return async dispatch => {
+		dispatch(updateAsyncState('isRemovingApplication', true))
+
+		try {
+			await axios.delete(`/api/v1/administration/application/${name}`)
+			toast.success('Application deleted')
+		} catch ({ response }) {
+			toast.success(response.data.message)
+		} finally {
+			dispatch(updateAsyncState('isRemovingApplication', false))
+		}
+	}
+}
+
 export function asyncAddRegistryImage (name) {
 	return async dispatch => {
 		dispatch(updateAsyncState('isAddingRegistryImage', true))
@@ -70,6 +85,17 @@ export function asyncRemoveGroup (label) {
 		}
 
 		dispatch(updateAsyncState('isRemovingGroup', true))
+	}
+}
+
+export function asyncRefreshRegistry() {
+	return async dispatch => {
+		dispatch(updateAsyncState('isRefreshingRegistry', true))
+
+		const { data } = await axios.put('/api/v1/administration/registry')
+		toast.success(data.message)
+
+		dispatch(updateAsyncState('isRefreshingRegistry', false))
 	}
 }
 
