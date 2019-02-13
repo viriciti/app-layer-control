@@ -32,6 +32,7 @@ module.exports =
 	defaultColumns:
 		onlineStatus:
 			headerName:   "Status"
+			getIn:        "status"
 			defaultValue: false
 			columnIndex:  0
 			sortable:     false

@@ -181,7 +181,9 @@ do ->
 					deviceId  = update.get "deviceId"
 					status    = update.get "status"
 
-					devices.setIn [deviceId, "connected"], status is "online"
+					devices
+						.setIn [deviceId, "connected"], status is "online"
+						.setIn [deviceId, "status"],    status
 				, deviceStates
 
 				broadcaster.broadcast "devicesState", deviceStates

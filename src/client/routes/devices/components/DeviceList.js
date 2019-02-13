@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react'
-import axios from 'axios'
 import naturalCompareLite from 'natural-compare-lite'
 import { Map, List } from 'immutable'
 import { connect } from 'react-redux'
@@ -74,6 +73,7 @@ class DeviceList extends PureComponent {
 
 		if (confirm(`Add group '${label}' to ${devices.length} device(s)?`)) {
 			this.props.asyncMultiStoreGroup(devices, label)
+			this.props.clearMultiSelect()
 		}
 	}
 
@@ -82,8 +82,9 @@ class DeviceList extends PureComponent {
 			.filter(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
 			.toArray()
 
-		if (confirm(`Remove group '${label}' from ${devices.size} device(s)?`)) {
+		if (confirm(`Remove group '${label}' from ${devices.length} device(s)?`)) {
 			this.props.asyncMultiRemoveGroup(devices, label)
+			this.props.clearMultiSelect()
 		}
 	}
 
