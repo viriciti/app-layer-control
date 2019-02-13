@@ -166,6 +166,7 @@ export function asyncMultiStoreGroup (devices, group) {
 			groups:    [group],
 		})
 
+		toast.success(`${devices.length} devices updated`)
 		dispatch(updateAsyncState('isStoringMultiGroups', false))
 	}
 }
@@ -180,6 +181,7 @@ export function asyncMultiRemoveGroup (devices, group) {
 			groups:    [group],
 		})
 
+		toast.success(`${devices.length} devices updated`)
 		dispatch(updateAsyncState('isRemovingMultiGroups', false))
 	}
 }
