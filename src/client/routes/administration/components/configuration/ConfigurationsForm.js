@@ -1,11 +1,13 @@
 import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
 import { Field, FieldArray, reduxForm } from 'redux-form/immutable'
-import { reduce } from 'lodash'
 import { Map, List } from 'immutable'
+import { connect } from 'react-redux'
+import { reduce } from 'lodash'
+import { toast } from 'react-toastify'
+import axios from 'axios'
 
+import AsyncButton from '/components/common/AsyncButton'
 import Modal from '/components/common/Modal'
-import { createConfiguration } from '/routes/administration/modules/actions'
 import validate from '/routes/administration/modules/validateForm'
 
 import { TextInput, VersionInput, SelectInput, DoubleTextInput, SliderInput } from '/routes/administration/commons'
@@ -86,30 +88,32 @@ class ConfigurationsForm extends PureComponent {
 			}, Map())
 	}
 
-	onSubmit = newConfiguration => {
-		const message = this.props.isAdding
+	onSubmit = async newConfiguration => {
+		const confirmMessage = this.props.isAdding
 			? 'A new configuration will be created. Are you sure?'
 			: 'The configuration will be updated. Are you sure?'
 
+		const configuration       = { ...newConfiguration }
+		const { applicationName } = configuration
 		const removeTrailingSlash = value => {
 			return value.replace(/(.+)\/$/, '$1')
 		}
 
-		if (!confirm(message)) {
+		if (!confirm(confirmMessage)) {
 			return
 		}
 
 		// normalize environment
-		if (newConfiguration.environment) {
-			newConfiguration.environment = newConfiguration.environment.map(env => {
+		if (configuration.environment) {
+			configuration.environment = configuration.environment.map(env => {
 				return [env.Name, env.Value].join('=')
 			})
 		}
 
 		// normalize ports
-		if (newConfiguration.ports) {
-			newConfiguration.ports = reduce(
-				newConfiguration.ports,
+		if (configuration.ports) {
+			configuration.ports = reduce(
+				configuration.ports,
 				(ports, port) => {
 					return {
 						...ports,
@@ -125,41 +129,40 @@ class ConfigurationsForm extends PureComponent {
 		}
 
 		// normalize mounts
-		if (newConfiguration.mounts) {
-			newConfiguration.mounts = newConfiguration.mounts.map(mount => {
+		if (configuration.mounts) {
+			configuration.mounts = configuration.mounts.map(mount => {
 				return [removeTrailingSlash(mount.HostPath), removeTrailingSlash(mount.ContainerPath)].join(':')
 			})
 		}
 
-		if (newConfiguration.restartPolicy === 'Do not automatically restart') {
-			newConfiguration.restartPolicy = 'no'
-		} else if (newConfiguration.restartPolicy === 'Always restart') {
-			newConfiguration.restartPolicy = 'always'
-		} else if (newConfiguration.restartPolicy === 'On failure') {
-			newConfiguration.restartPolicy = 'on-failure'
-		} else if (newConfiguration.restartPolicy === 'If not explicitly stopped') {
-			newConfiguration.restartPolicy = 'unless-stopped'
+		if (configuration.restartPolicy === 'Do not automatically restart') {
+			configuration.restartPolicy = 'no'
+		} else if (configuration.restartPolicy === 'Always restart') {
+			configuration.restartPolicy = 'always'
+		} else if (configuration.restartPolicy === 'On failure') {
+			configuration.restartPolicy = 'on-failure'
+		} else if (configuration.restartPolicy === 'If not explicitly stopped') {
+			configuration.restartPolicy = 'unless-stopped'
 		}
 
-		this.props.createConfiguration({
-			key:   newConfiguration.applicationName,
-			value: newConfiguration,
-		})
+		const { data } = await axios.put(`/api/v1/administration/application/${applicationName}`, configuration)
 
 		this.props.onRequestClose()
 		this.props.reset()
+
+		toast.success(data.message)
 	}
 
-	renderImagesNames () {
+	getAvailableImages () {
 		return this.props.registryImages.keySeq().toArray()
 	}
 
-	renderInstallStep () {
+	getInstallationSteps () {
 		return [
 			{ title: 'Pull', value: 'Pull' },
 			{ title: 'Clean', value: 'Clean' },
 			{ title: 'Create', value: 'Create' },
-			{ title: 'Start', value: 'Start (default)' },
+			{ title: 'Start', value: 'Start' },
 		]
 	}
 
@@ -181,7 +184,13 @@ class ConfigurationsForm extends PureComponent {
 						/>
 						<Field name="containerName" label="Container name" component={TextInput} required />
 
-						<Field name="fromImage" label="Image" component={SelectInput} options={this.renderImagesNames()} required />
+						<Field
+							name="fromImage"
+							label="Image"
+							component={SelectInput}
+							options={this.getAvailableImages()}
+							required
+						/>
 						<Field name="version" label="Version" component={VersionInput} required />
 						<Field
 							name="frontEndPort"
@@ -200,7 +209,7 @@ class ConfigurationsForm extends PureComponent {
 							name="lastInstallStep"
 							label="Last Install Step"
 							component={SelectInput}
-							options={this.renderInstallStep()}
+							options={this.getInstallationSteps()}
 						/>
 						<Field
 							name="networkMode"
@@ -247,9 +256,14 @@ class ConfigurationsForm extends PureComponent {
 							<div className="col-md-3 text-danger"> {this.props.error && <strong>{this.props.error}</strong>}</div>
 							<div className="col-md-12">
 								<div className="btn-group float-right mt-2">
-									<button type="submit" className="btn btn-primary room-sm-right">
+									<AsyncButton
+										busy={this.props.submitting}
+										className="btn btn-primary room-sm-right"
+										type="submit"
+										white
+									>
 										{this.props.isAdding ? 'Add' : 'Edit'}
-									</button>
+									</AsyncButton>
 									<button
 										type="button"
 										disabled={this.props.submitting}
@@ -274,12 +288,9 @@ const mapStateToProps = state => {
 	}
 }
 
-export default connect(
-	mapStateToProps,
-	{ createConfiguration }
-)(
+export default connect(mapStateToProps)(
 	reduxForm({
-		form: 'configurations',
+		form:          'configurations',
 		validate,
 		initialValues: initialFormValues,
 	})(ConfigurationsForm)

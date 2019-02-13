@@ -4,7 +4,7 @@ module.exports = (store) ->
 	Observable
 		.interval 1000
 		.map ->
-			store.getCache()
+			store.getAll()
 		.distinctUntilChanged (prev, next) ->
 			next.equals prev
 		.debounceTime 500

@@ -26,7 +26,8 @@
 
 .card-header,
 .card-body,
-.card-footer {
+.card-footer,
+.card-controls {
 	padding: 0.5rem 0.7rem;
 }
 
@@ -57,5 +58,14 @@
 		@extend .mx-3;
 
 		text-align: center;
+	}
+}
+
+.card-controls {
+	background-color: darken(#fff, 5%);
+	text-align: left;
+
+	&.card-controls--transparent {
+		background-color: transparent;
 	}
 }

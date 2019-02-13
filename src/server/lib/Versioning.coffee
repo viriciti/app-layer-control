@@ -105,7 +105,8 @@ class Versioning
 				url:     @getDockerURL token.image
 				headers: @getDockerHeaders token: token.token
 			, (error, response, body) =>
-				return cb error if error
+				return cb error                             if error
+				return cb null, versions: [], access: false if response.statusCode is 404
 
 				debug "[getImage] Request result", body?.toString()
 

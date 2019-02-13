@@ -1,13 +1,5 @@
 {
-  "verbose": true,
-  "ignore": [
-    ".git",
-    "node_modules",
-    "src/client"
-  ],
-  "watch": [
-    "src/server",
-    "config",
-		"webpack.config.js"
-  ]
+	"verbose": true,
+	"ignore": [".git", "node_modules", "src/client"],
+	"watch": ["src/server", "config"]
 }

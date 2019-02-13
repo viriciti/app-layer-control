@@ -3,8 +3,8 @@
 module.exports = (store) ->
 	throw new Error "No store found in input" unless store?
 
-	groups         = store.getCache "groups"
-	configurations = store.getCache "configurations"
+	groups         = store.get "groups"
+	configurations = store.get "configurations"
 
 	groups.map (containers) ->
 		containers

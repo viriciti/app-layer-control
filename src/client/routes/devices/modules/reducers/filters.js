@@ -7,9 +7,8 @@ import { DEVICE_SOURCES } from '/store/globalReducers/actions'
 
 const ACTION_HANDLERS = {
 	[DEVICE_SOURCES]: (filters = Map(), action) => {
-		let columns = fromJS(action.data)
+		let columns = fromJS(action.payload)
 
-		// Filter all 'filterable' columns and reduce to a filters map
 		columns = columns
 			.filter(column => {
 				return column.get('filterable')

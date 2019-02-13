@@ -1,13 +1,14 @@
 import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
+import { partial } from 'lodash'
 
 import Modal from '/components/common/Modal'
-import { refreshState, selectDevice } from '/routes/devices/modules/actions'
+import { asyncRefreshState, selectDevice } from '/routes/devices/modules/actions'
 import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
 import AsyncButton from '/components/common/AsyncButton'
 
-import { SystemInfo, DeviceLogs, DeviceContainers, DeviceImages, DeviceGroups, Queue } from './widgets'
+import { SystemInfo, Logs, Applications, DeviceImages, DeviceGroups, Queue } from './widgets'
 
 class DeviceDetail extends PureComponent {
 	getDeviceSources () {
@@ -16,10 +17,8 @@ class DeviceDetail extends PureComponent {
 		})
 	}
 
-	onRefreshState = () => {
-		this.props.refreshState({
-			dest: this.props.selectedDevice.get('deviceId'),
-		})
+	onRefreshState = async () => {
+		this.props.asyncRefreshState(this.props.selectedDevice.get('deviceId'))
 	}
 
 	renderContent = () => {
@@ -29,8 +28,8 @@ class DeviceDetail extends PureComponent {
 			return
 		}
 
-		const deviceId = selectedDevice.get('deviceId')
-		const status = selectedDevice.get('onlineStatus', 'offline')
+		const deviceId    = selectedDevice.get('deviceId')
+		const connected   = selectedDevice.get('connected')
 		const statusLabel = classNames('label', 'label--inline', 'label--no-hover', 'float-right')
 
 		return (
@@ -70,7 +69,7 @@ class DeviceDetail extends PureComponent {
 								<div className="col-lg-3 mb-4">
 									<h5>
 										<span className="fas fa-sliders-h pr-1" /> Control
-										{status === 'online' ? (
+										{connected ? (
 											<span className={classNames(statusLabel, 'label--success')}>
 												<span className="fas fa-wifi" /> Online
 											</span>
@@ -88,6 +87,7 @@ class DeviceDetail extends PureComponent {
 										onClick={this.onRefreshState}
 										busy={this.props.isRefreshingState.includes(deviceId)}
 										busyText="Refreshing ..."
+										white
 									>
 										<span className="fas fa-cloud-download-alt" /> Refresh State
 									</AsyncButton>
@@ -100,7 +100,7 @@ class DeviceDetail extends PureComponent {
 						<div className="col-md-8">
 							<div className="row">
 								<div className="col-lg-12 mb-4">
-									<DeviceContainers containers={selectedDevice.get('containers')} selectedDevice={selectedDevice} />
+									<Applications containers={selectedDevice.get('containers')} selectedDevice={selectedDevice} />
 								</div>
 							</div>
 							<div className="row">
@@ -113,7 +113,7 @@ class DeviceDetail extends PureComponent {
 						<div className="col-lg-4 mb-4">
 							<div className="row">
 								<div className="col-12">
-									<DeviceLogs deviceId={deviceId} />
+									<Logs deviceId={deviceId} />
 								</div>
 							</div>
 						</div>
@@ -130,8 +130,8 @@ class DeviceDetail extends PureComponent {
 	}
 
 	render () {
-		const status = this.props.selectedDevice ? this.props.selectedDevice.get('onlineStatus', 'offline') : 'offline'
-		const title = this.props.selectedDevice ? `Device: ${this.props.selectedDevice.get('deviceId')}` : ''
+		const status          = this.props.selectedDevice ? this.props.selectedDevice.get('connected') ? 'online' : 'offline' : 'offline'
+		const title           = this.props.selectedDevice ? `Device: ${this.props.selectedDevice.get('deviceId')}` : ''
 		const headerClassName = `device-${status}`
 
 		return (
@@ -139,9 +139,7 @@ class DeviceDetail extends PureComponent {
 				title={title}
 				headerClassName={headerClassName}
 				visible={this.props.open}
-				onClose={() => {
-					return this.props.selectDevice(null)
-				}}
+				onClose={partial(this.props.selectDevice, null)}
 				wide
 			>
 				{this.renderContent()}
@@ -154,11 +152,11 @@ export default connect(
 	state => {
 		return {
 			selectedDevice:    getSelectedDevice(state),
-			isRefreshingState: state.getIn(['userInterface', 'isRefreshingState']),
+			isRefreshingState: state.getIn(['ui', 'isRefreshingState']),
 		}
 	},
 	{
-		refreshState,
+		asyncRefreshState,
 		selectDevice,
 	}
 )(DeviceDetail)

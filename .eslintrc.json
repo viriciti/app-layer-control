@@ -5,14 +5,9 @@
 		"mocha": true
 	},
 	"rules": {
-		"comma-dangle": [
-			"error",
-			"always-multiline"
-		],
-		"jsx-quotes": [
-			"warn",
-			"prefer-double"
-		],
+		"align-assignments/align-assignments": "error",
+		"comma-dangle": ["error", "always-multiline"],
+		"jsx-quotes": ["warn", "prefer-double"],
 		"key-spacing": [
 			"warn",
 			{
@@ -22,18 +17,9 @@
 		],
 		"no-multi-spaces": 0,
 		"no-tabs": 0,
-		"react/jsx-indent": [
-			2,
-			"tab"
-		],
-		"react/jsx-indent-props": [
-			2,
-			"tab"
-		],
-		"semi": [
-			"warn",
-			"never"
-		],
+		"react/jsx-indent": [2, "tab"],
+		"react/jsx-indent-props": [2, "tab"],
+		"semi": ["warn", "never"],
 		"indent": [
 			"error",
 			"tab",
@@ -49,8 +35,6 @@
 		],
 		"react/jsx-equals-spacing": 0
 	},
-	"extends": [
-		"standard",
-		"standard-jsx"
-	]
+	"extends": ["standard", "standard-jsx"],
+	"plugins": ["align-assignments"]
 }

@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Map } from 'immutable'
 
 import GroupsForm from './GroupsForm'
-import { removeGroup, sendGroupToAllDevices, removeGroupFromAllDevices } from '/routes/administration/modules/actions'
+import { fetchGroups, asyncRemoveGroup } from '/routes/administration/modules/actions'
 import selectorDevicesDeviceId from '/routes/administration/modules/selectors/getDevicesSerial'
 
 class GroupsTable extends PureComponent {
@@ -11,13 +11,16 @@ class GroupsTable extends PureComponent {
 		isAdding:  false,
 		isEditing: false,
 		editing:   null,
+		deleting:  false,
+	}
+
+	componentDidMount () {
+		this.props.fetchGroups()
 	}
 
 	renderGroups () {
 		return this.props.groups
-			.sortBy((_, label) => {
-				return label
-			})
+			.sortBy((_, label) => label)
 			.entrySeq()
 			.map(([label, applications]) => {
 				return (
@@ -56,7 +59,11 @@ class GroupsTable extends PureComponent {
 							</button>
 
 							{label !== 'default' ? (
-								<button className="btn btn--text btn--icon" onClick={this.onRemoveGroup.bind(this, label)}>
+								<button
+									disabled={this.state.deleting}
+									className="btn btn--text btn--icon"
+									onClick={this.onRemoveGroup.bind(this, label)}
+								>
 									<span className="fas fa-trash" data-toggle="tooltip" title="Delete group" />
 								</button>
 							) : null}
@@ -80,13 +87,12 @@ class GroupsTable extends PureComponent {
 		})
 	}
 
-	onRemoveGroup = label => {
+	onRemoveGroup = async label => {
 		if (!confirm(`Deleting group ${label}. Confirm?`)) {
 			return
 		}
 
-		this.props.removeGroup(label)
-		this.props.removeGroupFromAllDevices({ payload: label, dest: this.props.devices })
+		this.props.asyncRemoveGroup(label)
 	}
 
 	onRequestClose = () => {
@@ -98,26 +104,37 @@ class GroupsTable extends PureComponent {
 			<Fragment>
 				<div className="card mb-3">
 					<div className="card-header">Groups</div>
-					<div className="card-body">
-						<div className="float-right mt-1 mb-3">
-							<button className="btn btn-primary" onClick={this.onAddGroup}>
-								<span className="fas fa-layer-group" /> Add Group
-							</button>
-						</div>
 
-						{this.props.groups.size ? (
-							<table className="table">
-								<thead className="thead-light">
-									<tr>
-										<th>Label</th>
-										<th>Applications</th>
-										<th />
-									</tr>
-								</thead>
-								<tbody>{this.renderGroups()}</tbody>
-							</table>
+					<div className="card-controls card-controls--transparent">
+						<button
+							className="btn btn-light btn-sm  float-right"
+							disabled={this.props.isFetchingGroups}
+							onClick={this.onAddGroup}
+						>
+							<span className="fas fa-plus-circle mr-1" /> Add Group
+						</button>
+					</div>
+
+					<div className="card-body">
+						{this.props.isFetchingGroups ? (
+							<div className="loader" />
 						) : (
-							<div className="card-message mt-3">You must create a group first</div>
+							<Fragment>
+								{this.props.groups.size ? (
+									<table className="table">
+										<thead className="thead-light">
+											<tr>
+												<th>Label</th>
+												<th>Applications</th>
+												<th />
+											</tr>
+										</thead>
+										<tbody>{this.renderGroups()}</tbody>
+									</table>
+								) : (
+									<div className="card-message mt-3">Create a group first</div>
+								)}
+							</Fragment>
 						)}
 					</div>
 				</div>
@@ -137,10 +154,11 @@ class GroupsTable extends PureComponent {
 export default connect(
 	state => {
 		return {
-			groups:         state.get('groups'),
-			configurations: state.get('configurations'),
-			devices:        selectorDevicesDeviceId(state),
+			groups:           state.get('groups'),
+			configurations:   state.get('configurations'),
+			devices:          selectorDevicesDeviceId(state),
+			isFetchingGroups: state.getIn(['ui', 'isFetchingGroups']),
 		}
 	},
-	{ removeGroup, sendGroupToAllDevices, removeGroupFromAllDevices }
+	{ fetchGroups, asyncRemoveGroup }
 )(GroupsTable)

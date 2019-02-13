@@ -1,7 +1,8 @@
-import { isEqual, find } from 'lodash'
 import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
+import naturalCompareLite from 'natural-compare-lite'
 import { Map, List } from 'immutable'
+import { connect } from 'react-redux'
+import { isEqual, partial } from 'lodash'
 
 import DeviceDetail from './DeviceDetail'
 import DeviceListItem from './DeviceListItem'
@@ -20,11 +21,15 @@ import {
 	multiSelectDevices,
 	multiSelectAction,
 	clearMultiSelect,
-	multiStoreGroups,
-	multiRemoveGroups,
+	asyncMultiStoreGroup,
+	asyncMultiRemoveGroup,
 	paginateTo,
 	resetPagination,
+	fetchDevices,
+	fetchSources,
 } from '/routes/devices/modules/actions'
+import { fetchGroups } from '/routes/administration/modules/actions'
+import toReactKey from '/utils/toReactKey'
 
 class DeviceList extends PureComponent {
 	defaultFilters = {
@@ -33,6 +38,7 @@ class DeviceList extends PureComponent {
 		groupsExclude: false,
 		version:       '',
 		error:         '',
+		isSubmitting:  false,
 	}
 
 	constructor () {
@@ -44,35 +50,10 @@ class DeviceList extends PureComponent {
 		}
 	}
 
-	onMultiSelectAction = value => {
-		const deviceInGroup = deviceId => {
-			return this.props.devices.getIn([deviceId, 'groups'], List()).includes(value)
-		}
-
-		const action = this.props.multiSelectedAction.get('value')
-		if (action === 'add') {
-			const addToDevices = this.props.multiSelectedDevices.filterNot(deviceInGroup)
-
-			if (confirm(`Add group '${value}' to ${addToDevices.size} device(s)?`)) {
-				this.props.multiStoreGroups({
-					dest:    addToDevices,
-					payload: [value],
-				})
-				this.props.clearMultiSelect()
-			}
-		} else if (action === 'remove') {
-			const removeFromDevices = this.props.multiSelectedDevices.filter(deviceInGroup)
-
-			if (confirm(`Remove group '${value}' from ${removeFromDevices.size} device(s)?`)) {
-				this.props.multiRemoveGroups({
-					dest:    removeFromDevices,
-					payload: value,
-				})
-				this.props.clearMultiSelect()
-			}
-		} else {
-			this.props.clearMultiSelect()
-		}
+	componentDidMount () {
+		this.props.fetchDevices()
+		this.props.fetchSources()
+		this.props.fetchGroups()
 	}
 
 	onSort = field => {
@@ -85,96 +66,33 @@ class DeviceList extends PureComponent {
 		this.setState({ sortBy: { field, asc: true } })
 	}
 
-	renderDevicesTable = () => {
-		if (this.props.devices.isEmpty()) {
-			return <div className="loader" />
+	onStoreGroup = async label => {
+		const devices = this.props.multiSelectedDevices
+			.filterNot(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
+			.toArray()
+
+		if (confirm(`Add group '${label}' to ${devices.length} device(s)?`)) {
+			this.props.asyncMultiStoreGroup(devices, label)
+			this.props.clearMultiSelect()
 		}
-
-		return (
-			<div className="table-responsive">
-				<table className="table table-hover">
-					<thead className="thead-light">
-						<tr>
-							<th className="align-middle">
-								<input
-									title="Select all devices"
-									className="d-block mx-auto w-auto"
-									type="checkbox"
-									onChange={() => {
-										this.props.multiSelectDevices(
-											this.props.filteredItems
-												.valueSeq()
-												.map(device => {
-													return device.get('deviceId')
-												})
-												.toList()
-										)
-									}}
-									checked={this.props.multiSelectedDevices.size === this.props.filteredItems.size}
-								/>
-							</th>
-
-							{this.props.deviceSources
-								.filter(deviceSource => {
-									return deviceSource.get('entryInTable')
-								})
-								.map((column, key) => {
-									return (
-										<TableHead
-											key={`header-${key}`}
-											onClick={() => {
-												this.onSort(key)
-											}}
-											sortable={column.get('sortable')}
-											ascending={this.state.sortBy.asc}
-											sorted={this.state.sortBy.field === key}
-											headerName={column.get('headerName')}
-											headerStyle={column.get('headerStyle', Map()).toJS()}
-										/>
-									)
-								})
-								.valueSeq()}
-						</tr>
-					</thead>
-					<tbody>
-						{this.getSortedDevices().size ? (
-							<PaginationTableBody
-								renderData={this.getSortedDevices().valueSeq()}
-								component={info => {
-									return (
-										<DeviceListItem
-											key={info.get('deviceId')}
-											info={info}
-											onSelectionToggle={this.onSelectionToggle}
-											selected={this.props.multiSelectedDevices.includes(info.get('deviceId'))}
-											configurations={this.props.configurations}
-											deviceSources={this.props.deviceSources}
-										/>
-									)
-								}}
-							/>
-						) : (
-							<tr className="tr--no-hover">
-								<td colSpan="10000">
-									<h4 className="text-center text-secondary my-5">No results matching this criteria</h4>
-								</td>
-							</tr>
-						)}
-					</tbody>
-				</table>
-			</div>
-		)
 	}
 
-	getSortedDevices = () => {
-		const field = this.state.sortBy.field.split('.')
+	onRemoveGroup = async label => {
+		const devices = this.props.multiSelectedDevices
+			.filter(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
+			.toArray()
+
+		if (confirm(`Remove group '${label}' from ${devices.length} device(s)?`)) {
+			this.props.asyncMultiRemoveGroup(devices, label)
+			this.props.clearMultiSelect()
+		}
+	}
+
+	sortDevices () {
+		const field   = this.state.sortBy.field.split('.')
 		const devices = this.props.filteredItems
-			.filter(device => {
-				return device.get('deviceId')
-			})
-			.sortBy(device => {
-				return device.getIn(field, '')
-			})
+			.filter(device => device.get('deviceId'))
+			.sortBy(device => device.getIn(field, ''))
 
 		if (!this.state.sortBy.asc) {
 			return devices.reverse()
@@ -183,79 +101,94 @@ class DeviceList extends PureComponent {
 		}
 	}
 
-	renderMultiSelection = () => {
-		const groupsOptions = this.props.groups
+	multiSelectOptions () {
+		return this.props.groups
 			.keySeq()
-			.filterNot(group => {
-				return group === 'default'
-			})
+			.filterNot(group => group === 'default')
 			.toArray()
-			.map(name => {
-				return {
-					value: name,
-					label: name,
-				}
-			})
-		const options = [
-			{
-				value:       'add',
-				label:       'Add Group',
-				placeholder: 'Select a group',
-				options:     groupsOptions,
-			},
-			{
-				value:       'remove',
-				label:       'Remove Group',
-				placeholder: 'Select a group',
-				options:     groupsOptions,
-			},
-		]
+			.sort(naturalCompareLite)
+	}
 
-		return (
-			<div className="multi-select mb-2">
-				<select
-					className="custom-select w-auto"
-					disabled={this.props.multiSelectedDevices.size === 0}
-					value={this.props.multiSelectedAction.get('value', '')}
-					onChange={({ target: { value } }) => {
-						return this.props.multiSelectAction(find(options, { value }))
-					}}
-					title={`${this.props.multiSelectedDevices.size} devices will be affected`}
-				>
-					<option value="">With selected ({this.props.multiSelectedDevices.size})</option>
-					{options.map(option => {
-						return (
-							<option key={`${option.value}${option.label}`} value={option.value}>
-								{option.label} ({this.props.multiSelectedDevices.size})
-							</option>
-						)
-					})}
-				</select>
+	renderDevicesTable = () => {
+		if (this.props.isFetchingDevices) {
+			return <div className="loader" />
+		} else {
+			return (
+				<div className="table-responsive">
+					<table className="table table-hover">
+						<thead>
+							<tr>
+								<th className="align-middle">
+									<div className="custom-control custom-checkbox">
+										<input
+											className="custom-control-input"
+											id="selectAll"
+											title="Select all devices"
+											type="checkbox"
+											onChange={() => {
+												this.props.multiSelectDevices(
+													this.props.filteredItems
+														.valueSeq()
+														.map(device => device.get('deviceId'))
+														.toList()
+												)
+											}}
+											checked={this.props.multiSelectedDevices.size === this.props.filteredItems.size}
+										/>
 
-				{this.props.multiSelectedAction.get('options', Map()).size ? (
-					<select
-						className="custom-select w-auto ml-1 my-3"
-						disabled={this.props.multiSelectedDevices.size === 0}
-						onChange={({ target }) => {
-							return this.onMultiSelectAction(target.value)
-						}}
-					>
-						<option>{this.props.multiSelectedAction.get('placeholder', 'Select an option')}</option>
+										<label className="custom-control-label" htmlFor="selectAll" />
+									</div>
+								</th>
 
-						{this.props.multiSelectedAction.get('options').map(option => {
-							return (
-								<option
-									key={`${this.props.multiSelectedAction.get('value')}-${option.get('value')}`}
-									value={option.get('value')}
-								>
-									{option.get('label')}
-								</option>
-							)
-						})}
-					</select>
-				) : null}
-			</div>
-		)
+								{this.props.deviceSources
+									.filter(deviceSource => {
+										return deviceSource.get('entryInTable')
+									})
+									.map((column, key) => {
+										return (
+											<TableHead
+												key={`header-${key}`}
+												onClick={partial(this.onSort, key)}
+												sortable={column.get('sortable')}
+												ascending={this.state.sortBy.asc}
+												sorted={this.state.sortBy.field === key}
+												headerName={column.get('headerName')}
+												headerStyle={column.get('headerStyle', Map()).toJS()}
+											/>
+										)
+									})
+									.valueSeq()}
+							</tr>
+						</thead>
+						<tbody>
+							{this.sortDevices().size ? (
+								<PaginationTableBody
+									renderData={this.sortDevices().valueSeq()}
+									component={info => {
+										return (
+											<DeviceListItem
+												key={info.get('deviceId')}
+												info={info}
+												onSelectionToggle={this.onSelectionToggle}
+												selected={this.props.multiSelectedDevices.includes(info.get('deviceId'))}
+												configurations={this.props.configurations}
+												deviceSources={this.props.deviceSources}
+											/>
+										)
+									}}
+								/>
+							) : (
+								<tr className="tr--no-hover">
+									<td colSpan="10000">
+										<h4 className="text-center text-secondary my-5">No results matching this criteria</h4>
+									</td>
+								</tr>
+							)}
+						</tbody>
+					</table>
+				</div>
+			)
+		}
 	}
 
 	render () {
@@ -272,51 +205,87 @@ class DeviceList extends PureComponent {
 				</header>
 
 				<div className="row ">
-					<div className="col-lg-10 mb-3">
+					<div className="col-lg-12 mb-3">
 						<Filters />
-					</div>
-
-					<div className="col-lg-2 mb-3">
-						<div className="card">
-							<div className="card-header">Legend</div>
-
-							<div className="card-body">
-								<ul>
-									<li className="my-3">
-										<span className="fas fa-heartbeat icon text-danger pr-2" data-toggle="tooltip" />
-										Container is down
-									</li>
-									<li className="my-3">
-										<span className="fas fa-download icon text-warning pr-2" data-toggle="tooltip" />
-										Outdated software
-									</li>
-								</ul>
-							</div>
-						</div>
 					</div>
 				</div>
 
 				<div className="row">
 					<div className="col">
 						<div className="card">
-							<div className="card-header">Devices</div>
+							<div className="card-controls mb-3">
+								<div className="btn-group">
+									<button
+										className="btn btn-light btn-sm dropdown-toggle mr-2"
+										data-toggle="dropdown"
+										disabled={
+											this.props.multiSelectedDevices.size === 0 ||
+											this.props.isStoringMultiGroups ||
+											this.props.isRemovingMultiGroups
+										}
+										type="button"
+									>
+										<span className="fas fa-plus-circle" /> Add Group ({this.props.multiSelectedDevices.size})
+									</button>
 
-							<div className="card-body spacing-md">
+									<div className="dropdown-menu">
+										{this.multiSelectOptions().map(name => (
+											<button
+												key={toReactKey('addGroup', name)}
+												className="dropdown-item cursor-pointer"
+												onClick={partial(this.onStoreGroup, name)}
+											>
+												<small>{name}</small>
+											</button>
+										))}
+									</div>
+								</div>
+
+								<div className="btn-group">
+									<button
+										className="btn btn-danger btn-sm dropdown-toggle mr-2"
+										data-toggle="dropdown"
+										disabled={
+											this.props.multiSelectedDevices.size === 0 ||
+											this.props.isStoringMultiGroups ||
+											this.props.isRemovingMultiGroups
+										}
+										type="button"
+									>
+										<span className="fas fa-minus-circle" /> Remove Group ({this.props.multiSelectedDevices.size})
+									</button>
+
+									<div className="dropdown-menu">
+										{this.multiSelectOptions().map(name => (
+											<button
+												key={toReactKey('removeGroup', name)}
+												className="dropdown-item cursor-pointer"
+												onClick={partial(this.onRemoveGroup, name)}
+											>
+												<small>{name}</small>
+											</button>
+										))}
+									</div>
+								</div>
+							</div>
+
+							<div className="card-body">
 								<div className="row">
 									<div className="col">
-										{this.renderMultiSelection()}
 										{this.renderDevicesTable()}
-
-										<PaginationControl pageRange={2} data={this.getSortedDevices()} />
 
 										<DeviceDetail
 											open={!!selectedDevice}
+											selectedDevice={selectedDevice}
 											onModalClose={this.onModalClose}
-											osVersion={this.props.osVersion}
 											deviceSources={this.props.deviceSources}
 										/>
 									</div>
 								</div>
+							</div>
+
+							<div className="card-controls">
+								<PaginationControl pageRange={2} data={this.sortDevices()} />
 							</div>
 						</div>
 					</div>
@@ -329,12 +298,15 @@ class DeviceList extends PureComponent {
 export default connect(
 	state => {
 		return {
-			devices:              state.get('devices'),
-			groups:               state.get('groups'),
-			multiSelectedDevices: state.getIn(['multiSelect', 'selected']),
-			multiSelectedAction:  state.getIn(['multiSelect', 'action']),
-			deviceSources:        state.get('deviceSources'),
-			configurations:       state.get('configurations'),
+			devices:               state.get('devices'),
+			groups:                state.get('groups'),
+			multiSelectedDevices:  state.getIn(['multiSelect', 'selected']),
+			multiSelectedAction:   state.getIn(['multiSelect', 'action']),
+			deviceSources:         state.get('deviceSources'),
+			configurations:        state.get('configurations'),
+			isStoringMultiGroups:  state.getIn(['ui', 'isStoringMultiGroups']),
+			isRemovingMultiGroups: state.getIn(['ui', 'isRemovingMultiGroups']),
+			isFetchingDevices:     state.getIn(['ui', 'isFetchingDevices']),
 
 			selectedDevice: selectedDeviceSelector(state),
 			filteredItems:  filterSelector(state),
@@ -348,9 +320,12 @@ export default connect(
 		multiSelectDevices,
 		multiSelectAction,
 		clearMultiSelect,
-		multiStoreGroups,
-		multiRemoveGroups,
+		asyncMultiStoreGroup,
+		asyncMultiRemoveGroup,
 		paginateTo,
 		resetPagination,
+		fetchDevices,
+		fetchSources,
+		fetchGroups,
 	}
 )(DeviceList)

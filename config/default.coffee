@@ -6,16 +6,15 @@ module.exports =
 		defaultInterval: 3000
 
 	server:
-		port: 3000
+		port:        3000
+		skipUpdates: false
 
 	mqtt:
-		clientId: "app-layer-control-#{os.hostname()}"
-		connectionOptions:
-			keepalive: 300
+		clientId:        "app-layer-control-#{os.hostname()}"
 		host:            "localhost"
 		port:            1883
-		readOnly:        true
 		responseTimeout: 5000
+
 
 	db:
 		hosts: [
@@ -23,6 +22,8 @@ module.exports =
 			port: 27017
 		]
 		name: "app-layer-control"
+		options:
+			replSet: "rs0"
 
 	versioning:
 		maxTokenAttempts: 3
@@ -30,14 +31,14 @@ module.exports =
 
 	defaultColumns:
 		onlineStatus:
-			headerName:   "State"
-			defaultValue: "offline"
+			headerName:   "Status"
+			getIn:        "status"
+			defaultValue: false
 			columnIndex:  0
 			sortable:     false
 			filterable:   true
 			copyable:     false
-			getIn:        "onlineStatus"
-			format:       "online"
+			format:       "status"
 			filterFormat:
 				type:    "checkboxes"
 				options: [
@@ -146,7 +147,7 @@ module.exports =
 			editable:     false
 			headerStyle:
 				width: "150px"
-			entryInTable: true
+			entryInTable: false
 
 		appVersion:
 			headerName:   "App Version"

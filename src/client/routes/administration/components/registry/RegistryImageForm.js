@@ -21,7 +21,7 @@ class RegistryImageForm extends PureComponent {
 						text:     'Add image',
 						textBusy: 'Adding image',
 						icon:     'fas fa-archive',
-						reduxKey: 'isAddingImage',
+						reduxKey: 'isAddingRegistryImage',
 					}}
 					type="text"
 				/>
