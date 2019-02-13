@@ -1,11 +1,10 @@
 stages:
-  - deps
-  - deploy-frontend
-  - deploy-backend
+  - dependencies
+  - build
   - release
 
-deps:
-  stage: deps
+dependencies:
+  stage: dependencies
   artifacts:
     paths:
       - node_modules
@@ -14,23 +13,13 @@ deps:
   only:
     - tags
 
-deploy-frontend:
-  stage: deploy-frontend
+build:
+  stage: build
   artifacts:
     paths:
       - dist
   script:
-    - npm run deploy-frontend
-  only:
-    - tags
-
-deploy-backend:
-  stage: deploy-backend
-  artifacts:
-    paths:
-      - dist
-  script:
-    - npm run deploy-backend
+    - npm run build
   only:
     - tags
 
@@ -40,7 +29,7 @@ release:
     - TAG=( ${CI_BUILD_TAG//[-.]/ } )
     - if [[ ${TAG[0]} =~ [0-9]+ ]] ; then MAJOR=${TAG[0]}; else MAJOR=${TAG[1]}; fi
     - docker login -u builder -p $BUILDER_TOKEN docker.viriciti.com
-    - docker build --build-arg ACCESS_KEY_ID=${ACCESS_KEY_ID} --build-arg SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY} --build-arg DOCKER_REGISTY_TOKEN=${DOCKER_REGISTY_TOKEN} -t $CI_REGISTRY_IMAGE .
+    - docker build --build-arg GITLAB_ACCESS_TOKEN=${GITLAB_ACCESS_TOKEN} -t $CI_REGISTRY_IMAGE .
     - docker push $CI_REGISTRY_IMAGE
     - docker tag $CI_REGISTRY_IMAGE $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
