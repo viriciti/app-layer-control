@@ -7,7 +7,7 @@ import { toast } from 'react-toastify'
 
 import AsyncButton from '/components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'
-import { fetchRegistry, asyncRemoveRegistryImage } from '/routes/administration/modules/actions'
+import { fetchRegistry, asyncRemoveRegistryImage, asyncAddRegistryImage } from '/routes/administration/modules/actions'
 
 const RegistryImage = ({ name, image, onRemoveImage, isRemovingAny }) => {
 	return (
@@ -68,15 +68,15 @@ class RegistryImagesOverview extends PureComponent {
 		this.setState({ isRefreshing: false })
 	}
 
-	onRemoveImage = ({ name, image }) => {
+	onRemoveImage = ({ name }) => {
 		if (confirm(`Remove registry image ${name}?`)) {
-			this.props.asyncRemoveRegistryImage({ name, image })
+			this.props.asyncRemoveRegistryImage(name)
 		}
 	}
 
 	onAddImage = ({ name }) => {
 		if (confirm(`Add registry image ${name}?`)) {
-			this.props.addRegistryImage({ name })
+			this.props.asyncAddRegistryImage(name)
 		}
 	}
 
@@ -156,5 +156,5 @@ export default connect(
 			isRemovingRegistryImage: state.getIn(['ui', 'isRemovingRegistryImage']),
 		}
 	},
-	{ fetchRegistry, asyncRemoveRegistryImage }
+	{ fetchRegistry, asyncRemoveRegistryImage, asyncAddRegistryImage }
 )(RegistryImagesOverview)

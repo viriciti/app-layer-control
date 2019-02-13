@@ -28,7 +28,23 @@ export function configurationSelected (configuration) {
 	}
 }
 
-export function asyncRemoveRegistryImage ({ name, image }) {
+export function asyncAddRegistryImage (name) {
+	return async dispatch => {
+		dispatch(updateAsyncState('isAddingRegistryImage', true))
+
+		try {
+			await axios.post(`/api/v1/administration/registry`, { name })
+
+			toast.success('Registry image added')
+		} catch ({ response }) {
+			toast.error(response.data.message)
+		} finally {
+			dispatch(updateAsyncState('isAddingRegistryImage', false))
+		}
+	}
+}
+
+export function asyncRemoveRegistryImage (name) {
 	return async dispatch => {
 		dispatch(updateAsyncState('isRemovingRegistryImage', true))
 

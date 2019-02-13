@@ -270,6 +270,8 @@ router.post "/registry", ({ app, params, body }, res, next) ->
 	{ db, broadcaster } = app.locals
 	{ name }            = body
 
+	console.log "name", name
+
 	try
 		await db.AllowedImage.create name: name
 
