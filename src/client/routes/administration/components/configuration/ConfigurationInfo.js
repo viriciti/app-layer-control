@@ -3,8 +3,6 @@ import React, { PureComponent } from 'react'
 import { List } from 'immutable'
 import { change } from 'redux-form'
 import { connect } from 'react-redux'
-import { toast } from 'react-toastify'
-import axios from 'axios'
 
 import AsyncButton from '/components/common/AsyncButton'
 import { removeConfiguration } from '/routes/administration/modules/actions/index'
@@ -24,19 +22,9 @@ class ConfigurationInfo extends PureComponent {
 	}
 
 	onDelete = async () => {
-		this.setState({ deleting: true })
-
-		try {
-			await axios.delete(
-				`/api/v1/administration/application/${this.props.selectedConfiguration.get('applicationName')}`
-			)
-
-			toast.success('Application deleted')
-		} catch ({ response }) {
-			toast.error(response.data.message)
+		if (confirm('Are you sure you want to remove this application?')) {
+			this.props.asyncRemoveApplication(this.props.selectedConfiguration.get('applicationName'))
 		}
-
-		this.setState({ deleting: false })
 	}
 
 	render () {
@@ -68,12 +56,17 @@ class ConfigurationInfo extends PureComponent {
 					<div className="row">
 						<div className="col-12">
 							<div className="btn-group float-right">
-								<button onClick={this.onEdit} className="btn btn-primary" type="button" disabled={this.state.deleting}>
+								<button
+									onClick={this.onEdit}
+									className="btn btn-primary"
+									type="button"
+									disabled={this.props.isRemovingApplication}
+								>
 									<span className="fas fa-paste" /> Edit
 								</button>
 
 								<AsyncButton
-									busy={this.state.deleting}
+									busy={this.props.isRemovingApplication}
 									busyText="Deleting ..."
 									className="btn btn-secondary"
 									onClick={this.onDelete}
@@ -94,7 +87,8 @@ class ConfigurationInfo extends PureComponent {
 export default connect(
 	state => {
 		return {
-			dependents: getConfigurationDependents(state),
+			dependents:            getConfigurationDependents(state),
+			isRemovingApplication: state.getIn(['ui', 'isRemovingApplication']),
 		}
 	},
 	{

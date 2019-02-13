@@ -6,8 +6,8 @@ import validate from '/routes/administration/modules/validateImageForm'
 
 class RegistryImageForm extends PureComponent {
 	onSubmit = values => {
-		this.props.onSubmit(values)
 		this.props.reset()
+		this.props.onSubmit(values)
 	}
 
 	render () {

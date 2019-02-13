@@ -3,11 +3,10 @@ import axios from 'axios'
 import { Map } from 'immutable'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
-import { toast } from 'react-toastify'
 
 import AsyncButton from '/components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'
-import { fetchRegistry, asyncRemoveRegistryImage, asyncAddRegistryImage } from '/routes/administration/modules/actions'
+import { fetchRegistry, asyncRefreshRegistry, asyncRemoveRegistryImage, asyncAddRegistryImage } from '/routes/administration/modules/actions'
 
 const RegistryImage = ({ name, image, onRemoveImage, isRemovingAny }) => {
 	return (
@@ -60,12 +59,7 @@ class RegistryImagesOverview extends PureComponent {
 	}
 
 	onRefresh = async () => {
-		this.setState({ isRefreshing: true })
-
-		const { data } = await axios.put('/api/v1/administration/registry')
-		toast.success(data.message)
-
-		this.setState({ isRefreshing: false })
+		this.props.asyncRefreshRegistry()
 	}
 
 	onRemoveImage = ({ name }) => {
@@ -92,7 +86,7 @@ class RegistryImagesOverview extends PureComponent {
 							<AsyncButton
 								className="btn btn-sm btn-light btn--no-underline"
 								onClick={this.onRefresh}
-								busy={this.state.isRefreshing}
+								busy={this.props.isRefreshing}
 								busyText="Fetching ..."
 							>
 								<Fragment>
@@ -154,7 +148,8 @@ export default connect(
 			isFetchingVersions:      state.getIn(['ui', 'isFetchingVersions']),
 			isFetchingRegistry:      state.getIn(['ui', 'isFetchingRegistry']),
 			isRemovingRegistryImage: state.getIn(['ui', 'isRemovingRegistryImage']),
+			isRefreshingRegistry: state.getIn(['ui', 'isRefreshingRegistry'])
 		}
 	},
-	{ fetchRegistry, asyncRemoveRegistryImage, asyncAddRegistryImage }
+	{ fetchRegistry, asyncRefreshRegistry, asyncRemoveRegistryImage, asyncAddRegistryImage }
 )(RegistryImagesOverview)
