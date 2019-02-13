@@ -88,6 +88,17 @@ export function asyncRemoveGroup (label) {
 	}
 }
 
+export function asyncRefreshRegistry() {
+	return async dispatch => {
+		dispatch(updateAsyncState('isRefreshingRegistry', true))
+
+		const { data } = await axios.put('/api/v1/administration/registry')
+		toast.success(data.message)
+
+		dispatch(updateAsyncState('isRefreshingRegistry', false))
+	}
+}
+
 export function fetchApplications () {
 	return async dispatch => {
 		dispatch(updateAsyncState('isFetchingApplications', true))
