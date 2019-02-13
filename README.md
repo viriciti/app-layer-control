@@ -14,6 +14,27 @@
 If you have [Docker Compose](https://docs.docker.com/compose/) installed, you can also run `docker-compose up -d`.  
 It is advised to _not_ use this in production (as it is not secure), but to configure the components separately instead.
 
+### Post installation
+
+Since [version], App Layer Control requires a replica set.  
+This enables App Layer Control to keep (connected) devices up to date with database changes and reduces code clutter.
+
+However, this requires you to initiate the replica set within the MongoDB container. To do this, go to your terminal and enter: `docker exec -it mongodb /bin/sh`. Once you are in the container, enter: `mongo`.  
+You are now in the [mongo](https://docs.mongodb.com/manual/reference/program/mongo/#bin.mongo) shell. Once inside, execute the following command:
+
+```
+rs.initiate({
+    _id: "rs0",
+    members: [
+        { _id: 0, host: "mongodb:27017" }
+    ]
+})
+```
+
+This will initiate the replica set and you're ready to go.
+
+**Note**: Once you enter the [mongo](https://docs.mongodb.com/manual/reference/program/mongo/#bin.mongo) shell, ensure that the line of where your cursor blinks starts with `rs0:PRIMARY`. This tells you whether the instance is running in a replica set. If this is not the case, kill the containers (`docker-compose down`) and create them again (`docker-compose up -d`).
+
 ## Getting started
 
 1. Clone (or fork) the project
@@ -26,10 +47,10 @@ While the default configuration provides a starting point, several settings are 
 These settings include the GitLab endpoint and Docker Registry endpoint.  
 To configure those, add an extra configuration file (or update the default configuration, whatever floats your boat), and make sure the following settings are configured:
 
-- `git.host`
-- `docker.host`
-- `docker.username`
-- `docker.password`
+- `git.host`: GitLab endpoint. Required to request an authentication token
+- `docker.host`: Docker Registry endpoint
+- `docker.username`: GitLab username
+- `docker.password`: GitLab access token (we highly discourage the use of a password)
 
 **Note:** The dot represents a nested value. For example, the setting `username` is a setting within the setting `docker`.
 

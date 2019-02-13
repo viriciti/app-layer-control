@@ -1,155 +1,149 @@
-async                           = require "async"
-log                             = (require "../lib/Logger") "updates"
 mqtt                            = require "mqtt"
 { Map }                         = require "immutable"
 { isBoolean, throttle, random } = require "lodash"
 config                          = require "config"
 MQTTPattern                     = require "mqtt-pattern"
 
-updateGroups = ({ db, store }, cb) ->
-	store.getGroups (error, groups) ->
-		return cb error if error
+log = (require "../lib/Logger") "updates"
 
-		if groups.every (applications) -> Map.isMap applications
-			log.warn "→ No need to update groups"
-			return cb()
-		else
-			log.info "→ Updating groups to new format ..."
+updateGroups = ({ db, store }) ->
+	groups = await store.getGroups()
 
-		async.parallel [
-			store.getEnabledRegistryImages
-			store.getConfigurations
-		], (error, [enabledRegistryImages, configurations]) ->
-			return cb error if error
+	if groups.every (applications) -> Map.isMap applications
+		log.warn "→ No need to update groups"
+		return Promise.resolve()
+	else
+		log.info "→ Updating groups to new format ..."
 
-			async.each groups, (group, next) ->
-				[name, applications] = group
-				updatedApplications  = applications.reduce (newApplications, applicationName) ->
-					fromImage      = configurations.getIn [applicationName, "fromImage"]
-					enabledVersion = enabledRegistryImages.get fromImage
+	[enabledRegistryImages, configurations] = await Promise.all [
+		store.getEnabledRegistryImages()
+		store.getConfigurations()
+	]
 
-					if enabledVersion
-						log.info "Setting version for #{applicationName} to #{enabledVersion}"
-					else
-						log.warn "No enabled version for #{applicationName} (#{fromImage})"
+	Promise.all groups.map (group) ->
+		[name, applications] = group
+		updatedApplications  = applications.reduce (newApplications, applicationName) ->
+			fromImage      = configurations.getIn [applicationName, "fromImage"]
+			enabledVersion = enabledRegistryImages.get fromImage
 
-					newApplications.set applicationName, enabledVersion
-				, Map()
+			if enabledVersion
+				log.info "Setting version for #{applicationName} to #{enabledVersion}"
+			else
+				log.warn "No enabled version for #{applicationName} (#{fromImage})"
 
-				updateQuery        = label: name
-				updatePayload      = applications: updatedApplications.toJS()
-				updateOptions      = upsert: true
-				updatePayloadUnset = $unset: enabledVersion: ""
+			newApplications.set applicationName, enabledVersion
+		, Map()
 
-				async.parallel [
-					(cb) ->
-						db.Group.findOneAndUpdate updateQuery, updatePayload, updateOptions, cb
-					(cb) ->
-						db.RegistryImages.update {}, updatePayloadUnset, cb
-				], next
-			, cb
+		updateQuery        = label: name
+		updatePayload      = applications: updatedApplications.toJS()
+		updateOptions      = upsert: true
+		updatePayloadUnset = $unset: enabledVersion: ""
 
-updateExists = ({ db, store }, cb) ->
-	store.getRegistryImages (error, images) ->
-		isUpdated = images.every (image) ->
-			isBoolean image.get "access"
+		Promise.all [
+			db.Group.findOneAndUpdate updateQuery, updatePayload, updateOptions
+			db.RegistryImages.update {}, updatePayloadUnset
+		]
 
-		if isUpdated
-			log.warn "→ No need to update registry images"
-			return cb()
-		else
-			log.info "→ Updating registry images ..."
+updateExists = ({ db, store }) ->
+	images = await store.getRegistryImages()
 
-		async.each images, ([name, image], next) ->
-			updateQuery   = { name }
-			updatePayload = access: image.get "exists"
-			updateOptions = $unset: exists: ""
+	isUpdated = images.every (image) ->
+		isBoolean image.get "access"
 
-			async.series [
-				(cb) ->
-					db.RegistryImages.update updateQuery, updatePayload, cb
-				(cb) ->
-					db.RegistryImages.update updateQuery, updateOptions, cb
-			], next
-		, cb
+	if isUpdated
+		log.warn "→ No need to update registry images"
+		return Promise.resolve()
+	else
+		log.info "→ Updating registry images ..."
 
-updateDeviceGroups = ({ db, store, mqttClient }, cb) ->
-	done = throttle (unsubscribeOnly) ->
-		if unsubscribeOnly
-			log.info "→ Groups updated for #{updates} device(s)"
+	Promise.all images.map ([name, image]) ->
+		updateQuery   = { name }
+		updatePayload = access: image.get "exists"
+		updateOptions = $unset: exists: ""
 
-			client.unsubscribe "devices/+/groups"
-			client.unsubscribe "devices/+/state"
-			cb()
-		else
-			client.unsubscribe "devices/+/groups"
-			client.subscribe   "devices/+/state"
-	, 3000, leading: false
+		await db.RegistryImages.update updateQuery, updatePayload
+		await db.RegistryImages.update updateQuery, updateOptions
 
-	skipUpdateFor = []
-	updates       = 0
-	client        = mqtt.connect Object.assign {},
-		config.mqtt
-		config.mqtt.connectionOptions
-		clientId: "#{config.mqtt.clientId}#{random 1, 999999}"
 
-	client.on "packetreceive", (packet) ->
-		return unless packet.topic
+updateDeviceGroups = ({ db, store, mqttClient }) ->
+	new Promise (resolve) ->
+		done = throttle (unsubscribeOnly) ->
+			if unsubscribeOnly
+				log.info "→ Groups updated for #{updates} device(s)"
 
-		groupsPattern = "devices/+id/groups"
-		statePattern  = "devices/+id/state"
+				client.unsubscribe "devices/+/groups"
+				client.unsubscribe "devices/+/state"
+				resolve()
+			else
+				client.unsubscribe "devices/+/groups"
+				client.subscribe   "devices/+/state"
+		, 3000, leading: false
 
-		if MQTTPattern.matches groupsPattern, packet.topic
-			# check for which devices we can skip updates for
-			{ id } = MQTTPattern.exec groupsPattern, packet.topic
-			skipUpdateFor.push id
+		skipUpdateFor = []
+		updates       = 0
+		client        = mqtt.connect Object.assign {},
+			config.mqtt
+			config.mqtt.connectionOptions
+			clientId: "#{config.mqtt.clientId}#{random 1, 999999}"
 
-			done false
-		else if MQTTPattern.matches statePattern, packet.topic
-			# publish the groups on a different topic
-			# using the groups as they are known on MQTT
-			{ id } = MQTTPattern.exec statePattern, packet.topic
+		client.on "packetreceive", (packet) ->
+			return unless packet.topic
 
-			unless id in skipUpdateFor
-				log.info "Updating groups for #{id}"
+			groupsPattern = "devices/+id/groups"
+			statePattern  = "devices/+id/state"
 
-				{ deviceId, groups } = JSON.parse packet.payload.toString()
-				topic                = "devices/#{deviceId}/groups"
-				message              = JSON.stringify groups
-				options              = retain: true
+			if MQTTPattern.matches groupsPattern, packet.topic
+				# check for which devices we can skip updates for
+				{ id } = MQTTPattern.exec groupsPattern, packet.topic
+				skipUpdateFor.push id
 
-				query  = deviceId: deviceId
-				update = groups: groups
+				done false
+			else if MQTTPattern.matches statePattern, packet.topic
+				# publish the groups on a different topic
+				# using the groups as they are known on MQTT
+				{ id } = MQTTPattern.exec statePattern, packet.topic
 
-				updates += 1
+				unless id in skipUpdateFor
+					log.info "Updating groups for #{id}"
 
-				await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
-				client.publish topic, message, options
+					{ deviceId, groups } = JSON.parse packet.payload.toString()
+					topic                = "devices/#{deviceId}/groups"
+					message              = JSON.stringify groups
+					options              = retain: true
 
-			done true
+					query  = deviceId: deviceId
+					update = groups: groups
 
-	setTimeout ->
-		done false unless skipUpdateFor.length
+					updates += 1
+
+					await db.DeviceGroup.findOneAndUpdate query, update, upsert: true
+					client.publish topic, message, options
+
+				done true
 
 		setTimeout ->
-			done true unless updates
-		, 3000
-	, 3000
+			done false unless skipUpdateFor.length
 
-	client.subscribe "devices/+/groups"
+			setTimeout ->
+				done true unless updates
+			, 3000
+		, 3000
+
+		client.subscribe "devices/+/groups"
 
 module.exports = ({ db, store }) ->
-	# :)
-	new Promise (resolve, reject) ->
-		async.parallel [
-			(next) ->
-				updateGroups { db, store }, next
-			(next) ->
-				updateExists { db, store }, next
-			(next) ->
-				updateDeviceGroups { db, store }, next
-		], (error) ->
-			return reject new Error "Failed to apply one or more updates: #{error.message}" if error
+	if config.server.skipUpdates
+		log.warn "Skipping updates"
+		return Promise.resolve()
 
-			log.info "→ Done"
-			resolve()
+	try
+		await Promise.all [
+			updateGroups { db, store }
+			updateExists { db, store }
+			updateDeviceGroups { db, store }
+		]
+
+		log.info "→ Done"
+		Promise.resolve()
+	catch error
+		Promise.reject new Error "Failed to apply one or more updates: #{error.message}"

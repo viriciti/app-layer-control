@@ -1,5 +1,7 @@
 import 'react-hot-loader/patch'
 
+import 'bootstrap'
+
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
@@ -16,6 +18,10 @@ const render = Component => {
 		document.getElementById('root')
 	)
 }
+
+// ws.addEventListener('open', () => console.info('Connected'))
+// ws.addEventListener('close', () => console.info('Disconnected'))
+// ws.addEventListener('message', )
 
 render(App)
 

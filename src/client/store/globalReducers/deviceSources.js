@@ -4,7 +4,7 @@ import { DEVICE_SOURCES } from './actions'
 
 const ACTION_HANDLERS = {
 	[DEVICE_SOURCES]: (_, action) => {
-		return fromJS(action.data).sortBy(column => {
+		return fromJS(action.payload).sortBy(column => {
 			return column.get('columnIndex')
 		})
 	},

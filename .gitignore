@@ -2,7 +2,8 @@
 .DS_STORE
 .env
 .cache
-.idea/
+.idea
+.local
 Dockerfile.local
 config/local.*
 config/local-*.*

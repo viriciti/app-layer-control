@@ -15,14 +15,14 @@
 	&.ascending {
 		&::after {
 			@extend .fa;
-			content: "\f160";
+			content: '\f160';
 		}
 	}
 
 	&.descending {
 		&::after {
 			@extend .fa;
-			content: "\f161";
+			content: '\f161';
 		}
 	}
 
@@ -38,4 +38,8 @@
 	&:hover {
 		background-color: transparent !important;
 	}
+}
+
+.table-selected {
+	background: darken(#fff, 5%);
 }

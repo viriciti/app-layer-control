@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
-import { without, isEmpty, defaultTo } from 'lodash'
+import { without, isEmpty, defaultTo, partial } from 'lodash'
 import semver from 'semver'
 
-import { storeGroups } from '/routes/devices/modules/actions'
+import { asyncStoreGroups } from '/routes/devices/modules/actions'
 import AsyncButton from '/components/common/AsyncButton'
 import selectedDeviceSelector from '/routes/devices/modules/selectors/getSelectedDevice'
 
@@ -13,9 +13,9 @@ class AddGroupsForm extends PureComponent {
 	}
 
 	getSupport () {
-		const dmVersion = this.props.selectedDevice.getIn(['systemInfo', 'dmVersion'])
-		const appVersion = this.props.selectedDevice.getIn(['systemInfo', 'appVersion'])
-		const version = defaultTo(dmVersion, appVersion)
+		const dmVersion      = this.props.selectedDevice.getIn(['systemInfo', 'dmVersion'])
+		const appVersion     = this.props.selectedDevice.getIn(['systemInfo', 'appVersion'])
+		const version        = defaultTo(dmVersion, appVersion)
 		const supportedSince = '1.18.0'
 
 		if (!version) {
@@ -34,11 +34,10 @@ class AddGroupsForm extends PureComponent {
 	}
 
 	onGroupSelected = e => {
-		const group = e.target.value
+		const group          = e.target.value
 		const selectedGroups = this.state.selectedGroups
 
-		if (selectedGroups.indexOf(group) > -1 || !group) {
-		} else {
+		if (!selectedGroups.includes(group)) {
 			this.setState({ selectedGroups: selectedGroups.concat(group) })
 		}
 	}
@@ -60,11 +59,7 @@ class AddGroupsForm extends PureComponent {
 			return
 		}
 
-		this.props.storeGroups({
-			dest:    this.props.selectedDevice.get('deviceId'),
-			payload: this.state.selectedGroups,
-		})
-
+		this.props.asyncStoreGroups(this.props.selectedDevice.get('deviceId'), this.state.selectedGroups)
 		this.setState({ selectedGroups: [] })
 	}
 
@@ -77,9 +72,7 @@ class AddGroupsForm extends PureComponent {
 						className="fas fa-minus-circle font-size-sm pl-2"
 						data-toggle="tooltip"
 						title="Deselect"
-						onClick={() => {
-							return this.onGroupDeselected(group)
-						}}
+						onClick={partial(this.onGroupDeselected, group)}
 					/>
 				</span>
 			)
@@ -164,8 +157,8 @@ export default connect(
 		return {
 			selectedDevice:  selectedDeviceSelector(state),
 			groups:          state.get('groups'),
-			isStoringGroups: state.getIn(['userInterface', 'isStoringGroups']),
+			isStoringGroups: state.getIn(['ui', 'isStoringGroups']),
 		}
 	},
-	{ storeGroups }
+	{ asyncStoreGroups }
 )(AddGroupsForm)

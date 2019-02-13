@@ -1,22 +1,20 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
+import { partial } from 'lodash'
 
 import AddGroupsForm from './AddGroupsForm'
-import { removeGroup } from '/routes/devices/modules/actions'
+import { asyncRemoveGroup } from '/routes/devices/modules/actions'
 
 class DeviceGroups extends PureComponent {
 	onRemoveGroup = group => {
 		if (!confirm(`Removing group ${group}. Are you sure?`)) return
 
-		this.props.removeGroup({
-			dest:    this.props.selectedDevice.get('deviceId'),
-			payload: group,
-		})
+		this.props.asyncRemoveGroup(this.props.selectedDevice.get('deviceId'), group)
 	}
 
 	renderGroups = () => {
 		const { groups, selectedDevice } = this.props
-		const deviceGroups = selectedDevice.get('groups')
+		const deviceGroups               = selectedDevice.get('groups')
 
 		return deviceGroups.map(group => {
 			return (
@@ -54,9 +52,7 @@ class DeviceGroups extends PureComponent {
 						) : (
 							<button
 								className="btn btn--text btn--icon float-right"
-								onClick={() => {
-									return this.onRemoveGroup(group)
-								}}
+								onClick={partial(this.onRemoveGroup, group)}
 								data-toggle="tooltip"
 								title="Delete group"
 							>
@@ -113,5 +109,5 @@ export default connect(
 			configurations: state.get('configurations'),
 		}
 	},
-	{ removeGroup }
+	{ asyncRemoveGroup }
 )(DeviceGroups)
