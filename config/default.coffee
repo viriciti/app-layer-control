@@ -35,7 +35,7 @@ module.exports =
 			getIn:        "status"
 			defaultValue: false
 			columnIndex:  0
-			sortable:     false
+			sortable:     true
 			filterable:   true
 			copyable:     false
 			format:       "status"
@@ -48,7 +48,7 @@ module.exports =
 			editable:     false
 			headerStyle:
 				minWidth: "0px"
-				width:    "10px"
+				width:    "25px"
 			entryInTable: true
 
 		updateState:
