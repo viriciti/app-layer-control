@@ -43,6 +43,7 @@
 		"parcel-bundler": "^1.11.0"
 	},
 	"dependencies": {
+		"@tn-group/api-client": "^3.0.0",
 		"@viriciti/app-layer-logic": "^1.2.3",
 		"ansi-to-html": "^0.6.4",
 		"assemble": "^0.3.83",
