@@ -4,6 +4,7 @@ import classNames from 'classnames'
 
 import SourceCustomisationModal from './SourceCustomisationModal'
 import { editColumn, addColumn, removeColumn } from '/routes/sources/modules/actions'
+import { fetchSources } from '/routes/devices/modules/actions'
 
 const StateIcon = ({ value }) => {
 	if (value) {
@@ -37,6 +38,10 @@ class SourceCustomisation extends PureComponent {
 		isEditing:   false,
 		editing:     null,
 		showEntries: 'both',
+	}
+
+	componentDidMount () {
+		this.props.fetchSources()
 	}
 
 	onRequestClose = () => {
@@ -226,5 +231,5 @@ export default connect(
 			deviceSources: state.get('deviceSources'),
 		}
 	},
-	{ editColumn, addColumn, removeColumn }
+	{ fetchSources, editColumn, addColumn, removeColumn }
 )(SourceCustomisation)
