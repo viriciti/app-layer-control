@@ -28,7 +28,7 @@ import {
 	fetchDevices,
 	fetchSources,
 } from '/routes/devices/modules/actions'
-import { fetchGroups } from '/routes/administration/modules/actions'
+import { fetchGroups, fetchApplications } from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'
 
 class DeviceList extends PureComponent {
@@ -54,6 +54,7 @@ class DeviceList extends PureComponent {
 		this.props.fetchDevices()
 		this.props.fetchSources()
 		this.props.fetchGroups()
+		this.props.fetchApplications()
 	}
 
 	onSort = field => {
@@ -327,5 +328,6 @@ export default connect(
 		fetchDevices,
 		fetchSources,
 		fetchGroups,
+		fetchApplications,
 	}
 )(DeviceList)
