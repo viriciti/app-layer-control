@@ -17,6 +17,8 @@ module.exports = (app) ->
 			res.send "Bundling is skipped, only the API is accessible"
 
 		app.use express.static directory
+		app.use "*", (req, res, next) ->
+			res.sendFile fileLocation
 
 		Promise.resolve()
 	else
