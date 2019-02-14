@@ -76,7 +76,7 @@ const formats = {
 	},
 
 	status: ({ info }) => {
-		const defaultClassName = classNames('fas', 'text-center', 'd-block')
+		const defaultClassName = classNames('fas', 'ml-3', 'd-block')
 
 		if (!info.has('connected')) {
 			return (
