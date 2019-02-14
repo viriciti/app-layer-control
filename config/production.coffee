@@ -19,7 +19,8 @@ module.exports =
 			{ host: "ndb-005", port: 27022 }
 			{ host: "ndb-006", port: 27022 }
 		]
-		options: replicaSet: "uberdb0"
+		options:
+			replSet: "uberdb0"
 
 	versioning:
 		git:
