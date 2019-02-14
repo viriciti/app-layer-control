@@ -35,7 +35,7 @@ module.exports =
 			getIn:        "status"
 			defaultValue: false
 			columnIndex:  0
-			sortable:     false
+			sortable:     true
 			filterable:   true
 			copyable:     false
 			format:       "status"
@@ -129,7 +129,7 @@ module.exports =
 			sortable:     false
 			filterable:   false
 			copyable:     true
-			getIn:        "systemInfo.tun0IP"
+			getIn:        "systemInfo.tun0"
 			editable:     false
 			headerStyle:
 				minWidth: "100px"
@@ -189,14 +189,14 @@ module.exports =
 
 		ppp0IP:
 			headerName:    "Cellular IP"
-			getIn:         "systemInfo.ppp0IP"
+			getIn:         "systemInfo.ppp0"
 			columnIndex:   51
 			entryInDetail: true
 			editable:      false
 
 		eth0IP:
 			headerName:    "Ethernet IP"
-			getIn:         "systemInfo.eth0IP"
+			getIn:         "systemInfo.eth0"
 			columnIndex:   52
 			entryInDetail: true
 			editable:      false
