@@ -13,13 +13,14 @@ getApplicationsConfiguration = (names) ->
 			.Configuration
 			.findOne applicationName: name
 			.orFail new Error "No configuration found for '#{name}'"
-			.select "-_id -__v -version"
+			.select "-_id -__v"
 			.lean()
 
 getGroupConfiguration = (label) ->
 	db
 		.Group
 		.findOne label: label
+		.orFail new Error "Group '#{label}' does not exist"
 		.select "-_id -__v"
 		.lean()
 
