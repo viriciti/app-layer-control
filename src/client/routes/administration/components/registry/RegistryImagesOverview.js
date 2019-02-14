@@ -6,7 +6,12 @@ import { partial } from 'lodash'
 
 import AsyncButton from '/components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'
-import { fetchRegistry, asyncRefreshRegistry, asyncRemoveRegistryImage, asyncAddRegistryImage } from '/routes/administration/modules/actions'
+import {
+	fetchRegistry,
+	asyncRefreshRegistry,
+	asyncRemoveRegistryImage,
+	asyncAddRegistryImage,
+} from '/routes/administration/modules/actions'
 
 const RegistryImage = ({ name, image, onRemoveImage, isRemovingAny }) => {
 	return (
@@ -86,7 +91,7 @@ class RegistryImagesOverview extends PureComponent {
 							<AsyncButton
 								className="btn btn-sm btn-light btn--no-underline"
 								onClick={this.onRefresh}
-								busy={this.props.isRefreshing}
+								busy={this.props.isRefreshingRegistry}
 								busyText="Fetching ..."
 							>
 								<Fragment>
@@ -148,7 +153,7 @@ export default connect(
 			isFetchingVersions:      state.getIn(['ui', 'isFetchingVersions']),
 			isFetchingRegistry:      state.getIn(['ui', 'isFetchingRegistry']),
 			isRemovingRegistryImage: state.getIn(['ui', 'isRemovingRegistryImage']),
-			isRefreshingRegistry: state.getIn(['ui', 'isRefreshingRegistry'])
+			isRefreshingRegistry:    state.getIn(['ui', 'isRefreshingRegistry']),
 		}
 	},
 	{ fetchRegistry, asyncRefreshRegistry, asyncRemoveRegistryImage, asyncAddRegistryImage }
