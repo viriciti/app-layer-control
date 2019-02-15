@@ -48,7 +48,7 @@ module.exports =
 			editable:     false
 			headerStyle:
 				minWidth: "0px"
-				width:    "25px"
+				width:    "100px"
 			entryInTable: true
 
 		updateState:
