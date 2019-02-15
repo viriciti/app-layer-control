@@ -94,6 +94,7 @@ class DeviceList extends PureComponent {
 		const devices = this.props.filteredItems
 			.filter(device => device.get('deviceId'))
 			.sortBy(device => device.getIn(field, ''))
+			.sort(device => -device.has('connected'))
 
 		if (!this.state.sortBy.asc) {
 			return devices.reverse()

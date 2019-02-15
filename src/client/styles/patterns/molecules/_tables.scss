@@ -43,3 +43,18 @@
 .table-selected {
 	background: darken(#fff, 5%);
 }
+
+.table-faded {
+	&,
+	&:hover,
+	&:focus,
+	&:active {
+		background-color: darken(#fff, 1%);
+	}
+
+	&,
+	*::before,
+	*::after {
+		color: darken(#fff, 25%);
+	}
+}

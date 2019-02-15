@@ -183,11 +183,10 @@ do ->
 				broadcaster.broadcast "devicesState", deviceStates
 
 		# docker registry
-		registry$
-			.subscribe (images) ->
-				await store.storeRegistryImages images
+		registry$.subscribe (images) ->
+			await store.storeRegistryImages images
 
-				broadcaster.broadcastRegistry()
+			broadcaster.broadcastRegistry()
 
 		# external sources
 		# ? API could be made simpler.

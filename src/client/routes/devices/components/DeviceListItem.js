@@ -37,7 +37,10 @@ class DeviceListItem extends PureComponent {
 
 		return (
 			<tr
-				className={classNames('device-item', { 'table-selected': this.props.selected })}
+				className={classNames('device-item', {
+					'table-selected': this.props.selected,
+					'table-faded':    !this.props.info.has('connected'),
+				})}
 				onClick={this.onSelectDevice}
 			>
 				<td>
