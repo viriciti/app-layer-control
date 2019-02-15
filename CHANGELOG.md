@@ -1,5 +1,7 @@
+# Changelog
+
 [Unreleased]
 
-### Added
+### Changed
 
-- Show effective version for semantic versioned applications
+- Show effective version for applications instead of the range
