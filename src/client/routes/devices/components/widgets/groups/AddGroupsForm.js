@@ -5,8 +5,8 @@ import semver from 'semver'
 
 import { asyncStoreGroups } from '/routes/devices/modules/actions'
 import AsyncButton from '/components/common/AsyncButton'
-import selectedDeviceSelector from '/routes/devices/modules/selectors/getSelectedDevice'
 import getAsyncState from '/store/selectors/getAsyncState'
+import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
 
 class AddGroupsForm extends PureComponent {
 	state = {
@@ -131,8 +131,7 @@ class AddGroupsForm extends PureComponent {
 									type="submit"
 									className="btn btn-light"
 									onClick={this.onSubmit}
-									busy={this.props.isStoringGroups.includes(this.props.selectedDevice.get('deviceId'))}
-									busyText="Sending ..."
+									busy={this.props.isStoringGroups}
 								>
 									Send
 								</AsyncButton>
@@ -155,10 +154,12 @@ class AddGroupsForm extends PureComponent {
 
 export default connect(
 	state => {
+		const selectedDevice = getSelectedDevice(state)
+
 		return {
-			selectedDevice:  selectedDeviceSelector(state),
+			selectedDevice,
 			groups:          state.get('groups'),
-			isStoringGroups: getAsyncState('isStoringGroups')(state),
+			isStoringGroups: getAsyncState(['isStoringGroups', selectedDevice.get('deviceId')])(state),
 		}
 	},
 	{ asyncStoreGroups }

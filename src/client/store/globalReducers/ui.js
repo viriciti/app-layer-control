@@ -53,9 +53,8 @@ const actionHandlers = {
 		const [key, status] = payload
 		const keyPath       = ['actions', ...key]
 
-		console.log(keyPath, state.toJS())
 		if (state.hasIn(keyPath) && state.getIn(keyPath) === status) {
-			console.debug(`Potentially unwanted behaviour: ${keyPath.join('.')} is being set to same value '${status}'`)
+			console.warn(`Potentially unwanted behaviour: ${keyPath.join('.')} is being set to same value '${status}'`)
 		}
 
 		return state.setIn(keyPath, status)

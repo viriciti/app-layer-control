@@ -4,20 +4,13 @@ import { isArray } from 'lodash'
 
 const getActions = state => state.getIn(['ui', 'actions'], Map())
 
-export default name => {
-	if (!isArray(name)) {
-		name = [name]
+export default keyPath => {
+	if (!isArray(keyPath)) {
+		keyPath = [keyPath]
 	}
 
 	return createSelector(
 		getActions,
-		actions => {
-			if (actions.hasIn(name)) {
-				return actions.getIn(name)
-			} else {
-				console.debug(`Action '${name.join('.')}' not found, returning default value`)
-				return false
-			}
-		}
+		actions => actions.getIn(keyPath, false)
 	)
 }
