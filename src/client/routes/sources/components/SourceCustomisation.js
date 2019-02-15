@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import classNames from 'classnames'
 
 import SourceCustomisationModal from './SourceCustomisationModal'
-import { editColumn, addColumn, removeColumn } from '/routes/sources/modules/actions'
+import { asyncEditSource, asyncAddSource, removeColumn } from '/routes/sources/modules/actions'
 import { fetchSources } from '/routes/devices/modules/actions'
 
 const StateIcon = ({ value }) => {
@@ -50,7 +50,7 @@ class SourceCustomisation extends PureComponent {
 
 	onRemove = deviceSource => {
 		if (confirm(`Are you sure you want to remove column '${deviceSource.get('headerName')}'?`)) {
-			this.props.removeColumn(deviceSource.get('headerName'))
+			this.props.removeColumn(deviceSource.get('name'))
 		}
 	}
 
@@ -63,11 +63,11 @@ class SourceCustomisation extends PureComponent {
 	}
 
 	onSubmitAdd = values => {
-		this.props.addColumn(values)
+		this.props.asyncAddSource(values)
 	}
 
 	onSubmitEdit = values => {
-		this.props.editColumn(this.state.editing.get('headerName'), values)
+		this.props.asyncEditSource(this.state.editing.get('name'), values)
 	}
 
 	onToggleTo = type => {
@@ -231,5 +231,5 @@ export default connect(
 			deviceSources: state.get('deviceSources'),
 		}
 	},
-	{ fetchSources, editColumn, addColumn, removeColumn }
+	{ fetchSources, asyncEditSource, asyncAddSource, removeColumn }
 )(SourceCustomisation)

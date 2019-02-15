@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { getFormValues, reduxForm, Field } from 'redux-form/immutable'
 import { without, omit } from 'lodash'
 
+import AsyncButton from '/components/common/AsyncButton'
 import Modal from '/components/common/Modal'
 import { TextInput, ToggleInput, TextInputWithPreview, ToggleEntry } from '/routes/sources/commons'
 import validate from '/routes/sources/modules/validateForm'
@@ -56,10 +57,15 @@ const EntryFields = ({ input: { value, onChange, onBlur }, meta: { touched, erro
 
 class SourceCustomisationModal extends PureComponent {
 	componentDidUpdate (prevProps) {
+		if (prevProps.isSubmittingSource && !this.props.isSubmittingSource) {
+			this.props.onRequestClose()
+		}
+
 		if (prevProps.isEditing && !this.props.editing) {
 			this.props.initialize(initialFormValues)
 		} else if (this.props.isEditing && !prevProps.editing && this.props.editing) {
 			this.props.initialize({
+				name:  this.props.editing.get('name'),
 				entry: [
 					this.props.editing.get('entryInTable') ? 'table' : '',
 					this.props.editing.get('entryInDetail') ? 'detail' : '',
@@ -76,14 +82,10 @@ class SourceCustomisationModal extends PureComponent {
 	}
 
 	normalizeEntry (values) {
-		const entryInTable = values.entry.includes('table')
+		const entryInTable  = values.entry.includes('table')
 		const entryInDetail = values.entry.includes('detail')
 
 		return { ...omit(values, 'entry'), entryInTable, entryInDetail }
-	}
-
-	onRequestClose = () => {
-		this.props.onRequestClose()
 	}
 
 	onSubmit = values => {
@@ -94,14 +96,16 @@ class SourceCustomisationModal extends PureComponent {
 		} else if (this.props.isEditing) {
 			this.props.onSubmitEdit(values)
 		}
-
-		this.onRequestClose()
 	}
 
 	renderForm () {
 		return (
 			<form onSubmit={this.props.handleSubmit(this.onSubmit.bind(this))}>
 				<Field name="entry" label="Entry" component={EntryFields} />
+
+				{this.props.isAdding ? (
+					<Field name="name" label="Name" component={TextInput} type="text" readOnly={this.props.isEditing} />
+				) : null}
 
 				<Field
 					name="headerName"
@@ -145,10 +149,21 @@ class SourceCustomisationModal extends PureComponent {
 				) : null}
 
 				<div className="form-group btn-group float-right">
-					<button className="btn btn-primary">{this.props.isAdding ? 'Add' : 'Save changes'}</button>
-					<button className="btn btn-secondary" type="button" onClick={this.onRequestClose}>
+					<AsyncButton
+						busy={this.props.isSubmittingSource}
+						busyText={this.props.isAdding ? 'Adding ...' : 'Saving ...'}
+						className="btn btn-primary"
+					>
+						{this.props.isAdding ? 'Add' : 'Save changes'}
+					</AsyncButton>
+					<AsyncButton
+						busy={this.props.isSubmittingSource}
+						className="btn btn-secondary"
+						type="button"
+						onClick={this.props.onRequestClose}
+					>
 						Cancel
-					</button>
+					</AsyncButton>
 				</div>
 			</form>
 		)
@@ -157,7 +172,7 @@ class SourceCustomisationModal extends PureComponent {
 	render () {
 		return (
 			<Modal
-				onClose={this.onRequestClose}
+				onClose={this.props.onRequestClose}
 				title={this.props.isEditing ? this.props.editing.get('headerName') : 'Add column'}
 				visible={this.props.isOpen}
 				wide
@@ -170,7 +185,8 @@ class SourceCustomisationModal extends PureComponent {
 
 export default connect(state => {
 	return {
-		formValues: getFormValues('deviceSources')(state),
+		formValues:         getFormValues('deviceSources')(state),
+		isSubmittingSource: state.getIn(['ui', 'isSubmittingSource'], false),
 	}
 })(
 	reduxForm({
