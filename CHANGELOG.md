@@ -12,4 +12,4 @@
 
 ### Fixed
 
-- The inability to add or update a new source
+- The inability to add, update or remove a source from the frontend

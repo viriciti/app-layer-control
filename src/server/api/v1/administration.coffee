@@ -133,7 +133,7 @@ router.delete "/source/:name", ({ app, params }, res, next) ->
 	{ name }            = params
 
 	try
-		await db.DeviceSource.deleteMany headerName: name
+		await db.DeviceSource.deleteMany name: name
 
 		broadcaster.broadcastSources()
 

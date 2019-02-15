@@ -29,11 +29,14 @@ export function asyncAddSource (payload) {
 	}
 }
 
-// export function removeColumn (name) {
-// 	return {
-// 		type: DB_NAMESPACE + REMOVE_COLUMN,
-// 		meta: {
-// 			name,
-// 		},
-// 	}
-// }
+export function asyncRemoveSource (name) {
+	return async dispatch => {
+		dispatch(updateAsyncState('isRemovingSource', true))
+
+		await axios.delete(`/api/v1/administration/source/${name}`)
+
+		toast.success('Source deleted')
+
+		dispatch(updateAsyncState('isRemovingSource', false))
+	}
+}
