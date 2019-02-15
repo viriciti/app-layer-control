@@ -9,6 +9,7 @@ import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevi
 import AsyncButton from '/components/common/AsyncButton'
 
 import { SystemInfo, Logs, Applications, DeviceImages, DeviceGroups, Queue } from './widgets'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 class DeviceDetail extends PureComponent {
 	getDeviceSources () {
@@ -85,7 +86,7 @@ class DeviceDetail extends PureComponent {
 									<AsyncButton
 										className="btn btn-secondary d-block mb-1"
 										onClick={this.onRefreshState}
-										busy={this.props.isRefreshingState.includes(deviceId)}
+										busy={this.props.isRefreshingState}
 										busyText="Refreshing ..."
 										white
 									>
@@ -130,7 +131,11 @@ class DeviceDetail extends PureComponent {
 	}
 
 	render () {
-		const status          = this.props.selectedDevice ? this.props.selectedDevice.get('connected') ? 'online' : 'offline' : 'offline'
+		const status          = this.props.selectedDevice
+			? this.props.selectedDevice.get('connected')
+				? 'online'
+				: 'offline'
+			: 'offline'
 		const title           = this.props.selectedDevice ? `Device: ${this.props.selectedDevice.get('deviceId')}` : ''
 		const headerClassName = `device-${status}`
 
@@ -149,10 +154,12 @@ class DeviceDetail extends PureComponent {
 }
 
 export default connect(
-	state => {
+	(state, ownProps) => {
+		const selectedDevice = getSelectedDevice(state)
+
 		return {
-			selectedDevice:    getSelectedDevice(state),
-			isRefreshingState: state.getIn(['ui', 'isRefreshingState']),
+			selectedDevice:    selectedDevice,
+			isRefreshingState: getAsyncState(['isRefreshingState', ownProps.open && selectedDevice.get('deviceId')])(state),
 		}
 	},
 	{

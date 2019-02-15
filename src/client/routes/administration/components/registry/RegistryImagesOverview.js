@@ -12,6 +12,7 @@ import {
 	asyncRemoveRegistryImage,
 	asyncAddRegistryImage,
 } from '/routes/administration/modules/actions'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 const RegistryImage = ({ name, image, onRemoveImage, isRemovingAny }) => {
 	return (
@@ -150,10 +151,10 @@ export default connect(
 		return {
 			allowedImages:           state.get('allowedImages'),
 			registryImages:          state.get('registryImages'),
-			isFetchingVersions:      state.getIn(['ui', 'isFetchingVersions']),
-			isFetchingRegistry:      state.getIn(['ui', 'isFetchingRegistry']),
-			isRemovingRegistryImage: state.getIn(['ui', 'isRemovingRegistryImage']),
-			isRefreshingRegistry:    state.getIn(['ui', 'isRefreshingRegistry']),
+			isFetchingVersions:      getAsyncState('isFetchingVersions')(state),
+			isFetchingRegistry:      getAsyncState('isFetchingRegistry')(state),
+			isRemovingRegistryImage: getAsyncState('isRemovingRegistryImage')(state),
+			isRefreshingRegistry:    getAsyncState('isRefreshingRegistry')(state),
 		}
 	},
 	{ fetchRegistry, asyncRefreshRegistry, asyncRemoveRegistryImage, asyncAddRegistryImage }

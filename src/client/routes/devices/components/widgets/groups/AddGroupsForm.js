@@ -6,6 +6,7 @@ import semver from 'semver'
 import { asyncStoreGroups } from '/routes/devices/modules/actions'
 import AsyncButton from '/components/common/AsyncButton'
 import selectedDeviceSelector from '/routes/devices/modules/selectors/getSelectedDevice'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 class AddGroupsForm extends PureComponent {
 	state = {
@@ -157,7 +158,7 @@ export default connect(
 		return {
 			selectedDevice:  selectedDeviceSelector(state),
 			groups:          state.get('groups'),
-			isStoringGroups: state.getIn(['ui', 'isStoringGroups']),
+			isStoringGroups: getAsyncState('isStoringGroups')(state),
 		}
 	},
 	{ asyncStoreGroups }

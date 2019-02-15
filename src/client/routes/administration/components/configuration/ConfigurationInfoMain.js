@@ -5,6 +5,7 @@ import { fetchApplications } from '/routes/administration/modules/actions'
 import ConfigurationsList from './ConfigurationsList'
 import ConfigurationInfo from './ConfigurationInfo'
 import ConfigurationsForm from './ConfigurationsForm'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 class ConfigurationInfoMain extends PureComponent {
 	state = {
@@ -99,7 +100,7 @@ class ConfigurationInfoMain extends PureComponent {
 const mapStateToProps = state => {
 	return {
 		configurations:         state.get('configurations'),
-		isFetchingApplications: state.getIn(['ui', 'isFetchingApplications']),
+		isFetchingApplications: getAsyncState('isFetchingApplications')(state),
 	}
 }
 

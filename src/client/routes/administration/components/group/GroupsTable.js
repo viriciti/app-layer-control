@@ -6,6 +6,7 @@ import semver from 'semver'
 import GroupsForm from './GroupsForm'
 import { fetchGroups, asyncRemoveGroup } from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 const Version = ({ name, range, effectiveVersion }) => {
 	if (effectiveVersion) {
@@ -206,7 +207,7 @@ export default connect(
 			groups:           state.get('groups'),
 			configurations:   state.get('configurations', Map()),
 			registryImages:   state.get('registryImages'),
-			isFetchingGroups: state.getIn(['ui', 'isFetchingGroups']),
+			isFetchingGroups: getAsyncState('isFetchingGroups')(state),
 		}
 	},
 	{ fetchGroups, asyncRemoveGroup }

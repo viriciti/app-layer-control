@@ -2,7 +2,18 @@ import { Map, List } from 'immutable'
 import { isArray, partial, eq } from 'lodash'
 
 import { UPDATE_ASYNC_STATE } from '/store/globalReducers/actions'
-import { SELECT_DEVICE, UPDATE_APPLICATION_ACTIVITY, UPDATE_DEVICE_ACTIVITY } from '/store/constants'
+import { SELECT_DEVICE, UPDATE_APPLICATION_ACTIVITY, UPDATE_DEVICE_ACTIVITY, SET_ASYNC_STATE } from '/store/constants'
+
+export function setAsyncState (name, status) {
+	if (!isArray(name)) {
+		name = [name]
+	}
+
+	return {
+		type:    SET_ASYNC_STATE,
+		payload: [name, status],
+	}
+}
 
 export function updateAsyncState (name, status) {
 	return {
@@ -37,6 +48,17 @@ export function updateApplicationActivity ({ name, deviceId, status, application
 const actionHandlers = {
 	[SELECT_DEVICE] (state, { payload }) {
 		return state.set('selectedDevice', payload)
+	},
+	[SET_ASYNC_STATE] (state, { payload }) {
+		const [key, status] = payload
+		const keyPath       = ['actions', ...key]
+
+		console.log(keyPath, state.toJS())
+		if (state.hasIn(keyPath) && state.getIn(keyPath) === status) {
+			console.debug(`Potentially unwanted behaviour: ${keyPath.join('.')} is being set to same value '${status}'`)
+		}
+
+		return state.setIn(keyPath, status)
 	},
 	[UPDATE_ASYNC_STATE] (state, { payload }) {
 		const [name, status] = payload

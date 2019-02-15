@@ -4,7 +4,12 @@ import { toast } from 'react-toastify'
 
 import { DEVICE_SOURCES } from '/store/globalReducers/actions'
 import { SELECT_DEVICE } from '/store/constants'
-import { updateAsyncState, updateDeviceActivity, updateApplicationActivity } from '/store/globalReducers/ui'
+import {
+	updateAsyncState,
+	updateDeviceActivity,
+	updateApplicationActivity,
+	setAsyncState,
+} from '/store/globalReducers/ui'
 
 export const MULTISELECT_DEVICE = 'MULTISELECT_DEVICE'
 export const MULTISELECT_DEVICES = 'MULTISELECT_DEVICES'
@@ -188,14 +193,7 @@ export function asyncMultiRemoveGroup (devices, group) {
 
 export function asyncRestartApplication (deviceId, application) {
 	return async dispatch => {
-		dispatch(
-			updateApplicationActivity({
-				deviceId,
-				status: true,
-				name:   'isRestartingApplication',
-				application,
-			})
-		)
+		dispatch(setAsyncState(['isRestartingApplication', deviceId, application], true))
 
 		try {
 			const { data } = await axios.put(`/api/devices/${deviceId}/restart/${application}`)
@@ -204,28 +202,14 @@ export function asyncRestartApplication (deviceId, application) {
 		} catch ({ response }) {
 			toast.error(response.data.message)
 		} finally {
-			dispatch(
-				updateApplicationActivity({
-					deviceId,
-					status: false,
-					name:   'isRestartingApplication',
-					application,
-				})
-			)
+			dispatch(setAsyncState(['isRestartingApplication', deviceId, application], false))
 		}
 	}
 }
 
 export function asyncRemoveApplication (deviceId, application) {
 	return async dispatch => {
-		dispatch(
-			updateApplicationActivity({
-				deviceId:    deviceId,
-				status:      true,
-				name:        'isRemovingApplication',
-				application: application,
-			})
-		)
+		dispatch(setAsyncState(['isRemovingApplication', deviceId, application], true))
 
 		try {
 			const { data } = await axios.delete(`/api/devices/${deviceId}/${application}`)
@@ -234,21 +218,14 @@ export function asyncRemoveApplication (deviceId, application) {
 		} catch ({ response }) {
 			toast.error(response.data.message)
 		} finally {
-			dispatch(
-				updateApplicationActivity({
-					deviceId:    deviceId,
-					status:      false,
-					name:        'isRemovingApplication',
-					application: application,
-				})
-			)
+			dispatch(setAsyncState(['isRemovingApplication', deviceId, application], false))
 		}
 	}
 }
 
 export function asyncRefreshState (deviceId) {
 	return async dispatch => {
-		dispatch(updateDeviceActivity('isRefreshingState', deviceId, true))
+		dispatch(setAsyncState(['isRefreshingState', deviceId], true))
 
 		try {
 			const { data } = await axios.put(`/api/devices/${deviceId}/state`)
@@ -257,21 +234,14 @@ export function asyncRefreshState (deviceId) {
 		} catch ({ response }) {
 			toast.error(response.data.message)
 		} finally {
-			dispatch(updateDeviceActivity('isRefreshingState', deviceId, false))
+			dispatch(setAsyncState(['isRefreshingState', deviceId], false))
 		}
 	}
 }
 
 export function fetchApplicationLogs (deviceId, application) {
 	return async dispatch => {
-		dispatch(
-			updateApplicationActivity({
-				deviceId:    deviceId,
-				status:      true,
-				name:        'isFetchingLogs',
-				application: application,
-			})
-		)
+		dispatch(setAsyncState(['isFetchingLogs', deviceId, application], true))
 
 		try {
 			const { data } = await axios.get(`/api/devices/${deviceId}/logs/${application}`)
@@ -289,35 +259,31 @@ export function fetchApplicationLogs (deviceId, application) {
 		} catch ({ response }) {
 			toast.error(response.data.message)
 		} finally {
-			dispatch(
-				updateApplicationActivity({
-					deviceId:    deviceId,
-					status:      false,
-					name:        'isFetchingLogs',
-					application: application,
-				})
-			)
+			dispatch(setAsyncState(['isFetchingLogs', deviceId, application], false))
 		}
 	}
 }
 
 export function fetchDevices () {
 	return async dispatch => {
-		dispatch(updateAsyncState('isFetchingDevices', true))
+		dispatch(setAsyncState('isFetchingDevices', true))
 
 		dispatch({
 			type:    DEVICES_STATE,
 			payload: get(await axios.get('/api/devices'), 'data.data'),
 		})
 
-		dispatch(updateAsyncState('isFetchingDevices', false))
+		dispatch(setAsyncState('isFetchingDevices', false))
 	}
 }
 
 export function fetchSources () {
-	return async dispatch =>
+	return async dispatch => {
+		dispatch(setAsyncState('isFetchingSources', true))
 		dispatch({
 			type:    DEVICE_SOURCES,
 			payload: get(await axios.get('/api/v1/administration/sources'), 'data.data'),
 		})
+		dispatch(setAsyncState('isFetchingSources', false))
+	}
 }

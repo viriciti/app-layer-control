@@ -7,6 +7,7 @@ import AsyncButton from '/components/common/AsyncButton'
 import Modal from '/components/common/Modal'
 import { TextInput, ToggleInput, TextInputWithPreview, ToggleEntry } from '/routes/sources/commons'
 import validate from '/routes/sources/modules/validateForm'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 const initialFormValues = {
 	entry: [],
@@ -186,7 +187,7 @@ class SourceCustomisationModal extends PureComponent {
 export default connect(state => {
 	return {
 		formValues:         getFormValues('deviceSources')(state),
-		isSubmittingSource: state.getIn(['ui', 'isSubmittingSource'], false),
+		isSubmittingSource: getAsyncState('isSubmittingSource')(state),
 	}
 })(
 	reduxForm({

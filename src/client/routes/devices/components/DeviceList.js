@@ -30,6 +30,7 @@ import {
 } from '/routes/devices/modules/actions'
 import { fetchGroups, fetchApplications } from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 class DeviceList extends PureComponent {
 	defaultFilters = {
@@ -306,9 +307,9 @@ export default connect(
 			multiSelectedAction:   state.getIn(['multiSelect', 'action']),
 			deviceSources:         state.get('deviceSources'),
 			configurations:        state.get('configurations'),
-			isStoringMultiGroups:  state.getIn(['ui', 'isStoringMultiGroups']),
-			isRemovingMultiGroups: state.getIn(['ui', 'isRemovingMultiGroups']),
-			isFetchingDevices:     state.getIn(['ui', 'isFetchingDevices']),
+			isStoringMultiGroups:  getAsyncState('isStoringMultiGroups')(state),
+			isRemovingMultiGroups: getAsyncState('isRemovingMultiGroups')(state),
+			isFetchingDevices:     getAsyncState('isFetchingDevices')(state),
 
 			selectedDevice: selectedDeviceSelector(state),
 			filteredItems:  filterSelector(state),
