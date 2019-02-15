@@ -11,7 +11,7 @@ import PaginationControl from './pagination/PaginationControl'
 import PaginationTableBody from './pagination/PaginationTableBody'
 import TableHead from './table/TableHead'
 
-import selectedDeviceSelector from '/routes/devices/modules/selectors/getSelectedDevice'
+import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
 import selectorDevicesSerial from '/routes/devices/modules/selectors/getDevicesSerial'
 import filterSelector from '/routes/devices/modules/selectors/getActiveFilters'
 import {
@@ -311,9 +311,8 @@ export default connect(
 			isRemovingMultiGroups: getAsyncState('isRemovingMultiGroups')(state),
 			isFetchingDevices:     getAsyncState('isFetchingDevices')(state),
 
-			selectedDevice: selectedDeviceSelector(state),
+			selectedDevice: getSelectedDevice(state),
 			filteredItems:  filterSelector(state),
-			serials:        selectorDevicesSerial(state),
 		}
 	},
 	{

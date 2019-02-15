@@ -35,7 +35,7 @@ class Filters extends PureComponent {
 
 	renderCheckboxes = (headerName, key) => {
 		const options = this.props.columns.getIn([key, 'filterFormat', 'options'], List())
-		const list = this.props.columns.getIn([key, 'value'], List())
+		const list    = this.props.columns.getIn([key, 'value'], List())
 
 		return (
 			<div className="col-4" key={key}>
@@ -68,9 +68,9 @@ class Filters extends PureComponent {
 	}
 
 	onCheckboxChange = event => {
-		const key = event.target.name
+		const key   = event.target.name
 		const value = event.target.value
-		let list = this.props.columns.getIn([key, 'value'], List())
+		let list    = this.props.columns.getIn([key, 'value'], List())
 
 		if (isEmpty(list)) {
 			list = List()
@@ -122,7 +122,7 @@ class Filters extends PureComponent {
 										})
 										.map((column, key) => {
 											const headerName = column.get('headerName')
-											const type = column.getIn(['filterFormat', 'type'], 'input')
+											const type       = column.getIn(['filterFormat', 'type'], 'input')
 
 											if (type === 'input') {
 												return this.renderInput(headerName, key)
