@@ -10,7 +10,9 @@ http                            = require "http"
 morgan                          = require "morgan"
 mqtt                            = require "async-mqtt"
 { Map, fromJS }                 = require "immutable"
-{ each, size, isEmpty, negate } = require "lodash"
+{ each, omit, isEmpty, negate } = require "lodash"
+{ PluginManager }               = require "live-plugin-manager"
+{ Subject }                     = require "rxjs"
 
 {
 	DevicesLogs
@@ -39,6 +41,12 @@ port    = process.env.PORT or config.server.port
 ws      = new WebSocket.Server server: server
 db      = new Database
 store   = new Store db
+manager = new PluginManager
+	npmRegistryConfig:
+		auth:
+			username: process.env.NPM_USER
+			password: process.env.NPM_PASS
+			email:    process.env.NPM_EMAIL
 
 rpc             = null
 deviceStates    = Map()
@@ -68,6 +76,10 @@ do ->
 	await db.connect()
 	await runUpdates db: db, store: store
 
+	log.warn "Installing #{config.plugins.length} plugin(s) ..."
+	await manager.install plugin.name for plugin in config.plugins
+	log.info "Installed #{config.plugins.length} plugin(s)"
+
 	await store.ensureDefaultDeviceSources()
 
 	socket         = mqtt.connect config.mqtt
@@ -77,7 +89,6 @@ do ->
 		db:    db
 		store: store
 		mqtt:  socket
-
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{config.mqtt.host}:#{config.mqtt.port}"
@@ -107,6 +118,7 @@ do ->
 		devicesStatus$  = DevicesStatus.observable  socket
 		deviceGroups$   = DeviceGroups.observable   socket
 		registry$       = DockerRegistry            config.versioning, db
+		source$         = new Subject
 		# cacheUpdate$    = cacheUpdate               store
 
 		# device logs
@@ -185,41 +197,48 @@ do ->
 		# docker registry
 		registry$.subscribe (images) ->
 			await store.storeRegistryImages images
-
 			broadcaster.broadcastRegistry()
 
-		# external sources
-		# ? API could be made simpler.
-		each externals, (source) ->
-			{
-				observable
-				mapFrom
-				mapTo
-				foreignKey
-			} = source getDeviceStates
+		# plugin sources
+		source$
+			.filter ({ _internal }) ->
+				not _internal
+			.bufferTime config.batchState.defaultInterval
+			.filter negate isEmpty
+			.subscribe (updates) ->
+				deviceStates = updates
+					.filter ({ deviceId, data }) ->
+						return log.warn "No device ID found in state payload. Ignoring update ..." unless deviceId?
+						return log.warn "No data found in state payload. Ignoring update ..."      unless data?
+						true
+					.reduce (devices, { deviceId, data }) ->
+						devices.mergeIn [deviceId], data
+					, deviceStates
 
-			observable
-				.bufferTime config.batchState.defaultInterval
-				.filter negate isEmpty
-				.subscribe (externalOutputs) ->
-					updatesToSend = externalOutputs.reduce (updates, externalOutput) ->
-						data         = fromJS externalOutput
-						value        = data.getIn mapFrom
-						clientId     = data.getIn foreignKey
-						keyPath      = [clientId].concat(mapTo)
-						deviceStates = deviceStates.setIn keyPath, value
+				broadcaster.broadcast "devicesState", deviceStates
 
-						# getIn makes it harder to determine the updates
-						# For now, just send the whole state and let Redux
-						# on the client side determine the difference
-						updates[clientId] = deviceStates.get clientId
-						updates
-					, {}
+		[
+			["devicesNsState", devicesNsState$]
+			["devicesState",   devicesState$]
+			["devicesStatus",  devicesStatus$]
+		].forEach ([name, observable$]) ->
+			observable$
+				.map (data) ->
+					name:      name
+					data:      data
+					_internal: true
+				.subscribe source$
 
-					debug "Sending #{size updatesToSend} state updates after external source updates"
+		# plugins
+		for plugin in config.plugins
+			fn             = manager.require plugin.name
+			wrappedSource$ = source$
+				.filter ({ _internal }) ->
+					_internal
+				.map (data) ->
+					omit data, "_internal"
 
-					broadcaster.broadcast "devicesState", deviceStates
-
+			fn wrappedSource$, plugin
 
 		socket.subscribe [
 			DevicesState.topic

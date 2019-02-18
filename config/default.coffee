@@ -15,7 +15,6 @@ module.exports =
 		port:            1883
 		responseTimeout: 5000
 
-
 	db:
 		hosts: [
 			host: "localhost"
@@ -28,6 +27,8 @@ module.exports =
 	versioning:
 		maxTokenAttempts: 3
 		checkingTimeout:  600000
+
+	plugins: []
 
 	defaultColumns:
 		onlineStatus:

@@ -54,14 +54,13 @@ To configure those, add an extra configuration file (or update the default confi
 
 **Note:** The dot represents a nested value. For example, the setting `username` is a setting within the setting `docker`.
 
-### External sources
+### Plugins (previously "External sources")
 
-By default, the App Layer Control will show the information provided by the App Layer Agent.
-However, there may be times where you want to show additional information.
-To do so, create your own `.coffee` file in `server/sources/external`. File name can be anything you want.
-The file **must** export an object with the following keys:
+App Layer Control allows you to add your own plugins. Plugins are powerful extensions that allow you to read data directly from the sources.  
+Additionally, plugins allow you to update the state of a device.
 
-- _mapFrom_ (_array_): Where to get the current value from out of the observable data
-- _mapTo_ (_array_): Where to set the new value in the state object
-- _foreignKey_ (_array_): Where to get the device ID from out of the observable data
-- _observable_ (_RxJS.Observable_)
+Plugins are installed on-the-fly from NPM (no support for GitHub at the moment) and do not require you to install them yourself.  
+The plugin must export a function and can take up to two arguments:
+
+- source (_Rx.Subject_): The data stream itself. You can do anything you normally can with [Subjects](https://github.com/ReactiveX/rxjs/blob/master/doc/subject.md). Because Subjects are bidirectional, you can call `.next()` in order to update the state information on App Layer Control. The updated state information must consist of a `deviceId` and `data` property.
+- context (_Object_): Context of the plugin, such as name and configuration. _Do not require [node-config](https://www.npmjs.com/package/config) within the plugin, as this may not be fully supported by the [https://nodejs.org/api/vm.html](Virtual Machine). Instead, pass the configuration within your plugin context and use that in your plugin._
