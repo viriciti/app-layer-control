@@ -32,25 +32,18 @@ import toReactKey from '/utils/toReactKey'
 import getAsyncState from '/store/selectors/getAsyncState'
 
 class DeviceList extends PureComponent {
-	defaultFilters = {
-		device:        '',
-		groups:        '',
-		groupsExclude: false,
-		version:       '',
-		error:         '',
-		isSubmitting:  false,
-	}
-
-	constructor () {
-		super()
-
-		this.state = {
-			selectedVersion: '',
-			sortBy:          { field: 'deviceId', asc: true },
-		}
+	state = {
+		sortBy: {
+			field: 'deviceId',
+			asc:   true,
+		},
 	}
 
 	componentDidMount () {
+		if (!this.props.devices.size) {
+			this.props.fetchDevices()
+		}
+
 		this.props.fetchDevices()
 		this.props.fetchSources()
 		this.props.fetchGroups()
@@ -59,12 +52,20 @@ class DeviceList extends PureComponent {
 
 	onSort = field => {
 		if (isEqual(this.state.sortBy.field, field)) {
-			return this.setState(prevState => {
-				return { sortBy: { field, asc: !prevState.sortBy.asc } }
+			this.setState({
+				sortBy: {
+					field,
+					asc: !this.state.sortBy.asc,
+				},
+			})
+		} else {
+			this.setState({
+				sortBy: {
+					field,
+					asc: true,
+				},
 			})
 		}
-
-		this.setState({ sortBy: { field, asc: true } })
 	}
 
 	onStoreGroup = async label => {
@@ -87,10 +88,6 @@ class DeviceList extends PureComponent {
 			this.props.asyncMultiRemoveGroup(devices, label)
 			this.props.clearMultiSelect()
 		}
-	}
-
-	onFilter = value => {
-		console.log(value)
 	}
 
 	sortDevices () {
