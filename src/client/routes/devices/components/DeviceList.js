@@ -6,14 +6,13 @@ import { isEqual, partial } from 'lodash'
 
 import DeviceDetail from './DeviceDetail'
 import DeviceListItem from './DeviceListItem'
-import Filters from './Filters'
+import Filter from './Filter'
 import PaginationControl from './pagination/PaginationControl'
 import PaginationTableBody from './pagination/PaginationTableBody'
 import TableHead from './table/TableHead'
 
 import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
-import selectorDevicesSerial from '/routes/devices/modules/selectors/getDevicesSerial'
-import filterSelector from '/routes/devices/modules/selectors/getActiveFilters'
+import filterDevices from '/routes/devices/modules/selectors/filterDevices'
 import {
 	selectDevice,
 	storeGroups,
@@ -88,6 +87,10 @@ class DeviceList extends PureComponent {
 			this.props.asyncMultiRemoveGroup(devices, label)
 			this.props.clearMultiSelect()
 		}
+	}
+
+	onFilter = value => {
+		console.log(value)
 	}
 
 	sortDevices () {
@@ -207,16 +210,10 @@ class DeviceList extends PureComponent {
 					</div>
 				</header>
 
-				<div className="row ">
-					<div className="col-lg-12 mb-3">
-						<Filters />
-					</div>
-				</div>
-
 				<div className="row">
 					<div className="col">
 						<div className="card">
-							<div className="card-controls mb-3">
+							<div className="card-controls">
 								<div className="btn-group">
 									<button
 										className="btn btn-light btn-sm dropdown-toggle mr-2"
@@ -272,6 +269,8 @@ class DeviceList extends PureComponent {
 								</div>
 							</div>
 
+							<Filter />
+
 							<div className="card-body">
 								<div className="row">
 									<div className="col">
@@ -312,7 +311,7 @@ export default connect(
 			isFetchingDevices:     getAsyncState('isFetchingDevices')(state),
 
 			selectedDevice: getSelectedDevice(state),
-			filteredItems:  filterSelector(state),
+			filteredItems:  filterDevices(state),
 		}
 	},
 	{

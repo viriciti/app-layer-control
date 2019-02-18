@@ -13,9 +13,7 @@ import getAsyncState from '/store/selectors/getAsyncState'
 
 class DeviceDetail extends PureComponent {
 	getDeviceSources () {
-		return this.props.deviceSources.filter(deviceSource => {
-			return deviceSource.get('entryInDetail')
-		})
+		return this.props.deviceSources.filter(source => source.get('entryInDetail'))
 	}
 
 	onRefreshState = async () => {

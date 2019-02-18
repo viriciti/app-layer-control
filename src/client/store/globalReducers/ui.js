@@ -2,7 +2,25 @@ import { Map, List } from 'immutable'
 import { isArray, partial, eq } from 'lodash'
 
 import { UPDATE_ASYNC_STATE } from '/store/globalReducers/actions'
-import { SELECT_DEVICE, UPDATE_APPLICATION_ACTIVITY, UPDATE_DEVICE_ACTIVITY, SET_ASYNC_STATE } from '/store/constants'
+import {
+	SELECT_DEVICE,
+	UPDATE_APPLICATION_ACTIVITY,
+	UPDATE_DEVICE_ACTIVITY,
+	SET_ASYNC_STATE,
+	APPLY_FILTER,
+} from '/store/constants'
+
+export function applyFilter (query) {
+	return {
+		type:    APPLY_FILTER,
+		payload: query,
+		meta:    {
+			debounce: {
+				time: 250,
+			},
+		},
+	}
+}
 
 export function setAsyncState (name, status) {
 	if (!isArray(name)) {
@@ -84,19 +102,12 @@ const actionHandlers = {
 			return state.setIn([name, deviceId], currentStatuses.filterNot(partial(eq, application)))
 		}
 	},
+	[APPLY_FILTER] (state, { payload }) {
+		return state.set('filter', payload)
+	},
 }
 
-const initialState = Map({
-	isFetchingVersions: false,
-	isRefreshingState:  List(),
-	isStoringGroups:    List(),
-
-	isFetchingApplications: true,
-	isFetchingGroups:       true,
-	isFetchingRegistry:     true,
-})
-
-export default function uiReducer (state = initialState, action) {
+export default function uiReducer (state = Map(), action) {
 	if (actionHandlers[action.type]) {
 		return actionHandlers[action.type](state, action)
 	} else {

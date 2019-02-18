@@ -4,22 +4,14 @@ import { toast } from 'react-toastify'
 
 import { DEVICE_SOURCES } from '/store/globalReducers/actions'
 import { SELECT_DEVICE } from '/store/constants'
-import {
-	updateAsyncState,
-	updateDeviceActivity,
-	updateApplicationActivity,
-	setAsyncState,
-} from '/store/globalReducers/ui'
+import { updateAsyncState, updateDeviceActivity, setAsyncState } from '/store/globalReducers/ui'
 
 export const MULTISELECT_DEVICE = 'MULTISELECT_DEVICE'
 export const MULTISELECT_DEVICES = 'MULTISELECT_DEVICES'
 export const MULTISELECT_ACTION = 'MULTISELECT_ACTION' // type of action to perfom on selected devices // TODO fix naming
 export const MULTISELECT_ACTION_CLEAR = 'MULTISELECT_ACTION_CLEAR'
 
-export const ADD_FILTER = 'ADD_FILTER'
-export const SET_FILTER = 'SET_FILTER'
-export const APPLY_FILTERS = 'APPLY_FILTERS'
-export const CLEAR_FILTERS = 'CLEAR_FILTERS'
+export const APPLY_FILTER = 'APPLY_FILTER'
 
 export const DEVICE_STATE = 'DEVICE_STATE'
 export const DEVICES_STATE = 'DEVICES_STATE'
@@ -45,32 +37,6 @@ export const DEVICE_LOGS = 'DEVICE_LOGS'
 export const PAGINATE = 'PAGINATE'
 export const ITEMS_PER_PAGE = 'ITEMS_PER_PAGE'
 export const RESET_PAGINATION = 'RESET_PAGINATION'
-
-export function addFilter (payload) {
-	return {
-		type: ADD_FILTER,
-		payload,
-	}
-}
-
-export function setFilter (payload) {
-	return {
-		type: SET_FILTER,
-		payload,
-	}
-}
-
-export function clearFilters () {
-	return {
-		type: CLEAR_FILTERS,
-	}
-}
-
-export function applyFilters () {
-	return {
-		type: APPLY_FILTERS,
-	}
-}
 
 export function paginateTo ({ selected }) {
 	return {
