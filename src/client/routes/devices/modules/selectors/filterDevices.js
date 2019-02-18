@@ -1,21 +1,28 @@
 import { createSelector } from 'reselect'
 import { Map } from 'immutable'
+import { isString } from 'lodash'
 
-const devices = state => state.get('devices', Map())
-const filter  = state => state.getIn(['ui', 'filter'], '')
-
-const searchIn = ['status', 'systemInfo.tun0', 'updateState.short', 'deviceId', 'systemInfo.appVersion']
+const getDevices = state => state.get('devices', Map())
+const getFilter  = state => state.getIn(['ui', 'filter'], '')
+const getSources = state =>
+	state
+		.get('deviceSources', Map())
+		.filter(source => source.get('filterable'))
+		.keySeq()
+		.toList()
 
 export default createSelector(
-	[devices, filter],
-	(devices, filter) => {
-		return devices.filter(device =>
-			searchIn.some(field =>
-				device
-					.getIn(field.split('.'), '')
-					.toLowerCase()
-					.includes(filter.toLowerCase())
-			)
+	[getDevices, getFilter, getSources],
+	(devices, filter, sources) =>
+		devices.filter(device =>
+			sources.some(field => {
+				const value = device.getIn(field.split('.'), '')
+
+				if (isString(value)) {
+					return value.toLowerCase().includes(filter.toLowerCase())
+				} else {
+					return false
+				}
+			})
 		)
-	}
 )
