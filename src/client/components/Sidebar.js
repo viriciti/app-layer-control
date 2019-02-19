@@ -40,7 +40,7 @@ class Sidebar extends Component {
 					</li>
 					<li className="sidebar__list-item">
 						<NavLink exact activeClassName="active" to="/sources">
-							<span className="sidebar__list-icon fas fa-memory" />
+							<span className="sidebar__list-icon fas fa-puzzle-piece" />
 							<span className="sidebar__list-label">Sources</span>
 						</NavLink>
 					</li>

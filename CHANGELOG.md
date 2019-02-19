@@ -4,20 +4,21 @@
 
 ### Added
 
-- Devices with an incomplete state now appear greyed out in the table
-- Configuring Docker and GitLab can now be done through environment variables (see [README](README.md))
+- Highlight devices with an incomplete state as grey in the table
+- Prefer configuration Docker and GitLab through environment variables (see [README](README.md))
 - Plugins: add functionality to App Layer Control without rebuilding the source
 
 ### Changed
 
 - Show effective version for applications instead of the range
-- Filtering has been merged into a single field
+- Merge multiple filter fields into a single field
 
 ### Fixed
 
-- The inability to add, update or remove a source from the frontend
-- Rendering performance for Devices improved by reducing the frequency of sorting and filtering
+- Fix the inability to add, update or remove a source
+- Improve rendering performance for devices by reducing the frequency of sorting and filtering
+- Fix bug where adding or updating a source would not update the UI
 
 ### Removed
 
-- External sources have been removed for a more powerful plugin system
+- Remove external sources in favor of a more powerful plugin system
