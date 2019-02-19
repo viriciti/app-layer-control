@@ -8,4 +8,7 @@ const getDevicesSerial = devices => {
 	return devices.keySeq()
 }
 
-export default createSelector(devices, getDevicesSerial)
+export default createSelector(
+	devices,
+	getDevicesSerial
+)

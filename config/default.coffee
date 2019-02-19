@@ -8,13 +8,17 @@ module.exports =
 	server:
 		port:        3000
 		skipUpdates: false
+		skipBundler: true
+		npm:
+			username: process.env.NPM_USERNAME
+			password: process.env.NPM_PASSWORD
+			email:    process.env.NPM_EMAIL
 
 	mqtt:
 		clientId:        "app-layer-control-#{os.hostname()}"
 		host:            "localhost"
 		port:            1883
 		responseTimeout: 5000
-
 
 	db:
 		hosts: [
@@ -28,6 +32,13 @@ module.exports =
 	versioning:
 		maxTokenAttempts: 3
 		checkingTimeout:  600000
+		registry:
+			url:         process.env.DOCKER_REGISTRY
+			host:        process.env.GITLAB_HOST
+			username:    process.env.GITLAB_USERNAME
+			accessToken: process.env.GITLAB_ACCESS_TOKEN
+
+	plugins: []
 
 	defaultColumns:
 		onlineStatus:
@@ -48,7 +59,7 @@ module.exports =
 			editable:     false
 			headerStyle:
 				minWidth: "0px"
-				width:    "25px"
+				width:    "100px"
 			entryInTable: true
 
 		updateState:

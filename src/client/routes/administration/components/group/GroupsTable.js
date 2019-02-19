@@ -1,10 +1,43 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
-import { Map } from 'immutable'
+import { Map, List } from 'immutable'
+import semver from 'semver'
 
 import GroupsForm from './GroupsForm'
 import { fetchGroups, asyncRemoveGroup } from '/routes/administration/modules/actions'
-import selectorDevicesDeviceId from '/routes/administration/modules/selectors/getDevicesSerial'
+import toReactKey from '/utils/toReactKey'
+import getAsyncState from '/store/selectors/getAsyncState'
+
+const Version = ({ name, range, effectiveVersion }) => {
+	if (effectiveVersion) {
+		return (
+			<li>
+				{name}@{effectiveVersion}
+				<small
+					className="label label-sm label--inline float-right"
+					title={`Calculated from semantic versioning range ${range}`}
+				>
+					Effective version
+				</small>
+			</li>
+		)
+	} else {
+		return (
+			<li>
+				{name}@{range}
+				<span className="float-right text-warning">
+					<span className="fas fa-exclamation-triangle" title="Effective version could not be calculated" />
+				</span>
+			</li>
+		)
+	}
+}
+
+const LockedVersion = ({ name, version }) => (
+	<li>
+		{name}@{version}
+	</li>
+)
 
 class GroupsTable extends PureComponent {
 	state = {
@@ -18,59 +51,22 @@ class GroupsTable extends PureComponent {
 		this.props.fetchGroups()
 	}
 
-	renderGroups () {
-		return this.props.groups
-			.sortBy((_, label) => label)
-			.entrySeq()
-			.map(([label, applications]) => {
-				return (
-					<tr key={label}>
-						<td>{label}</td>
-						<td>
-							<ul className="list-unstyled">
-								{applications.size ? (
-									applications.entrySeq().map(([application, version]) => {
-										if (version) {
-											return (
-												<li key={`${label}${application}${version}`} title="Locked version">
-													{[application, version].join('@')}
-												</li>
-											)
-										} else {
-											return (
-												<li key={`${label}${application}`} title="Semantic versioning">
-													{[application, this.props.configurations.getIn([application, 'version'])].join('@')}
-												</li>
-											)
-										}
-									})
-								) : (
-									<i className="text-secondary">Empty group</i>
-								)}
-							</ul>
-						</td>
-						<td className="text-right">
-							<button
-								className="btn btn--text btn--icon"
-								onClick={this.onEditGroup.bind(this, label)}
-								title="Edit group"
-							>
-								<span className="fas fa-pen" data-toggle="tooltip" />
-							</button>
+	getRepositoryVersions (repository) {
+		return this.props.registryImages
+			.find((_, name) => repository === name, null, Map())
+			.get('versions', List())
+			.filter(semver.valid)
+	}
 
-							{label !== 'default' ? (
-								<button
-									disabled={this.state.deleting}
-									className="btn btn--text btn--icon"
-									onClick={this.onRemoveGroup.bind(this, label)}
-								>
-									<span className="fas fa-trash" data-toggle="tooltip" title="Delete group" />
-								</button>
-							) : null}
-						</td>
-					</tr>
-				)
-			})
+	getRange (name) {
+		return this.props.configurations.getIn([name, 'version'])
+	}
+
+	getEffectiveVersion (name) {
+		const versions = this.getRepositoryVersions(this.props.configurations.getIn([name, 'fromImage']))
+		const range    = this.getRange(name)
+
+		return semver.maxSatisfying(versions.toArray(), range)
 	}
 
 	onAddGroup = () => {
@@ -129,7 +125,61 @@ class GroupsTable extends PureComponent {
 												<th />
 											</tr>
 										</thead>
-										<tbody>{this.renderGroups()}</tbody>
+										<tbody>
+											{this.props.groups
+												.sortBy((_, label) => label)
+												.entrySeq()
+												.map(([label, applications]) => (
+													<tr key={label}>
+														<td>{label}</td>
+														<td>
+															<ul className="list-unstyled">
+																{applications.size ? (
+																	applications
+																		.entrySeq()
+																		.map(([application, version]) =>
+																			version ? (
+																				<LockedVersion
+																					key={toReactKey(label, application, version)}
+																					name={application}
+																					version={version}
+																				/>
+																			) : (
+																				<Version
+																					key={toReactKey(label, application)}
+																					name={application}
+																					range={this.getRange(application)}
+																					effectiveVersion={this.getEffectiveVersion(application)}
+																				/>
+																			)
+																		)
+																) : (
+																	<i className="text-secondary">Empty group</i>
+																)}
+															</ul>
+														</td>
+														<td className="text-right">
+															<button
+																className="btn btn--text btn--icon"
+																onClick={this.onEditGroup.bind(this, label)}
+																title="Edit group"
+															>
+																<span className="fas fa-pen" data-toggle="tooltip" />
+															</button>
+
+															{label !== 'default' ? (
+																<button
+																	disabled={this.state.deleting}
+																	className="btn btn--text btn--icon"
+																	onClick={this.onRemoveGroup.bind(this, label)}
+																>
+																	<span className="fas fa-trash" data-toggle="tooltip" title="Delete group" />
+																</button>
+															) : null}
+														</td>
+													</tr>
+												))}
+										</tbody>
 									</table>
 								) : (
 									<div className="card-message mt-3">Create a group first</div>
@@ -155,9 +205,9 @@ export default connect(
 	state => {
 		return {
 			groups:           state.get('groups'),
-			configurations:   state.get('configurations'),
-			devices:          selectorDevicesDeviceId(state),
-			isFetchingGroups: state.getIn(['ui', 'isFetchingGroups']),
+			configurations:   state.get('configurations', Map()),
+			registryImages:   state.get('registryImages'),
+			isFetchingGroups: getAsyncState('isFetchingGroups')(state),
 		}
 	},
 	{ fetchGroups, asyncRemoveGroup }

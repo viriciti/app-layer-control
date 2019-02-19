@@ -1,10 +1,12 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import classNames from 'classnames'
+import { partial } from 'lodash'
 
 import SourceCustomisationModal from './SourceCustomisationModal'
-import { editColumn, addColumn, removeColumn } from '/routes/sources/modules/actions'
+import { asyncEditSource, asyncAddSource, asyncRemoveSource } from '/routes/sources/modules/actions'
 import { fetchSources } from '/routes/devices/modules/actions'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 const StateIcon = ({ value }) => {
 	if (value) {
@@ -14,17 +16,27 @@ const StateIcon = ({ value }) => {
 	}
 }
 
-const EditButtons = ({ visible, onEdit, onRemove }) => {
+const EditButtons = ({ visible, onEdit, onRemove, isRemovingSource }) => {
 	if (!visible) {
 		return <span className="fas fa-lock text-center text-muted d-block" title="This source cannot be edited" />
 	} else {
 		return (
 			<div className="text-center">
-				<button className="btn btn-light btn--icon mr-2" title="Edit this source" onClick={onEdit}>
+				<button
+					className="btn btn-light btn--icon mr-2"
+					title="Edit this source"
+					onClick={onEdit}
+					disabled={isRemovingSource}
+				>
 					<span className="fas fa-pencil-alt" />
 				</button>
 
-				<button className="btn btn-danger btn--icon" title="Remove this source" onClick={onRemove}>
+				<button
+					className="btn btn-danger btn--icon"
+					title="Remove this source"
+					onClick={onRemove}
+					disabled={isRemovingSource}
+				>
 					<span className="fas fa-trash" />
 				</button>
 			</div>
@@ -49,8 +61,8 @@ class SourceCustomisation extends PureComponent {
 	}
 
 	onRemove = deviceSource => {
-		if (confirm(`Are you sure you want to remove column '${deviceSource.get('headerName')}'?`)) {
-			this.props.removeColumn(deviceSource.get('headerName'))
+		if (confirm(`Are you sure you want to remove source '${deviceSource.get('headerName')}'?`)) {
+			this.props.asyncRemoveSource(deviceSource.get('name'))
 		}
 	}
 
@@ -63,11 +75,11 @@ class SourceCustomisation extends PureComponent {
 	}
 
 	onSubmitAdd = values => {
-		this.props.addColumn(values)
+		this.props.asyncAddSource(values)
 	}
 
 	onSubmitEdit = values => {
-		this.props.editColumn(this.state.editing.get('headerName'), values)
+		this.props.asyncEditSource(this.state.editing.get('name'), values)
 	}
 
 	onToggleTo = type => {
@@ -116,7 +128,7 @@ class SourceCustomisation extends PureComponent {
 					Source customisation
 					<div className="btn-group btn-group--toggle float-right">
 						<button
-							onClick={this.onToggleTo.bind(this, 'table')}
+							onClick={partial(this.onToggleTo, 'table')}
 							className={classNames(defaultToggleClassName, {
 								'btn-dark':  this.state.showEntries === 'table',
 								'btn-light': this.state.showEntries !== 'table',
@@ -125,7 +137,7 @@ class SourceCustomisation extends PureComponent {
 							<span className="fas fa-table" /> <small>Table entries</small>
 						</button>
 						<button
-							onClick={this.onToggleTo.bind(this, 'detail')}
+							onClick={partial(this.onToggleTo, 'detail')}
 							className={classNames(defaultToggleClassName, {
 								'btn-dark':  this.state.showEntries === 'detail',
 								'btn-light': this.state.showEntries !== 'detail',
@@ -134,7 +146,7 @@ class SourceCustomisation extends PureComponent {
 							<span className="fas fa-list" /> <small>Detail entries</small>
 						</button>
 						<button
-							onClick={this.onToggleTo.bind(this, 'both')}
+							onClick={partial(this.onToggleTo, 'both')}
 							className={classNames(defaultToggleClassName, {
 								'btn-dark':  this.state.showEntries === 'both',
 								'btn-light': this.state.showEntries !== 'both',
@@ -148,7 +160,7 @@ class SourceCustomisation extends PureComponent {
 				<div className="card-body">
 					<div className="mt-1 mb-3 float-right">
 						<button className="btn btn-primary" onClick={this.onAdd}>
-							<span className="fas fa-columns" /> Add New Column
+							<span className="fas fa-columns" /> Add New Source
 						</button>
 					</div>
 
@@ -199,8 +211,9 @@ class SourceCustomisation extends PureComponent {
 											<td>
 												<EditButtons
 													visible={deviceSource.get('editable', true)}
-													onEdit={this.onEdit.bind(this, deviceSource)}
-													onRemove={this.onRemove.bind(this, deviceSource)}
+													onEdit={partial(this.onEdit, deviceSource)}
+													onRemove={partial(this.onRemove, deviceSource)}
+													isRemovingSource={this.props.isRemovingSource}
 												/>
 											</td>
 										</tr>
@@ -228,8 +241,9 @@ class SourceCustomisation extends PureComponent {
 export default connect(
 	state => {
 		return {
-			deviceSources: state.get('deviceSources'),
+			deviceSources:    state.get('deviceSources'),
+			isRemovingSource: getAsyncState('isRemovingSource')(state),
 		}
 	},
-	{ fetchSources, editColumn, addColumn, removeColumn }
+	{ fetchSources, asyncEditSource, asyncAddSource, asyncRemoveSource }
 )(SourceCustomisation)

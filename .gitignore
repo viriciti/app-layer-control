@@ -12,3 +12,4 @@ coverage
 dist
 node_modules
 package-lock.json
+plugin_packages

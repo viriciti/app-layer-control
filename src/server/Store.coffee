@@ -1,5 +1,4 @@
 config                                    = require "config"
-debug                                     = (require "debug") "app:Store"
 pMap                                      = require "p-map"
 { Map, fromJS, Iterable }                 = require "immutable"
 { object, pluck }                         = require "underscore"

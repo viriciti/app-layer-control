@@ -1,7 +1,7 @@
 import React from 'react'
 import classNames from 'classnames'
 
-const TextInput = ({ helpText, input, label, type, placeholder, meta: { touched, error, disabled } }) => {
+const TextInput = ({ helpText, input, label, type, placeholder, readOnly, meta: { touched, error, disabled } }) => {
 	return (
 		<div className="form-group row">
 			<label className="col-sm-2 col-form-label" htmlFor={input.name}>
@@ -11,10 +11,11 @@ const TextInput = ({ helpText, input, label, type, placeholder, meta: { touched,
 			<div className="col-sm-10">
 				<input
 					{...input}
-					id={input.name}
-					type={type}
-					placeholder={placeholder}
 					className={classNames('form-control', { 'is-invalid': touched && error && !disabled })}
+					id={input.name}
+					placeholder={placeholder}
+					type={type}
+					readOnly={readOnly}
 				/>
 
 				{touched && error && !disabled ? (

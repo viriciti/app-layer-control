@@ -1,16 +1,17 @@
-RPC                             = require "mqtt-json-rpc"
-WebSocket                       = require "ws"
-bodyParser                      = require "body-parser"
-compression                     = require "compression"
-config                          = require "config"
-cors                            = require "cors"
-debug                           = (require "debug") "app:main"
-express                         = require "express"
-http                            = require "http"
-morgan                          = require "morgan"
-mqtt                            = require "async-mqtt"
-{ Map, fromJS }                 = require "immutable"
-{ each, size, isEmpty, negate } = require "lodash"
+RPC                        = require "mqtt-json-rpc"
+WebSocket                  = require "ws"
+bodyParser                 = require "body-parser"
+compression                = require "compression"
+config                     = require "config"
+cors                       = require "cors"
+express                    = require "express"
+http                       = require "http"
+morgan                     = require "morgan"
+mqtt                       = require "async-mqtt"
+{ Map }                    = require "immutable"
+{ isEmpty, negate, every } = require "lodash"
+{ Subject }                = require "rxjs"
+kleur                      = require "kleur"
 
 {
 	DevicesLogs
@@ -19,18 +20,17 @@ mqtt                            = require "async-mqtt"
 	DevicesStatus
 	DeviceGroups
 	DockerRegistry
-	externals
-}                            = require "./sources"
-Database                     = require "./db/Database"
-Store                        = require "./Store"
-bundle                       = require "./bundle"
-populateMqttWithDeviceGroups = require "./helpers/populateMqttWithDeviceGroups"
-populateMqttWithGroups       = require "./helpers/populateMqttWithGroups"
-runUpdates                   = require "./updates"
-Watcher                      = require "./db/Watcher"
-Broadcaster                  = require "./Broadcaster"
-
-log = (require "./lib/Logger") "main"
+}                              = require "./sources"
+Database                       = require "./db/Database"
+Store                          = require "./Store"
+bundle                         = require "./bundle"
+populateMqttWithDeviceGroups   = require "./helpers/populateMqttWithDeviceGroups"
+populateMqttWithGroups         = require "./helpers/populateMqttWithGroups"
+runUpdates                     = require "./updates"
+Watcher                        = require "./db/Watcher"
+Broadcaster                    = require "./Broadcaster"
+{ installPlugins, runPlugins } = require "./plugins"
+log                            = (require "./lib/Logger") "main"
 
 # Server initialization
 app     = express()
@@ -44,6 +44,9 @@ rpc             = null
 deviceStates    = Map()
 getDeviceStates = -> deviceStates
 
+log.info "NPM authentication enabled: #{if every config.server.npm then 'yes' else 'no'}"
+log.info "Docker registry: #{config.versioning.registry.url}"
+log.info "GitLab endpoint: #{config.versioning.registry.host}"
 log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
 
 app.use cors()
@@ -68,6 +71,8 @@ do ->
 	await db.connect()
 	await runUpdates db: db, store: store
 
+	await installPlugins config.plugins
+
 	await store.ensureDefaultDeviceSources()
 
 	socket         = mqtt.connect config.mqtt
@@ -77,7 +82,6 @@ do ->
 		db:    db
 		store: store
 		mqtt:  socket
-
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{config.mqtt.host}:#{config.mqtt.port}"
@@ -107,12 +111,12 @@ do ->
 		devicesStatus$  = DevicesStatus.observable  socket
 		deviceGroups$   = DeviceGroups.observable   socket
 		registry$       = DockerRegistry            config.versioning, db
+		source$         = new Subject
 		# cacheUpdate$    = cacheUpdate               store
 
 		# device logs
-		devicesLogs$
-			.subscribe (message) ->
-				broadcaster.broadcast "deviceLogs", message
+		devicesLogs$.subscribe (message) ->
+			broadcaster.broadcast "deviceLogs", message
 
 		# state updates
 		devicesState$
@@ -183,44 +187,42 @@ do ->
 				broadcaster.broadcast "devicesState", deviceStates
 
 		# docker registry
-		registry$
-			.subscribe (images) ->
-				await store.storeRegistryImages images
+		registry$.subscribe (images) ->
+			await store.storeRegistryImages images
+			broadcaster.broadcastRegistry()
 
-				broadcaster.broadcastRegistry()
+		# plugin sources
+		source$
+			.filter ({ _internal }) ->
+				not _internal
+			.bufferTime config.batchState.defaultInterval
+			.filter negate isEmpty
+			.subscribe (updates) ->
+				deviceStates = updates
+					.filter ({ deviceId, data }) ->
+						return log.warn "No device ID found in state payload. Ignoring update ..." unless deviceId?
+						return log.warn "No data found in state payload. Ignoring update ..."      unless data?
+						true
+					.reduce (devices, { deviceId, data }) ->
+						devices.mergeIn [deviceId], data
+					, deviceStates
 
-		# external sources
-		# ? API could be made simpler.
-		each externals, (source) ->
-			{
-				observable
-				mapFrom
-				mapTo
-				foreignKey
-			} = source getDeviceStates
+				broadcaster.broadcast "devicesState", deviceStates
 
-			observable
-				.bufferTime config.batchState.defaultInterval
-				.filter negate isEmpty
-				.subscribe (externalOutputs) ->
-					updatesToSend = externalOutputs.reduce (updates, externalOutput) ->
-						data         = fromJS externalOutput
-						value        = data.getIn mapFrom
-						clientId     = data.getIn foreignKey
-						keyPath      = [clientId].concat(mapTo)
-						deviceStates = deviceStates.setIn keyPath, value
+		[
+			["devicesNsState", devicesNsState$]
+			["devicesState",   devicesState$]
+			["devicesStatus",  devicesStatus$]
+		].forEach ([name, observable$]) ->
+			observable$
+				.map (data) ->
+					name:      name
+					data:      data
+					_internal: true
+				.subscribe source$
 
-						# getIn makes it harder to determine the updates
-						# For now, just send the whole state and let Redux
-						# on the client side determine the difference
-						updates[clientId] = deviceStates.get clientId
-						updates
-					, {}
-
-					debug "Sending #{size updatesToSend} state updates after external source updates"
-
-					broadcaster.broadcast "devicesState", deviceStates
-
+		# plugins
+		runPlugins config.plugins, source$
 
 		socket.subscribe [
 			DevicesState.topic
@@ -257,25 +259,9 @@ do ->
 	server.listen port, ->
 		log.info "Server listening on :#{@address().port}"
 
-# inspect state of a device through CLI
-process
-	.stdin
-	.on "data", (data) ->
-		return if process.env.NODE_ENV is "production"
+# catch unhandled rejections
+process.on "unhandledRejection", (error) ->
+	log.error "#{kleur.red "Unhandled rejection:"} #{error.message}"
+	log.error error.stack
 
-		input = data.toString().trim()
-		return unless input.startsWith ".inspect"
-
-		deviceId = input
-			.split " "
-			.slice 1
-			.join ""
-		return console.warn "device '#{deviceId}' not found" unless deviceStates.get deviceId
-
-		file  = require("path").join ".local", deviceId
-		state = deviceStates
-			.get deviceId
-			.toJS()
-
-		require("fs").writeFileSync file, JSON.stringify state, null, 4
-		console.log "state stored in #{file}"
+	process.exit 1

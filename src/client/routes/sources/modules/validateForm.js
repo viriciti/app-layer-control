@@ -1,29 +1,39 @@
 import { Iterable } from 'immutable'
 import { every, isEmpty } from 'lodash'
 
-function getHeaderName (source) {
-	if (Iterable.isIterable(source)) {
-		return source
-			.get('headerName')
-			.toLowerCase()
-			.trim()
-	} else {
-		return source && source.toLowerCase().trim()
+function wrapValueGetter (key) {
+	return source => {
+		if (Iterable.isIterable(source)) {
+			return source
+				.get(key)
+				.toLowerCase()
+				.trim()
+		} else {
+			return source && source.toLowerCase().trim()
+		}
 	}
 }
 
+const getHeaderName = wrapValueGetter('headerName')
+const getName       = wrapValueGetter('name')
+
 export default (values, props) => {
-	const errors = {}
+	const errors           = {}
+	const isNameUsed       = props.deviceSources
+		.filter(customSource => getName(customSource) !== getName(props.editing))
+		.some(customSource => getName(customSource) === getName(values.name))
 	const isHeaderNameUsed = props.deviceSources
-		.filter(customTableField => {
-			return getHeaderName(customTableField) !== getHeaderName(props.editing)
-		})
-		.some(customTableField => {
-			return getHeaderName(customTableField) === getHeaderName(values.headerName)
-		})
+		.filter(customSource => getHeaderName(customSource) !== getHeaderName(props.editing))
+		.some(customSource => getHeaderName(customSource) === getHeaderName(values.headerName))
 
 	if (values.entry && (!values.entry.length || every(values.entry, isEmpty))) {
 		errors.entry = 'You must specify whether the source should be visible in the table, detail page or both'
+	}
+
+	if (!values.name) {
+		errors.name = 'Enter an identifier for this source'
+	} else if (isNameUsed) {
+		errors.name = 'This name is already used'
 	}
 
 	if (!values.headerName) {

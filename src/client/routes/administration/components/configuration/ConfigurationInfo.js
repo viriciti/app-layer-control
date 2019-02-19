@@ -5,8 +5,9 @@ import { change } from 'redux-form'
 import { connect } from 'react-redux'
 
 import AsyncButton from '/components/common/AsyncButton'
-import { removeConfiguration } from '/routes/administration/modules/actions/index'
+import { asyncRemoveApplication } from '/routes/administration/modules/actions/index'
 import getConfigurationDependents from '/routes/administration/modules/selectors/getConfigurationDependents'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 class ConfigurationInfo extends PureComponent {
 	state = {
@@ -67,7 +68,6 @@ class ConfigurationInfo extends PureComponent {
 
 								<AsyncButton
 									busy={this.props.isRemovingApplication}
-									busyText="Deleting ..."
 									className="btn btn-secondary"
 									onClick={this.onDelete}
 									type="button"
@@ -88,11 +88,11 @@ export default connect(
 	state => {
 		return {
 			dependents:            getConfigurationDependents(state),
-			isRemovingApplication: state.getIn(['ui', 'isRemovingApplication']),
+			isRemovingApplication: getAsyncState(['isRemovingApplication'])(state),
 		}
 	},
 	{
-		removeConfiguration,
+		asyncRemoveApplication,
 		change,
 	}
 )(ConfigurationInfo)

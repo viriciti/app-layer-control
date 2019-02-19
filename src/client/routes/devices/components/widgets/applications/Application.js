@@ -8,6 +8,7 @@ import { first } from 'lodash'
 import AsyncButton from '/components/common/AsyncButton'
 import { asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs } from '/routes/devices/modules/actions'
 import toReactKey from '/utils/toReactKey'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 const convert = new Convert()
 
@@ -78,7 +79,6 @@ class Application extends PureComponent {
 						<div className="btn-group float-right">
 							<AsyncButton
 								busy={this.props.isFetchingLogs}
-								busyText="Fetching ..."
 								className="btn btn-light btn-sm btn--icon"
 								type="button"
 								onClick={this.onRequestContainerLogs}
@@ -89,7 +89,6 @@ class Application extends PureComponent {
 
 							<AsyncButton
 								busy={this.props.isRestartingApplication}
-								busyText="Restarting ..."
 								className="btn btn-warning btn-sm btn--icon"
 								type="button"
 								onClick={this.onRestart}
@@ -110,7 +109,6 @@ class Application extends PureComponent {
 					<div className="col-3 offset-9">
 						<AsyncButton
 							busy={this.props.isRemovingApplication}
-							busyText="Deleting ..."
 							className="btn btn-danger btn--icon btn-sm float-right"
 							type="button"
 							onClick={this.onRemove}
@@ -129,13 +127,12 @@ export default connect(
 	(state, ownProps) => {
 		const { deviceId } = ownProps
 		const name         = ownProps.selectedContainer.get('name')
-		const getActivity  = activity => state.getIn(['ui', activity, deviceId], List()).includes(name)
 
 		return {
 			applicationLogs:         state.getIn(['devicesLogs', deviceId, 'containers', name], List()),
-			isRestartingApplication: getActivity('isRestartingApplication'),
-			isRemovingApplication:   getActivity('isRemovingApplication'),
-			isFetchingLogs:          getActivity('isFetchingLogs'),
+			isRestartingApplication: getAsyncState(['isRestartingApplication', deviceId, name])(state),
+			isRemovingApplication:   getAsyncState(['isRemovingApplication', deviceId, name])(state),
+			isFetchingLogs:          getAsyncState(['isFetchingLogs', deviceId, name])(state),
 		}
 	},
 	{ asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs }

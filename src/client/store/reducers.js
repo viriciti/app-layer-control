@@ -2,7 +2,6 @@ import { combineReducers } from 'redux-immutable'
 import { reducer as formReducer } from 'redux-form'
 
 import devicesReducer from '/routes/devices/modules/reducers/devicesReducer'
-import filtersReducer from '/routes/devices/modules/reducers/filters'
 import devicesLogsReducer from '/routes/devices/modules/reducers/devicesLogsReducer'
 import multiSelectReducer from '/routes/devices/modules/reducers/multiSelectReducer'
 import groupsReducer from '/routes/administration/modules/reducers/groupsReducer'
@@ -17,7 +16,6 @@ export const makeRootReducer = asyncReducers => {
 	return combineReducers({
 		...asyncReducers,
 		devices:        devicesReducer,
-		filters:        filtersReducer,
 		devicesLogs:    devicesLogsReducer,
 		form:           formReducer,
 		groups:         groupsReducer,

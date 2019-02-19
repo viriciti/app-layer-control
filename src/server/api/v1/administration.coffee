@@ -133,7 +133,7 @@ router.delete "/source/:name", ({ app, params }, res, next) ->
 	{ name }            = params
 
 	try
-		await db.DeviceSource.deleteMany headerName: name
+		await db.DeviceSource.deleteMany name: name
 
 		broadcaster.broadcastSources()
 
@@ -304,7 +304,7 @@ router.delete "/registry/:name", ({ app, params, body }, res, next) ->
 	{ name }            = params
 	name                = decodeURIComponent name
 
-	host   = config.versioning.docker.host
+	host   = config.versioning.registry.url
 	host  += "/" unless host.endsWith "/"
 	image  = "#{host}#{name}"
 
