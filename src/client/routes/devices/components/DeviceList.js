@@ -40,10 +40,6 @@ class DeviceList extends PureComponent {
 	}
 
 	componentDidMount () {
-		if (!this.props.devices.size) {
-			this.props.fetchDevices()
-		}
-
 		this.props.fetchDevices()
 		this.props.fetchSources()
 		this.props.fetchGroups()

@@ -112,9 +112,8 @@ do ->
 		# cacheUpdate$    = cacheUpdate               store
 
 		# device logs
-		devicesLogs$
-			.subscribe (message) ->
-				broadcaster.broadcast "deviceLogs", message
+		devicesLogs$.subscribe (message) ->
+			broadcaster.broadcast "deviceLogs", message
 
 		# state updates
 		devicesState$
