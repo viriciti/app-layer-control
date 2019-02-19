@@ -32,10 +32,13 @@ module.exports =
 	versioning:
 		maxTokenAttempts: 3
 		checkingTimeout:  600000
+		registry:
+			url:         process.env.DOCKER_REGISTRY
+			host:        process.env.GITLAB_HOST
+			username:    process.env.GITLAB_USERNAME
+			accessToken: process.env.GITLAB_ACCESS_TOKEN
 
-	plugins: [
-		name: "express"
-	]
+	plugins: []
 
 	defaultColumns:
 		onlineStatus:

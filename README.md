@@ -43,16 +43,16 @@ This will initiate the replica set and you're ready to go.
 
 ### Configuration
 
-While the default configuration provides a starting point, several settings are omitted for security reasons.  
-These settings include the GitLab endpoint and Docker Registry endpoint.  
-To configure those, add an extra configuration file (or update the default configuration, whatever floats your boat), and make sure the following settings are configured:
+Configuring App Layer Control is done through a configuration file (requiring you to mount it manually) and environment variables.  
+We recommend using environment variables, since these will cause the least configuration issues over time.
 
-- `git.host`: GitLab endpoint. Required to request an authentication token
-- `docker.host`: Docker Registry endpoint
-- `docker.username`: GitLab username
-- `docker.password`: GitLab access token (we highly discourage the use of a password)
-
-**Note:** The dot represents a nested value. For example, the setting `username` is a setting within the setting `docker`.
+- `NPM_USERNAME` (_Optional_): NPM username. Allow you to install private packages
+- `NPM_PASSWORD` (_Optional_): NPM password. Allow you to install private packages
+- `NPM_EMAIL` (_Optional_): Mandatory for NPM
+- `GITLAB_HOST` (_Required_): GitLab endpoint. Required and used to request an authentication token
+- `GITLAB_USERNAME` (_Required_): GitLab username. Required and used to request an authentication token
+- `GITLAB_ACCESS_TOKEN` (_Required_): GitLab access token. Required and used to request an authentication token.
+- `DOCKER_REGISTRY` (_Required_): Docker Registry endpoint. Required to construct the URL to pull from
 
 ### Plugins (previously "External sources")
 
@@ -62,5 +62,5 @@ Additionally, plugins allow you to update the state of a device.
 Plugins are installed on-the-fly from NPM (no support for GitHub at the moment) and do not require you to install them yourself.  
 The plugin must export a function and can take up to two arguments:
 
-- source (_Rx.Subject_): The data stream itself. You can do anything you normally can with [Subjects](https://github.com/ReactiveX/rxjs/blob/master/doc/subject.md). Because Subjects are bidirectional, you can call `.next()` in order to update the state information on App Layer Control. The updated state information must consist of a `deviceId` and `data` property.
+- source (_Rx.Subject_): The data stream itself. You can do anything you normally can with [Subjects](https://github.com/ReactiveX/rxjs/blob/master/doc/subject.md). Because Subjects are bidirectional, you can call `.next()` in order to update the state information on App Layer Control. The updated state information must consist of a `deviceId` and `data` property. Any update you make is buffered for a second and then merged with the state of the devices.
 - context (_Object_): Context of the plugin, such as name and configuration. _Do not require [node-config](https://www.npmjs.com/package/config) within the plugin, as this may not be fully supported by the [https://nodejs.org/api/vm.html](Virtual Machine). Instead, pass the configuration within your plugin context and use that in your plugin._

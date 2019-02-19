@@ -7,9 +7,8 @@ semver  = require "semver"
 url     = require "url"
 
 class Versioning
-	constructor: ({ @docker, @git, @cacheTime = 60 }) ->
-		throw new Error "No Docker configuration specified" unless @docker?
-		throw new Error "No Git configuration specified" unless @git?
+	constructor: ({ @registry, @cacheTime = 60 }) ->
+		throw new Error "No registry configuration specified" unless @registry?
 
 		@tokens        = {}
 		@tokenAttempts = {}
@@ -176,7 +175,6 @@ class Versioning
 
 		debug "[getVersions] Using matcher:", matcher
 		debug "[getVersions] Using names:  ", names
-		debug "[getVersions] Start get images"
 
 		@getImages names, (error, images) ->
 			return cb error if error
@@ -197,7 +195,7 @@ class Versioning
 
 		url.format
 			protocol: "https"
-			host:     @docker.host
+			host:     @registry.host
 			pathname: "v2/#{image}/tags/list"
 
 	getDockerHeaders: ({ token }) ->
@@ -208,7 +206,7 @@ class Versioning
 
 		url.format
 			protocol: "https"
-			host:     @git.host
+			host:     @registry.host
 			pathname: "jwt/auth"
 			query:
 				client_id:     "docker"
@@ -218,8 +216,8 @@ class Versioning
 
 	getGitHeaders: ->
 		auth =
-			username: @docker.username
-			password: @docker.password
+			username: @registry.username
+			password: @registry.accessToken
 
 		authToken = "#{auth.username}:#{auth.password}"
 		b64       = Buffer.from(authToken).toString "base64"

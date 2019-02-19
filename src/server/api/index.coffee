@@ -11,7 +11,7 @@ router.get "/versioning", (req, res) ->
 		.status 200
 		.send
 			status: "success"
-			data:   host: config.versioning.docker.host
+			data:   host: config.versioning.registry.url
 		.end()
 
 router.get "/version", (req, res) ->
