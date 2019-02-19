@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import naturalCompareLite from 'natural-compare-lite'
 import { Map, List } from 'immutable'
 import { connect } from 'react-redux'
-import { isEqual, partial } from 'lodash'
+import { partial } from 'lodash'
 
 import DeviceDetail from './DeviceDetail'
 import DeviceListItem from './DeviceListItem'
@@ -12,7 +12,7 @@ import PaginationTableBody from './pagination/PaginationTableBody'
 import TableHead from './table/TableHead'
 
 import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
-import filterDevices from '/routes/devices/modules/selectors/filterDevices'
+import getDevices from '/routes/devices/modules/selectors/getDevices'
 import {
 	selectDevice,
 	storeGroups,
@@ -27,6 +27,7 @@ import {
 	fetchDevices,
 	fetchSources,
 } from '/routes/devices/modules/actions'
+import { applySort } from '/store/globalReducers/ui'
 import { fetchGroups, fetchApplications } from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'
 import getAsyncState from '/store/selectors/getAsyncState'
@@ -47,20 +48,10 @@ class DeviceList extends PureComponent {
 	}
 
 	onSort = field => {
-		if (isEqual(this.state.sortBy.field, field)) {
-			this.setState({
-				sortBy: {
-					field,
-					asc: !this.state.sortBy.asc,
-				},
-			})
+		if (this.props.sort.get('field') === field) {
+			this.props.applySort({ field, ascending: !this.props.sort.get('ascending') })
 		} else {
-			this.setState({
-				sortBy: {
-					field,
-					asc: true,
-				},
-			})
+			this.props.applySort({ field, ascending: true })
 		}
 	}
 
@@ -83,20 +74,6 @@ class DeviceList extends PureComponent {
 		if (confirm(`Remove group '${label}' from ${devices.length} device(s)?`)) {
 			this.props.asyncMultiRemoveGroup(devices, label)
 			this.props.clearMultiSelect()
-		}
-	}
-
-	sortDevices () {
-		const field   = this.state.sortBy.field.split('.')
-		const devices = this.props.filteredItems
-			.filter(device => device.get('deviceId'))
-			.sortBy(device => device.getIn(field, ''))
-			.sort(device => -device.has('connected'))
-
-		if (!this.state.sortBy.asc) {
-			return devices.reverse()
-		} else {
-			return devices
 		}
 	}
 
@@ -126,13 +103,13 @@ class DeviceList extends PureComponent {
 											type="checkbox"
 											onChange={() => {
 												this.props.multiSelectDevices(
-													this.props.filteredItems
+													this.props.devices
 														.valueSeq()
 														.map(device => device.get('deviceId'))
 														.toList()
 												)
 											}}
-											checked={this.props.multiSelectedDevices.size === this.props.filteredItems.size}
+											checked={this.props.multiSelectedDevices.size === this.props.devices.size}
 										/>
 
 										<label className="custom-control-label" htmlFor="selectAll" />
@@ -149,8 +126,8 @@ class DeviceList extends PureComponent {
 												key={`header-${key}`}
 												onClick={partial(this.onSort, key)}
 												sortable={column.get('sortable')}
-												ascending={this.state.sortBy.asc}
-												sorted={this.state.sortBy.field === key}
+												ascending={this.props.sort.get('ascending')}
+												sorted={this.props.sort.get('field') === key}
 												headerName={column.get('headerName')}
 												headerStyle={column.get('headerStyle', Map()).toJS()}
 											/>
@@ -160,9 +137,9 @@ class DeviceList extends PureComponent {
 							</tr>
 						</thead>
 						<tbody>
-							{this.sortDevices().size ? (
+							{this.props.devices.size ? (
 								<PaginationTableBody
-									renderData={this.sortDevices().valueSeq()}
+									renderData={this.props.devices.valueSeq()}
 									component={info => {
 										return (
 											<DeviceListItem
@@ -280,7 +257,7 @@ class DeviceList extends PureComponent {
 							</div>
 
 							<div className="card-controls">
-								<PaginationControl pageRange={2} data={this.sortDevices()} />
+								<PaginationControl pageRange={2} data={this.props.devices} />
 							</div>
 						</div>
 					</div>
@@ -293,21 +270,22 @@ class DeviceList extends PureComponent {
 export default connect(
 	state => {
 		return {
-			devices:               state.get('devices'),
 			groups:                state.get('groups'),
 			multiSelectedDevices:  state.getIn(['multiSelect', 'selected']),
 			multiSelectedAction:   state.getIn(['multiSelect', 'action']),
 			deviceSources:         state.get('deviceSources'),
 			configurations:        state.get('configurations'),
+			sort:                  state.getIn(['ui', 'sort']),
 			isStoringMultiGroups:  getAsyncState('isStoringMultiGroups')(state),
 			isRemovingMultiGroups: getAsyncState('isRemovingMultiGroups')(state),
 			isFetchingDevices:     getAsyncState('isFetchingDevices')(state),
 
 			selectedDevice: getSelectedDevice(state),
-			filteredItems:  filterDevices(state),
+			devices:        getDevices(state),
 		}
 	},
 	{
+		applySort,
 		selectDevice,
 		storeGroups,
 		removeGroup,

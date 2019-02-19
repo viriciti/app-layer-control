@@ -1,4 +1,4 @@
-import { Map, List } from 'immutable'
+import { Map, List, fromJS } from 'immutable'
 import { isArray, partial, eq } from 'lodash'
 
 import { UPDATE_ASYNC_STATE } from '/store/globalReducers/actions'
@@ -8,6 +8,7 @@ import {
 	UPDATE_DEVICE_ACTIVITY,
 	SET_ASYNC_STATE,
 	APPLY_FILTER,
+	APPLY_SORT,
 } from '/store/constants'
 
 export function applyFilter (query) {
@@ -17,6 +18,21 @@ export function applyFilter (query) {
 		meta:    {
 			debounce: {
 				time: 250,
+			},
+		},
+	}
+}
+
+export function applySort ({ field, ascending }) {
+	return {
+		type:    APPLY_SORT,
+		payload: {
+			field,
+			ascending,
+		},
+		meta: {
+			debounce: {
+				time: 50,
 			},
 		},
 	}
@@ -105,9 +121,18 @@ const actionHandlers = {
 	[APPLY_FILTER] (state, { payload }) {
 		return state.set('filter', payload)
 	},
+	[APPLY_SORT] (state, { payload }) {
+		return state.set('sort', Map(payload))
+	},
 }
 
-export default function uiReducer (state = Map(), action) {
+const initialState = fromJS({
+	sort: {
+		field:     'deviceId',
+		ascending: true,
+	},
+})
+export default function uiReducer (state = initialState, action) {
 	if (actionHandlers[action.type]) {
 		return actionHandlers[action.type](state, action)
 	} else {

@@ -16,6 +16,7 @@
 ### Fixed
 
 - The inability to add, update or remove a source from the frontend
+- Rendering performance for Devices improved by reducing the frequency of sorting and filtering
 
 ### Removed
 
