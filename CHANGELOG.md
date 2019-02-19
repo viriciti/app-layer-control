@@ -10,6 +10,7 @@
 
 - Show effective version for applications instead of the range
 - Filtering has been merged into a single field
+- Removed external sources for a more powerful plugin system
 
 ### Fixed
 

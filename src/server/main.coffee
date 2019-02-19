@@ -1,18 +1,16 @@
-RPC                             = require "mqtt-json-rpc"
-WebSocket                       = require "ws"
-bodyParser                      = require "body-parser"
-compression                     = require "compression"
-config                          = require "config"
-cors                            = require "cors"
-debug                           = (require "debug") "app:main"
-express                         = require "express"
-http                            = require "http"
-morgan                          = require "morgan"
-mqtt                            = require "async-mqtt"
-{ Map, fromJS }                 = require "immutable"
-{ each, omit, isEmpty, negate } = require "lodash"
-{ PluginManager }               = require "live-plugin-manager"
-{ Subject }                     = require "rxjs"
+RPC                        = require "mqtt-json-rpc"
+WebSocket                  = require "ws"
+bodyParser                 = require "body-parser"
+compression                = require "compression"
+config                     = require "config"
+cors                       = require "cors"
+express                    = require "express"
+http                       = require "http"
+morgan                     = require "morgan"
+mqtt                       = require "async-mqtt"
+{ Map }                    = require "immutable"
+{ isEmpty, negate, every } = require "lodash"
+{ Subject }                = require "rxjs"
 
 {
 	DevicesLogs
@@ -21,17 +19,16 @@ mqtt                            = require "async-mqtt"
 	DevicesStatus
 	DeviceGroups
 	DockerRegistry
-	externals
-}                            = require "./sources"
-Database                     = require "./db/Database"
-Store                        = require "./Store"
-bundle                       = require "./bundle"
-populateMqttWithDeviceGroups = require "./helpers/populateMqttWithDeviceGroups"
-populateMqttWithGroups       = require "./helpers/populateMqttWithGroups"
-runUpdates                   = require "./updates"
-Watcher                      = require "./db/Watcher"
-Broadcaster                  = require "./Broadcaster"
-
+}                              = require "./sources"
+Database                       = require "./db/Database"
+Store                          = require "./Store"
+bundle                         = require "./bundle"
+populateMqttWithDeviceGroups   = require "./helpers/populateMqttWithDeviceGroups"
+populateMqttWithGroups         = require "./helpers/populateMqttWithGroups"
+runUpdates                     = require "./updates"
+Watcher                        = require "./db/Watcher"
+Broadcaster                    = require "./Broadcaster"
+{ installPlugins, runPlugins } = require "./plugins"
 log = (require "./lib/Logger") "main"
 
 # Server initialization
@@ -41,17 +38,12 @@ port    = process.env.PORT or config.server.port
 ws      = new WebSocket.Server server: server
 db      = new Database
 store   = new Store db
-manager = new PluginManager
-	npmRegistryConfig:
-		auth:
-			username: process.env.NPM_USER
-			password: process.env.NPM_PASS
-			email:    process.env.NPM_EMAIL
 
 rpc             = null
 deviceStates    = Map()
 getDeviceStates = -> deviceStates
 
+log.info "NPM authentication enabled: #{if every config.server.npm then 'yes' else 'no'}"
 log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
 
 app.use cors()
@@ -76,9 +68,7 @@ do ->
 	await db.connect()
 	await runUpdates db: db, store: store
 
-	log.warn "Installing #{config.plugins.length} plugin(s) ..."
-	await manager.install plugin.name for plugin in config.plugins
-	log.info "Installed #{config.plugins.length} plugin(s)"
+	await installPlugins config.plugins
 
 	await store.ensureDefaultDeviceSources()
 
@@ -230,15 +220,7 @@ do ->
 				.subscribe source$
 
 		# plugins
-		for plugin in config.plugins
-			fn             = manager.require plugin.name
-			wrappedSource$ = source$
-				.filter ({ _internal }) ->
-					_internal
-				.map (data) ->
-					omit data, "_internal"
-
-			fn wrappedSource$, plugin
+		runPlugins config.plugins, source$
 
 		socket.subscribe [
 			DevicesState.topic

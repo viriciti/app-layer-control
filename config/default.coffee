@@ -8,6 +8,11 @@ module.exports =
 	server:
 		port:        3000
 		skipUpdates: false
+		skipBundler: true
+		npm:
+			username: process.env.NPM_USERNAME
+			password: process.env.NPM_PASSWORD
+			email:    process.env.NPM_EMAIL
 
 	mqtt:
 		clientId:        "app-layer-control-#{os.hostname()}"
@@ -28,7 +33,9 @@ module.exports =
 		maxTokenAttempts: 3
 		checkingTimeout:  600000
 
-	plugins: []
+	plugins: [
+		name: "express"
+	]
 
 	defaultColumns:
 		onlineStatus:
