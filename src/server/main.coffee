@@ -11,6 +11,7 @@ mqtt                       = require "async-mqtt"
 { Map }                    = require "immutable"
 { isEmpty, negate, every } = require "lodash"
 { Subject }                = require "rxjs"
+kleur                      = require "kleur"
 
 {
 	DevicesLogs
@@ -29,7 +30,7 @@ runUpdates                     = require "./updates"
 Watcher                        = require "./db/Watcher"
 Broadcaster                    = require "./Broadcaster"
 { installPlugins, runPlugins } = require "./plugins"
-log = (require "./lib/Logger") "main"
+log                            = (require "./lib/Logger") "main"
 
 # Server initialization
 app     = express()
@@ -256,25 +257,9 @@ do ->
 	server.listen port, ->
 		log.info "Server listening on :#{@address().port}"
 
-# inspect state of a device through CLI
-process
-	.stdin
-	.on "data", (data) ->
-		return if process.env.NODE_ENV is "production"
+# catch unhandled rejections
+process.on "unhandledRejection", (error) ->
+	log.error "#{kleur.red "Unhandled rejection:"} #{error.message}"
+	log.error error.stack
 
-		input = data.toString().trim()
-		return unless input.startsWith ".inspect"
-
-		deviceId = input
-			.split " "
-			.slice 1
-			.join ""
-		return console.warn "device '#{deviceId}' not found" unless deviceStates.get deviceId
-
-		file  = require("path").join ".local", deviceId
-		state = deviceStates
-			.get deviceId
-			.toJS()
-
-		require("fs").writeFileSync file, JSON.stringify state, null, 4
-		console.log "state stored in #{file}"
+	process.exit 1

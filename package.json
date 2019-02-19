@@ -60,6 +60,7 @@
 		"express": "^4.16.1",
 		"immutable": "^3.8.2",
 		"jquery": "^3.3.1",
+		"kleur": "^3.0.2",
 		"live-plugin-manager": "^0.12.0",
 		"lodash": "^4.17.11",
 		"moment": "^2.21.0",

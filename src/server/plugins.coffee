@@ -12,8 +12,14 @@ manager = new PluginManager unless every config.server.npm then {} else
 			password: config.server.npm.password
 			email:    config.server.npm.email
 
+validatePlugins = (plugins) ->
+	plugins.forEach (plugin) ->
+		throw new Error "Plugin is missing a name" unless plugin.name?
+
 installPlugins = (plugins) ->
 	log.warn "Installing #{plugins.length} plugin(s) ..."
+
+	validatePlugins plugins
 
 	await Promise.all plugins.map (plugin) ->
 		try
