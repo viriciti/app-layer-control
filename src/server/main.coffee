@@ -45,6 +45,8 @@ deviceStates    = Map()
 getDeviceStates = -> deviceStates
 
 log.info "NPM authentication enabled: #{if every config.server.npm then 'yes' else 'no'}"
+log.info "Docker registry: #{config.versioning.registry.url}"
+log.info "GitLab endpoint: #{config.versioning.registry.host}"
 log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
 
 app.use cors()
