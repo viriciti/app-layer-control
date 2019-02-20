@@ -15,25 +15,15 @@ function wrapValueGetter (key) {
 }
 
 const getHeaderName = wrapValueGetter('headerName')
-const getName       = wrapValueGetter('name')
 
 export default (values, props) => {
 	const errors           = {}
-	const isNameUsed       = props.deviceSources
-		.filter(customSource => getName(customSource) !== getName(props.editing))
-		.some(customSource => getName(customSource) === getName(values.name))
 	const isHeaderNameUsed = props.deviceSources
 		.filter(customSource => getHeaderName(customSource) !== getHeaderName(props.editing))
 		.some(customSource => getHeaderName(customSource) === getHeaderName(values.headerName))
 
 	if (values.entry && (!values.entry.length || every(values.entry, isEmpty))) {
 		errors.entry = 'You must specify whether the source should be visible in the table, detail page or both'
-	}
-
-	if (!values.name) {
-		errors.name = 'Enter an identifier for this source'
-	} else if (isNameUsed) {
-		errors.name = 'This name is already used'
 	}
 
 	if (!values.headerName) {

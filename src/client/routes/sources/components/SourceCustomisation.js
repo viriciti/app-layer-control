@@ -62,7 +62,7 @@ class SourceCustomisation extends PureComponent {
 
 	onRemove = deviceSource => {
 		if (confirm(`Are you sure you want to remove source '${deviceSource.get('headerName')}'?`)) {
-			this.props.asyncRemoveSource(deviceSource.get('name'))
+			this.props.asyncRemoveSource(deviceSource.get('headerName'))
 		}
 	}
 

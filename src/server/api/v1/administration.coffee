@@ -105,8 +105,8 @@ router.get "/sources", ({ app }, res, next) ->
 router.put "/source/:name", ({ app, params, body }, res, next) ->
 	{ db, broadcaster } = app.locals
 	{ name }            = params
-	query               = name: name
-	update              = { ...body, name: name }
+	query               = headerName: name
+	update              = { ...body, headerName: name }
 
 	try
 		doc = await db.DeviceSource.findOneAndUpdate query, update,
@@ -133,7 +133,7 @@ router.delete "/source/:name", ({ app, params }, res, next) ->
 	{ name }            = params
 
 	try
-		await db.DeviceSource.deleteMany name: name
+		await db.DeviceSource.deleteMany headerName: name
 
 		broadcaster.broadcastSources()
 

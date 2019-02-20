@@ -66,7 +66,6 @@ class SourceCustomisationModal extends PureComponent {
 			this.props.initialize(initialFormValues)
 		} else if (this.props.isEditing && !prevProps.editing && this.props.editing) {
 			this.props.initialize({
-				name:  this.props.editing.get('name'),
 				entry: [
 					this.props.editing.get('entryInTable') ? 'table' : '',
 					this.props.editing.get('entryInDetail') ? 'detail' : '',
@@ -103,18 +102,7 @@ class SourceCustomisationModal extends PureComponent {
 		return (
 			<form onSubmit={this.props.handleSubmit(this.onSubmit.bind(this))}>
 				<Field name="entry" label="Entry" component={EntryFields} />
-
-				{this.props.isAdding ? (
-					<Field name="name" label="Name" component={TextInput} type="text" readOnly={this.props.isEditing} />
-				) : null}
-
-				<Field
-					name="headerName"
-					label="Label"
-					component={TextInput}
-					type="text"
-					helpText={this.props.isEditing ? 'Changing the header name will not affect the name in the preview' : null}
-				/>
+				<Field name="headerName" label="Label" component={TextInput} type="text" readOnly={this.props.isEditing} />
 				<Field
 					name="getIn"
 					label="Source"
