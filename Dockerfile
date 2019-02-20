@@ -1,4 +1,4 @@
-FROM node:8
+FROM node:10
 
 # Create app directory
 RUN mkdir -p /app
@@ -14,8 +14,8 @@ RUN npm install
 # Compile app
 COPY src/ /app/src
 COPY config/ /app/config
-COPY webpack.config.js .babelrc /app/
-RUN npm run deploy
+COPY .babelrc /app/
+RUN npm run build
 
 EXPOSE 3000
 

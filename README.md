@@ -46,6 +46,10 @@ This will initiate the replica set and you're ready to go.
 Configuring App Layer Control is done through a configuration file (requiring you to mount it manually) and environment variables.  
 We recommend using environment variables, since these will cause the least configuration issues over time.
 
+- `MQTT_HOST` (_Optional_): MQTT endpoint. Default: localhost
+- `MQTT_PORT` (_Optional_): MQTT port. Default: 1883
+- `DB_HOSTS` (_Optional_): Comma-separated database hosts. Default: localhost:27017
+- `DB_REPLICA_SET` (_Optional_): Name of the replica set. Default: rs0
 - `NPM_USERNAME` (_Optional_): NPM username. Allow you to install private packages
 - `NPM_PASSWORD` (_Optional_): NPM password. Allow you to install private packages
 - `NPM_EMAIL` (_Optional_): Mandatory for NPM

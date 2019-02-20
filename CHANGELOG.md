@@ -1,5 +1,16 @@
 # Changelog
 
+[Unreleased]
+
+### Added
+
+- Database hosts can now configured through environment variables (comma-separated)
+- MQTT host and port can now be configured through environment variables
+
+### Fixed
+
+- Fix outdated Dockerfile from failing to build
+
 [4.8.0]
 
 ### Added
