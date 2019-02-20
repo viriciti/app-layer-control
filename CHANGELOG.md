@@ -5,6 +5,7 @@
 ### Fixed
 
 - Bump the amount of max listeners to 15 for MQTT
+- Alphabetically sort the groups when adding them to a device
 
 ## [4.8.1]
 
