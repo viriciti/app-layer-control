@@ -125,7 +125,7 @@ do ->
 			.bufferTime config.batchState.defaultInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				deviceStates = updates.reduce (devices, update) ->
+				stateUpdates = updates.reduce (devices, update) ->
 					deviceId = update.get "deviceId"
 					data     = update.get "data"
 					newState = data.merge Map
@@ -137,9 +137,10 @@ do ->
 					newState = (newState.remove key) for key in keys
 
 					devices.mergeIn [deviceId], newState
-				, deviceStates
+				, Map()
 
-				broadcaster.broadcast "devicesState", deviceStates
+				deviceStates = deviceStates.mergeDeep stateUpdates
+				broadcaster.broadcast "devicesState", stateUpdates
 
 		# specific state updates
 		# these updates are broadcasted more frequently
@@ -148,16 +149,17 @@ do ->
 			.bufferTime config.batchState.nsStateInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				deviceStates = updates.reduce (devices, update) ->
+				stateUpdates = updates.reduce (devices, update) ->
 					key      = update.get "key"
 					deviceId = update.get "deviceId"
 
 					devices
 						.setIn [deviceId, key], update.get "value"
 						.setIn [deviceId, "lastSeenTimestamp"], Date.now()
-				, deviceStates
+				, Map()
 
-				broadcaster.broadcast "devicesState", deviceStates
+				deviceStates = deviceStates.mergeDeep stateUpdates
+				broadcaster.broadcast "devicesState", stateUpdates
 
 		# first time online devices
 		devicesStatus$
@@ -177,16 +179,17 @@ do ->
 			.bufferTime config.batchState.defaultInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				deviceStates = updates.reduce (devices, update) ->
+				stateUpdates = updates.reduce (devices, update) ->
 					deviceId  = update.get "deviceId"
 					status    = update.get "status"
 
 					devices
 						.setIn [deviceId, "connected"], status is "online"
 						.setIn [deviceId, "status"],    status
-				, deviceStates
+				, Map()
 
-				broadcaster.broadcast "devicesState", deviceStates
+				deviceStates = deviceStates.mergeDeep stateUpdates
+				broadcaster.broadcast "devicesState", stateUpdates
 
 		# docker registry
 		registry$.subscribe (images) ->
@@ -200,16 +203,16 @@ do ->
 			.bufferTime config.batchState.defaultInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				deviceStates = updates
+				stateUpdates = updates
 					.filter ({ deviceId, data }) ->
 						return log.warn "No device ID found in state payload. Ignoring update ..." unless deviceId?
 						return log.warn "No data found in state payload. Ignoring update ..."      unless data?
 						true
 					.reduce (devices, { deviceId, data }) ->
 						devices.mergeIn [deviceId], data
-					, deviceStates
+					, Map()
 
-				broadcaster.broadcast "devicesState", deviceStates
+				broadcaster.broadcast "devicesState", stateUpdates
 
 		[
 			["devicesNsState", devicesNsState$]

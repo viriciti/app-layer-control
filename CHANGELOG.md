@@ -6,6 +6,7 @@
 
 - Bump the amount of max listeners to 15 for MQTT
 - Alphabetically sort the groups when adding them to a device
+- Reduce the amount of state updates sent by the server
 
 ## [4.8.1]
 
