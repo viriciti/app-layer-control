@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Treat staging as production, but with a different NODE_ENV
+
 ### Fixed
 
 - Bump the amount of max listeners to 15 for MQTT
