@@ -7,11 +7,11 @@ directory    = path.resolve __dirname, "..", "client"
 fileLocation = path.resolve directory, "index.html"
 
 module.exports = (app) ->
-	if config.server.skipBundler or process.env.NODE_ENV is "production"
+	if config.server.skipBundler or process.env.NODE_ENV in ["staging", "production"]
 		debug "Serving from #{directory}"
 
 		app.use (req, res, next) ->
-			return next() if process.env.NODE_ENV is "production"
+			return next() if process.env.NODE_ENV in ["staging", "production"]
 			return next() if req.originalUrl.startsWith "/api"
 
 			res.send "Bundling is skipped, only the API is accessible"

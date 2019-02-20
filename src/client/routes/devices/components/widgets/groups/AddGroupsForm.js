@@ -86,6 +86,7 @@ class AddGroupsForm extends PureComponent {
 				Please select a group
 			</option>
 		)
+
 		if (!this.props.groups) return placeholder
 
 		return [placeholder].concat(
@@ -94,6 +95,7 @@ class AddGroupsForm extends PureComponent {
 				.filter(group => {
 					return group !== 'default'
 				})
+				.sort()
 				.map(group => {
 					return (
 						<option key={group} value={group}>
