@@ -1,19 +1,19 @@
-version: '3'
+version: "3"
 services:
   vernemq:
     container_name: vernemq
     environment:
-      DOCKER_VERNEMQ_ALLOW_ANONYMOUS: 'on'
+      DOCKER_VERNEMQ_ALLOW_ANONYMOUS: "on"
       DOCKER_VERNEMQ_MAX_ONLINE_MESSAGES: 10000
     image: erlio/docker-vernemq
-    ports: ['1883:1883']
+    ports: ["1883:1883", "8888:8888"]
     restart: always
 
   mongodb:
     container_name: mongodb
-    command: ['mongod', --storageEngine, wiredTiger, --replSet, rs0]
+    command: ["mongod", --storageEngine, wiredTiger, --replSet, rs0]
     image: mongo:3.6
-    ports: ['27017:27017']
+    ports: ["27017:27017"]
     restart: always
     network_mode: host
     volumes:

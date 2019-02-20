@@ -75,7 +75,9 @@ do ->
 
 	await store.ensureDefaultDeviceSources()
 
-	socket         = mqtt.connect config.mqtt
+	socket = mqtt.connect config.mqtt
+	socket.setMaxListeners 15
+
 	rpc            = new RPC socket, timeout: config.mqtt.responseTimeout
 	broadcaster    = new Broadcaster ws
 	watcher        = new Watcher

@@ -49,7 +49,7 @@ export default (initialState = Map({})) => {
 	store.dispatch(hydrate(ws))
 
 	if (module.hot) {
-		module.hot.accept('./reducers', () => {
+		module.hot.accept(() => {
 			const reducers = require('./reducers').default
 			store.replaceReducer(reducers(store.asyncReducers))
 		})

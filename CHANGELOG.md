@@ -1,6 +1,12 @@
 # Changelog
 
-[4.8.1]
+## [Unreleased]
+
+### Fixed
+
+- Bump the amount of max listeners to 15 for MQTT
+
+## [4.8.1]
 
 ### Added
 
@@ -11,7 +17,7 @@
 
 - Fix outdated Dockerfile from failing to build
 
-[4.8.0]
+## [4.8.0]
 
 ### Added
 

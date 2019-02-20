@@ -9,7 +9,7 @@ import { AppContainer } from 'react-hot-loader'
 import createStore from '/store/createStore'
 import App from '/components/App'
 
-const store = createStore()
+const store  = createStore()
 const render = Component => {
 	ReactDOM.render(
 		<AppContainer>
@@ -18,10 +18,6 @@ const render = Component => {
 		document.getElementById('root')
 	)
 }
-
-// ws.addEventListener('open', () => console.info('Connected'))
-// ws.addEventListener('close', () => console.info('Disconnected'))
-// ws.addEventListener('message', )
 
 render(App)
 

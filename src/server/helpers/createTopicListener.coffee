@@ -19,5 +19,5 @@ module.exports = (socket, matcher) ->
 			observer.complete()
 
 		socket
-			.on "packetreceive", onMessage
-			.on "close",   onClose
+			.on   "packetreceive", onMessage
+			.once "close",         onClose

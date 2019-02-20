@@ -7,9 +7,9 @@ import { asyncRemoveGroup } from '/routes/devices/modules/actions'
 
 class DeviceGroups extends PureComponent {
 	onRemoveGroup = group => {
-		if (!confirm(`Removing group ${group}. Are you sure?`)) return
-
-		this.props.asyncRemoveGroup(this.props.selectedDevice.get('deviceId'), group)
+		if (confirm(`Removing group ${group}. Are you sure?`)) {
+			this.props.asyncRemoveGroup(this.props.selectedDevice.get('deviceId'), group)
+		}
 	}
 
 	renderGroups = () => {
