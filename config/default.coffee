@@ -16,18 +16,15 @@ module.exports =
 
 	mqtt:
 		clientId:        "app-layer-control-#{os.hostname()}"
-		host:            "localhost"
-		port:            1883
+		host:            process.env.MQTT_HOST or "localhost"
+		port:            process.env.MQTT_PORT or 1883
 		responseTimeout: 5000
 
 	db:
-		hosts: [
-			host: "localhost"
-			port: 27017
-		]
+		hosts: process.env.DB_HOSTS or "localhost:27017"
 		name: "app-layer-control"
 		options:
-			replSet: "rs0"
+			replSet: process.env.DB_REPLICA_SET or "rs0"
 
 	versioning:
 		maxTokenAttempts: 3

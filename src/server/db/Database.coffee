@@ -19,10 +19,20 @@ class Database
 
 		@connect() if @options.autoConnect
 
+	expandHosts: (hosts) ->
+		hosts
+			.split ","
+			.map (host) ->
+				[url, port] = host.split ":"
+				port      or= 27017
+
+				host: url
+				port: port
+
 	connect: ->
 		mongoose.Promise = global.Promise
 		url              = mongodbURI.format
-			hosts:    config.db.hosts
+			hosts:    @expandHosts config.db.hosts
 			database: config.db.name
 			options:  config.db.options or undefined
 
