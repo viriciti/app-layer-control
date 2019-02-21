@@ -1,15 +1,17 @@
 import { Iterable } from 'immutable'
-import { every, isEmpty } from 'lodash'
+import { every, isEmpty, defaultTo } from 'lodash'
 
 function wrapValueGetter (key) {
 	return source => {
 		if (Iterable.isIterable(source)) {
 			return source
-				.get(key)
+				.get(key, '')
 				.toLowerCase()
 				.trim()
 		} else {
-			return source && source.toLowerCase().trim()
+			return defaultTo(source, '')
+				.toLowerCase()
+				.trim()
 		}
 	}
 }
