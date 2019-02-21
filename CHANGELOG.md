@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix controls not updating their async activity due to incorrect state update
 - Fix jumping table by enforcing a fixed table layout.
   **Note**: This requires you to specify a width when adding a source.
+- Fix logs not appearing for devices
+- Fix memory leak caused by incorrectly assigning IDs (LastSeenInterval)
 
 ## 4.8.2
 
