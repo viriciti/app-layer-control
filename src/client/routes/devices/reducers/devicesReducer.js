@@ -1,6 +1,6 @@
 import { Map, fromJS } from 'immutable'
 
-import { DEVICE_STATE, DEVICES_STATE } from '/routes/devices/modules/actions'
+import { DEVICE_STATE, DEVICES_STATE } from '/routes/devices/actions'
 
 // ------------------------------------
 // Action Handlers

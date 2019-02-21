@@ -5,6 +5,7 @@
 ### Changed
 
 - Treat staging as production, but with a different NODE_ENV
+- Hide devices with incomplete state from the devices table
 
 ### Fixed
 

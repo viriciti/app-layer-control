@@ -4,8 +4,8 @@ import { connect } from 'react-redux'
 import { partial } from 'lodash'
 
 import Modal from '/components/common/Modal'
-import { asyncRefreshState, selectDevice } from '/routes/devices/modules/actions'
-import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
+import { asyncRefreshState, selectDevice } from '/routes/devices/actions'
+import getSelectedDevice from '/routes/devices/selectors/getSelectedDevice'
 import AsyncButton from '/components/common/AsyncButton'
 
 import { SystemInfo, Logs, Applications, DeviceImages, DeviceGroups, Queue } from './widgets'

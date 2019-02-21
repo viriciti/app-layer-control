@@ -1,6 +1,6 @@
 import { Map, List, fromJS } from 'immutable'
 
-import { MULTISELECT_DEVICE, MULTISELECT_DEVICES, MULTISELECT_ACTION, MULTISELECT_ACTION_CLEAR } from '/routes/devices/modules/actions'
+import { MULTISELECT_DEVICE, MULTISELECT_DEVICES, MULTISELECT_ACTION, MULTISELECT_ACTION_CLEAR } from '/routes/devices/actions'
 
 // ------------------------------------
 // Action Handlers

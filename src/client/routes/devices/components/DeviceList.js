@@ -11,8 +11,8 @@ import PaginationControl from './pagination/PaginationControl'
 import PaginationTableBody from './pagination/PaginationTableBody'
 import TableHead from './table/TableHead'
 
-import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
-import getDevices from '/routes/devices/modules/selectors/getDevices'
+import getSelectedDevice from '/routes/devices/selectors/getSelectedDevice'
+import getDevices from '/routes/devices/selectors/getDevices'
 import {
 	selectDevice,
 	storeGroups,
@@ -26,7 +26,7 @@ import {
 	resetPagination,
 	fetchDevices,
 	fetchSources,
-} from '/routes/devices/modules/actions'
+} from '/routes/devices/actions'
 import { applySort } from '/store/globalReducers/ui'
 import { fetchGroups, fetchApplications } from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'

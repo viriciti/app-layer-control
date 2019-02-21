@@ -19,14 +19,14 @@ It is advised to _not_ use this in production (as it is not secure), but to conf
 Since [version], App Layer Control requires a replica set.  
 This enables App Layer Control to keep (connected) devices up to date with database changes and reduces code clutter.
 
-However, this requires you to initiate the replica set within the MongoDB container. To do this, go to your terminal and enter: `docker exec -it mongodb /bin/sh`. Once you are in the container, enter: `mongo`.  
+However, this requires you to initiate the replica set within the MongoDB container. To do this, go to your terminal and enter: `docker exec -it mongodb mongo`.  
 You are now in the [mongo](https://docs.mongodb.com/manual/reference/program/mongo/#bin.mongo) shell. Once inside, execute the following command:
 
 ```
 rs.initiate({
     _id: "rs0",
     members: [
-        { _id: 0, host: "mongodb:27017" }
+        { _id: 0, host: "localhost:27017" }
     ]
 })
 ```
