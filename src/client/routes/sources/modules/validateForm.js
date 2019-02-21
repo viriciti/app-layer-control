@@ -40,5 +40,16 @@ export default (values, props) => {
 		errors.getIn = 'Enter a source'
 	}
 
+	// Table validation rules
+	if (values.entry && values.entry.includes('table')) {
+		if (!values.columnWidth) {
+			errors.columnWidth = 'How wide should the column be?'
+		} else if (values.columnWidth < 10) {
+			errors.columnWidth = 'Column is too small'
+		} else if (values.columnWidth > 250) {
+			errors.columnWidth = 'Column will take too much space'
+		}
+	}
+
 	return errors
 }

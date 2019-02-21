@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react'
 import naturalCompareLite from 'natural-compare-lite'
-import { Map, List } from 'immutable'
+import { List } from 'immutable'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
 
@@ -91,24 +91,17 @@ class DeviceList extends PureComponent {
 		} else {
 			return (
 				<div className="table-responsive">
-					<table className="table table-hover">
+					<table className="table table-hover table--fixed">
 						<thead>
 							<tr>
-								<th className="align-middle">
+								<th className="align-middle" style={{ width: 15 }}>
 									<div className="custom-control custom-checkbox">
 										<input
 											className="custom-control-input"
 											id="selectAll"
 											title="Select all devices"
 											type="checkbox"
-											onChange={() => {
-												this.props.multiSelectDevices(
-													this.props.devices
-														.valueSeq()
-														.map(device => device.get('deviceId'))
-														.toList()
-												)
-											}}
+											onChange={() => this.props.multiSelectDevices(this.props.devices.keySeq().toList())}
 											checked={this.props.multiSelectedDevices.size === this.props.devices.size}
 										/>
 
@@ -117,19 +110,17 @@ class DeviceList extends PureComponent {
 								</th>
 
 								{this.props.deviceSources
-									.filter(deviceSource => {
-										return deviceSource.get('entryInTable')
-									})
+									.filter(deviceSource => deviceSource.get('entryInTable'))
 									.map((column, key) => {
 										return (
 											<TableHead
 												key={`header-${key}`}
-												onClick={partial(this.onSort, key)}
+												onSort={partial(this.onSort, key)}
 												sortable={column.get('sortable')}
 												ascending={this.props.sort.get('ascending')}
 												sorted={this.props.sort.get('field') === key}
 												headerName={column.get('headerName')}
-												headerStyle={column.get('headerStyle', Map()).toJS()}
+												columnWidth={column.get('columnWidth')}
 											/>
 										)
 									})

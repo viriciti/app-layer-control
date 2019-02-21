@@ -1,11 +1,29 @@
 # Changelog
 
-## [4.8.2]
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## Unreleased
+
+### Changed
+
+- Completely hide devices with incomplete state from the devices table
+- Update the way sources are handled internally: create them if they do not exist in the database, leave as is if they do exist.
+
+### Fixed
+
+- Fix controls not updating their async activity due to incorrect state update
+- Fix jumping table by enforcing a fixed table layout.
+  **Note**: This requires you to specify a width when adding a source.
+
+## 4.8.2
 
 ### Changed
 
 - Treat staging as production, but with a different NODE_ENV
-- Hide devices with incomplete state from the devices table
+- Reduce visibility of devices with incomplete state from the devices table
 
 ### Fixed
 
@@ -13,7 +31,7 @@
 - Alphabetically sort the groups when adding them to a device
 - Reduce the amount of state updates sent by the server
 
-## [4.8.1]
+## 4.8.1
 
 ### Added
 

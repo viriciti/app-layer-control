@@ -71,6 +71,7 @@ class SourceCustomisationModal extends PureComponent {
 					this.props.editing.get('entryInDetail') ? 'detail' : '',
 				],
 				columnIndex:  this.props.editing.get('columnIndex'),
+				columnWidth:  this.props.editing.get('columnWidth'),
 				getIn:        this.props.editing.get('getIn'),
 				defaultValue: this.props.editing.get('defaultValue'),
 				headerName:   this.props.editing.get('headerName'),
@@ -130,6 +131,15 @@ class SourceCustomisationModal extends PureComponent {
 							previewAvailable={this.props.isEditing}
 							deviceSources={this.props.deviceSources}
 							deviceSource={this.props.editing}
+						/>
+						<Field
+							name="columnWidth"
+							label="Width"
+							placeholder="Width of the column"
+							component={TextInput}
+							type="number"
+							min="10"
+							max="250"
 						/>
 						<Field name="sortable" label="Sortable" component={ToggleInput} type="checkbox" />
 						<Field name="filterable" label="Filterable" component={ToggleInput} type="checkbox" />
