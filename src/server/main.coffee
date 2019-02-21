@@ -229,17 +229,15 @@ do ->
 		# plugins
 		runPlugins config.plugins, source$
 
-		socket.subscribe [
+		await socket.subscribe [
 			DevicesState.topic
 			DevicesLogs.topic
 			DevicesNsState.topic
 			DevicesStatus.topic
 			DeviceGroups.topic
-		], (error, granted) ->
-			throw new Error "Error subscribing topics: #{error.message}" if error
+		]
 
-			log.info "Subscribed to MQTT"
-			log.info "Topics: #{granted.map(({ topic }) -> topic).join ", "}"
+		log.info "MQTT subscriptions set"
 
 	onError = (error) ->
 		log.error error.message
