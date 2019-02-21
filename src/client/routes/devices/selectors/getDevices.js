@@ -12,17 +12,13 @@ const getSources = state =>
 		.keySeq()
 		.toList()
 
-// .filter(device => device.get('deviceId'))
-// .sortBy(device => device.getIn(field, ''))
-// .sort(device => -device.has('connected'))
-
 export default createImmutableSelector(
 	[getDevices, getFilter, getSort, getSources],
 	(devices, filter, sort, sources) => {
 		const devicesWithMutations = devices
 			.filter(
 				device =>
-				device.has('connected') &&
+					device.has('connected') &&
 					device.has('deviceId') &&
 					sources.some(field => {
 						const value = device.getIn(field.split('.'), '')

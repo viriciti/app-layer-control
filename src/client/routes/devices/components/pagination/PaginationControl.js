@@ -7,7 +7,7 @@ import { paginateTo, setItemsPerPage } from '/routes/devices/actions'
 
 const itemsPerPageOptions = [10, 20, 50]
 
-const mapStateToProps = state => {
+const mapStateToProps    = state => {
 	return {
 		paginate: state.get('paginate'),
 	}
@@ -16,7 +16,7 @@ const mapDispatchToProps = { paginateTo, setItemsPerPage }
 
 const PaginationControl = ({ data, paginateTo, paginate, pageRange, setItemsPerPage }) => {
 	const pages = calculatePages({ data, itemsPerPage: paginate.get('itemsPerPage') })
-	const page = paginate.get('page') > pages ? 0 : paginate.get('page')
+	const page  = paginate.get('page') > pages ? 0 : paginate.get('page')
 
 	return (
 		<div className="row">
