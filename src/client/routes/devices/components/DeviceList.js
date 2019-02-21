@@ -11,8 +11,8 @@ import PaginationControl from './pagination/PaginationControl'
 import PaginationTableBody from './pagination/PaginationTableBody'
 import TableHead from './table/TableHead'
 
-import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
-import getDevices from '/routes/devices/modules/selectors/getDevices'
+import getSelectedDevice from '/routes/devices/selectors/getSelectedDevice'
+import getDevices from '/routes/devices/selectors/getDevices'
 import {
 	selectDevice,
 	storeGroups,
@@ -26,7 +26,7 @@ import {
 	resetPagination,
 	fetchDevices,
 	fetchSources,
-} from '/routes/devices/modules/actions'
+} from '/routes/devices/actions'
 import { applySort } from '/store/globalReducers/ui'
 import { fetchGroups, fetchApplications } from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'
@@ -137,7 +137,19 @@ class DeviceList extends PureComponent {
 							</tr>
 						</thead>
 						<tbody>
-							{this.props.devices.size ? (
+							{this.props.filter && !this.props.devices.size ? (
+								<tr className="tr--no-hover">
+									<td colSpan="10000">
+										<h6 className="text-center text-secondary my-5">No devices were found with this search query</h6>
+									</td>
+								</tr>
+							) : !this.props.devices.size ? (
+								<tr className="tr--no-hover">
+									<td colSpan="10000">
+										<h6 className="text-center text-secondary my-5">No devices were found</h6>
+									</td>
+								</tr>
+							) : (
 								<PaginationTableBody
 									renderData={this.props.devices.valueSeq()}
 									component={info => {
@@ -153,12 +165,6 @@ class DeviceList extends PureComponent {
 										)
 									}}
 								/>
-							) : (
-								<tr className="tr--no-hover">
-									<td colSpan="10000">
-										<h4 className="text-center text-secondary my-5">No results matching this criteria</h4>
-									</td>
-								</tr>
 							)}
 						</tbody>
 					</table>
@@ -275,6 +281,7 @@ export default connect(
 			multiSelectedAction:   state.getIn(['multiSelect', 'action']),
 			deviceSources:         state.get('deviceSources'),
 			configurations:        state.get('configurations'),
+			filter:                state.getIn(['ui', 'filter']),
 			sort:                  state.getIn(['ui', 'sort']),
 			isStoringMultiGroups:  getAsyncState('isStoringMultiGroups')(state),
 			isRemovingMultiGroups: getAsyncState('isRemovingMultiGroups')(state),

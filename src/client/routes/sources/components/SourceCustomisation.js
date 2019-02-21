@@ -5,7 +5,7 @@ import { partial } from 'lodash'
 
 import SourceCustomisationModal from './SourceCustomisationModal'
 import { asyncEditSource, asyncAddSource, asyncRemoveSource } from '/routes/sources/modules/actions'
-import { fetchSources } from '/routes/devices/modules/actions'
+import { fetchSources } from '/routes/devices/actions'
 import getAsyncState from '/store/selectors/getAsyncState'
 
 const StateIcon = ({ value }) => {

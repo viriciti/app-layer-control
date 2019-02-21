@@ -6,7 +6,7 @@ import { List } from 'immutable'
 import { first } from 'lodash'
 
 import AsyncButton from '/components/common/AsyncButton'
-import { asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs } from '/routes/devices/modules/actions'
+import { asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs } from '/routes/devices/actions'
 import toReactKey from '/utils/toReactKey'
 import getAsyncState from '/store/selectors/getAsyncState'
 

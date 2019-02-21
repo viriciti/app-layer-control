@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { partial } from 'lodash'
 
 import AddGroupsForm from './AddGroupsForm'
-import { asyncRemoveGroup } from '/routes/devices/modules/actions'
+import { asyncRemoveGroup } from '/routes/devices/actions'
 
 class DeviceGroups extends PureComponent {
 	onRemoveGroup = group => {

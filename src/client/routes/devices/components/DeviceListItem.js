@@ -5,7 +5,7 @@ import { partialRight } from 'lodash'
 import classNames from 'classnames'
 
 import formats from '/routes/devices/components/table/formats'
-import { selectDevice, multiSelectDevice } from '/routes/devices/modules/actions'
+import { selectDevice, multiSelectDevice } from '/routes/devices/actions'
 import toReactKey from '/utils/toReactKey'
 
 const Clipboard = ({ onClick }) => (

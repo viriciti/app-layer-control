@@ -1,6 +1,6 @@
 import { Map, List, fromJS } from 'immutable'
 
-import { DEVICE_LOGS, CONTAINER_LOGS, CLEAN_LOGS } from '/routes/devices/modules/actions'
+import { DEVICE_LOGS, CONTAINER_LOGS, CLEAN_LOGS } from '/routes/devices/actions'
 
 // ------------------------------------
 // Action Handlers
