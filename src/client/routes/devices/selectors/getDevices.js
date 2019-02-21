@@ -22,6 +22,7 @@ export default createImmutableSelector(
 		const devicesWithMutations = devices
 			.filter(
 				device =>
+				device.has('connected') &&
 					device.has('deviceId') &&
 					sources.some(field => {
 						const value = device.getIn(field.split('.'), '')

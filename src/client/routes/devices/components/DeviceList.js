@@ -25,7 +25,7 @@ import {
 	paginateTo,
 	resetPagination,
 	fetchDevices,
-	fetchSources,
+	fetchSources
 } from '/routes/devices/actions'
 import { applySort } from '/store/globalReducers/ui'
 import { fetchGroups, fetchApplications } from '/routes/administration/modules/actions'
@@ -36,11 +36,11 @@ class DeviceList extends PureComponent {
 	state = {
 		sortBy: {
 			field: 'deviceId',
-			asc:   true,
-		},
+			asc: true
+		}
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.props.fetchDevices()
 		this.props.fetchSources()
 		this.props.fetchGroups()
@@ -77,7 +77,7 @@ class DeviceList extends PureComponent {
 		}
 	}
 
-	multiSelectOptions () {
+	multiSelectOptions() {
 		return this.props.groups
 			.keySeq()
 			.filterNot(group => group === 'default')
@@ -137,7 +137,19 @@ class DeviceList extends PureComponent {
 							</tr>
 						</thead>
 						<tbody>
-							{this.props.devices.size ? (
+							{this.props.filter && !this.props.devices.size ? (
+								<tr className="tr--no-hover">
+									<td colSpan="10000">
+										<h6 className="text-center text-secondary my-5">No devices were found with this search query</h6>
+									</td>
+								</tr>
+							) : !this.props.devices.size ? (
+								<tr className="tr--no-hover">
+									<td colSpan="10000">
+										<h6 className="text-center text-secondary my-5">No devices were found</h6>
+									</td>
+								</tr>
+							) : (
 								<PaginationTableBody
 									renderData={this.props.devices.valueSeq()}
 									component={info => {
@@ -153,12 +165,6 @@ class DeviceList extends PureComponent {
 										)
 									}}
 								/>
-							) : (
-								<tr className="tr--no-hover">
-									<td colSpan="10000">
-										<h4 className="text-center text-secondary my-5">No results matching this criteria</h4>
-									</td>
-								</tr>
 							)}
 						</tbody>
 					</table>
@@ -167,7 +173,7 @@ class DeviceList extends PureComponent {
 		}
 	}
 
-	render () {
+	render() {
 		const { selectedDevice } = this.props
 
 		return (
@@ -270,18 +276,19 @@ class DeviceList extends PureComponent {
 export default connect(
 	state => {
 		return {
-			groups:                state.get('groups'),
-			multiSelectedDevices:  state.getIn(['multiSelect', 'selected']),
-			multiSelectedAction:   state.getIn(['multiSelect', 'action']),
-			deviceSources:         state.get('deviceSources'),
-			configurations:        state.get('configurations'),
-			sort:                  state.getIn(['ui', 'sort']),
-			isStoringMultiGroups:  getAsyncState('isStoringMultiGroups')(state),
+			groups: state.get('groups'),
+			multiSelectedDevices: state.getIn(['multiSelect', 'selected']),
+			multiSelectedAction: state.getIn(['multiSelect', 'action']),
+			deviceSources: state.get('deviceSources'),
+			configurations: state.get('configurations'),
+			filter: state.getIn(['ui', 'filter']),
+			sort: state.getIn(['ui', 'sort']),
+			isStoringMultiGroups: getAsyncState('isStoringMultiGroups')(state),
 			isRemovingMultiGroups: getAsyncState('isRemovingMultiGroups')(state),
-			isFetchingDevices:     getAsyncState('isFetchingDevices')(state),
+			isFetchingDevices: getAsyncState('isFetchingDevices')(state),
 
 			selectedDevice: getSelectedDevice(state),
-			devices:        getDevices(state),
+			devices: getDevices(state)
 		}
 	},
 	{
@@ -299,6 +306,6 @@ export default connect(
 		fetchDevices,
 		fetchSources,
 		fetchGroups,
-		fetchApplications,
+		fetchApplications
 	}
 )(DeviceList)
