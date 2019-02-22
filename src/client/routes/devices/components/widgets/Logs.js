@@ -1,15 +1,12 @@
-import React, { Component, Fragment } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import moment from 'moment'
 import { List } from 'immutable'
 import { connect } from 'react-redux'
 
 import { cleanLogs } from '/routes/devices/actions'
+import toReactKey from '/utils/toReactKey'
 
-class Logs extends Component {
-	shouldComponentUpdate (nextProps) {
-		return this.props.logs.get(this.props.deviceId) !== nextProps.logs.get(this.props.deviceId)
-	}
-
+class Logs extends PureComponent {
 	getIconForType (type) {
 		if (type === 'error') {
 			return <span className="fas fa-exclamation-circle fa-fw text-danger" />
@@ -39,7 +36,7 @@ class Logs extends Component {
 				})
 				.map((log, index) => {
 					return (
-						<li key={`logs${this.props.deviceId}${index}`} className="p-1">
+						<li key={toReactKey('logs', this.props.deviceId, index)} className="p-1">
 							{this.getIconForType(log.get('type'))}
 
 							<span className="pl-2">

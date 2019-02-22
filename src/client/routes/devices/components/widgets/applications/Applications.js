@@ -87,9 +87,7 @@ class Applications extends Component {
 						<ul className="list-group">
 							{defaultTo(this.props.containers, Map())
 								.valueSeq()
-								.sort((previous, next) => {
-									return naturalCompare(previous.get('name'), next.get('name'))
-								})
+								.sort((previous, next) => naturalCompare(previous.get('name'), next.get('name')))
 								.map(container => {
 									const selectedContainer = this.state.selectedContainer && this.state.selectedContainer.get('name')
 									const frontEndPort      = this.props.configurations.getIn([container.get('name'), 'frontEndPort'])

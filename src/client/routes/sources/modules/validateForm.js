@@ -1,39 +1,31 @@
 import { Iterable } from 'immutable'
-import { every, isEmpty } from 'lodash'
+import { every, isEmpty, defaultTo } from 'lodash'
 
 function wrapValueGetter (key) {
 	return source => {
 		if (Iterable.isIterable(source)) {
 			return source
-				.get(key)
+				.get(key, '')
 				.toLowerCase()
 				.trim()
 		} else {
-			return source && source.toLowerCase().trim()
+			return defaultTo(source, '')
+				.toLowerCase()
+				.trim()
 		}
 	}
 }
 
 const getHeaderName = wrapValueGetter('headerName')
-const getName       = wrapValueGetter('name')
 
 export default (values, props) => {
 	const errors           = {}
-	const isNameUsed       = props.deviceSources
-		.filter(customSource => getName(customSource) !== getName(props.editing))
-		.some(customSource => getName(customSource) === getName(values.name))
 	const isHeaderNameUsed = props.deviceSources
 		.filter(customSource => getHeaderName(customSource) !== getHeaderName(props.editing))
 		.some(customSource => getHeaderName(customSource) === getHeaderName(values.headerName))
 
 	if (values.entry && (!values.entry.length || every(values.entry, isEmpty))) {
 		errors.entry = 'You must specify whether the source should be visible in the table, detail page or both'
-	}
-
-	if (!values.name) {
-		errors.name = 'Enter an identifier for this source'
-	} else if (isNameUsed) {
-		errors.name = 'This name is already used'
 	}
 
 	if (!values.headerName) {
@@ -46,6 +38,17 @@ export default (values, props) => {
 
 	if (!values.getIn) {
 		errors.getIn = 'Enter a source'
+	}
+
+	// Table validation rules
+	if (values.entry && values.entry.includes('table')) {
+		if (!values.columnWidth) {
+			errors.columnWidth = 'How wide should the column be?'
+		} else if (values.columnWidth < 10) {
+			errors.columnWidth = 'Column is too small'
+		} else if (values.columnWidth > 250) {
+			errors.columnWidth = 'Column will take too much space'
+		}
 	}
 
 	return errors

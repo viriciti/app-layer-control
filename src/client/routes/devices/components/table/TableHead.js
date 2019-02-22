@@ -1,6 +1,16 @@
 import React, { PureComponent } from 'react'
+import PropTypes from 'prop-types'
 
 class TableHead extends PureComponent {
+	static propTypes = {
+		onSort:      PropTypes.func,
+		sortable:    PropTypes.bool,
+		ascending:   PropTypes.bool,
+		sorted:      PropTypes.bool,
+		headerName:  PropTypes.string.isRequired,
+		columnWidth: PropTypes.number,
+	}
+
 	getClassName () {
 		if (this.props.sortable) {
 			const base = ['th', 'th--sortable']
@@ -19,14 +29,23 @@ class TableHead extends PureComponent {
 		}
 	}
 
-	onClick = () => {
-		if (!this.props.sortable) return
-		this.props.onClick()
+	getStyle () {
+		if (this.props.columnWidth) {
+			return { width: this.props.columnWidth }
+		} else {
+			return {}
+		}
+	}
+
+	onSort = () => {
+		if (this.props.sortable) {
+			this.props.onSort()
+		}
 	}
 
 	render () {
 		return (
-			<th className={this.getClassName()} style={this.props.headerStyle || {}} onClick={this.onClick}>
+			<th className={this.getClassName()} onClick={this.onSort} style={this.getStyle()}>
 				{this.props.headerName}
 			</th>
 		)

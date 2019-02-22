@@ -118,13 +118,10 @@ class Store
 		@db.DeviceGroup.insertMany insert, rawResult: true
 
 	ensureDefaultDeviceSources: ->
-		Promise.all toPairs(config.defaultColumns).map ([name, column]) =>
-			query   = name: name
-			options =
-				upsert:              true
-				setDefaultsOnInsert: true
+		sourcesCount = await @db.DeviceSource.countDocuments()
+		return log.warn "Sources have been configured already" if sourcesCount
 
-			@db.DeviceSource.findOneAndUpdate query, column, options
+		@db.DeviceSource.create config.defaultColumns
 
 	set: (key, value) ->
 		throw new Error "Value must be Immutable" unless Iterable.isIterable value

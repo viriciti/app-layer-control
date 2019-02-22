@@ -2,28 +2,14 @@
 
 module.exports = (mongoose) ->
 	mongoose.model "DeviceSource",
-		name:
+		headerName:
 			type:     String
 			required: true
 			unique:   true
 
-		editable:
-			type:    Boolean
-			default: true
-
-		headerName:
-			type:     String
-			required: true
-
-		headerStyle: Object
-
 		getIn:
 			type:     String
 			required: true
-
-		fallbackGetIn:
-			type:    String
-			default: ""
 
 		getInTitle:
 			type:    String
@@ -34,6 +20,8 @@ module.exports = (mongoose) ->
 		columnIndex:
 			type:    Number
 			default: -1
+
+		columnWidth: Number
 
 		sortable:
 			type:    Boolean
@@ -46,8 +34,6 @@ module.exports = (mongoose) ->
 		filterable:
 			type:    Boolean
 			default: false
-
-		filterFormat: Object
 
 		format:
 			type:    String

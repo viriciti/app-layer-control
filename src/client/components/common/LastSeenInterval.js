@@ -1,20 +1,19 @@
 import { PureComponent } from 'react'
+import { uniqueId, forEach } from 'lodash'
 
-const listeners = []
-
+const listeners = {}
 setInterval(() => {
-	listeners.forEach(fn => {
-		fn()
-	})
+	forEach(listeners, fn => fn())
 }, 30 * 1000)
 
 export default class LastSeenInterval extends PureComponent {
 	componentDidMount () {
-		this.index = listeners.push(this.updateComponent)
+		this.id            = uniqueId('reactLastSeenInterval')
+		listeners[this.id] = this.updateComponent
 	}
 
 	componentWillUnmount () {
-		listeners.splice(this.index, 1)
+		delete listeners[this.id]
 	}
 
 	updateComponent = () => {

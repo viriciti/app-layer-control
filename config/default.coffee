@@ -37,121 +37,74 @@ module.exports =
 
 	plugins: []
 
-	defaultColumns:
-		onlineStatus:
-			headerName:   "Status"
-			getIn:        "status"
-			defaultValue: false
-			columnIndex:  0
-			sortable:     true
-			filterable:   true
-			copyable:     false
-			format:       "status"
-			filterFormat:
-				type:    "checkboxes"
-				options: [
-					{ value: "online",  label: "Online" }
-					{ value: "offline", label: "Offline" }
-				]
-			editable:     false
-			headerStyle:
-				minWidth: "0px"
-				width:    "100px"
-			entryInTable: true
-
-		updateState:
-			headerName:   "Update State"
-			defaultValue: "Idle"
-			columnIndex:  10
-			sortable:     true
-			filterable:   true
-			copyable:     false
-			getIn:        "updateState.short"
-			getInTitle:   "updateState.long"
-			editable:     false
-			filterFormat:
-				type:    "checkboxes"
-				options: [
-					{ value: "error",    label: "Error" }
-					{ value: "updating", label: "Updating" }
-					{ value: "idle",     label: "Idle" }
-				]
-			format: "updateState"
-			headerStyle:
-				minWidth: "200px"
-			entryInTable:  true
-			entryInDetail: true
-
-		alerts:
-			headerName:   "Active alerts"
-			defaultValue: ""
-			columnIndex:  20
-			sortable:     true
-			copyable:     false
-			getIn:        "activeAlerts"
-			format:       "alerts"
-			filterable:   true
-			filterFormat:
-				type:    "checkboxes"
-				options: [
-					{ value: "containersNotRunning", label: "Container is down" }
-					{ value: "versionsNotMatching",  label: "Outdated software" }
-				]
-			editable:     false
-			headerStyle:
-				minWidth: "100px"
-			entryInTable: true
-
-		lastSeenDuration:
-			headerName:   "Last seen"
-			defaultValue: ""
-			columnIndex:  30
-			sortable:     true
-			filterable:   false
-			copyable:     false
-			getIn:        "lastSeenTimestamp"
-			format:       "fromNow"
-			editable:     false
-			headerStyle:
-				minWidth: "100px"
-			entryInTable: true
-
-		deviceId:
-			headerName:   "Device ID"
-			defaultValue: ""
-			columnIndex:  40
-			sortable:     true
-			filterable:   true
-			copyable:     true
-			getIn:        "deviceId"
-			editable:     false
-			headerStyle:
-				minWidth: "100px"
-			entryInTable:  true
-			entryInDetail: true
-
-		groups:
-			headerName:   "Groups"
-			defaultValue: ""
-			columnIndex:  50
-			sortable:     true
-			filterable:   true
-			copyable:     false
-			getIn:        "groups"
-			editable:     false
-			headerStyle:
-				width: "150px"
-			entryInTable: false
-
-		appVersion:
-			headerName:   "App Version"
-			defaultValue: ""
-			columnIndex:  60
-			sortable:     true
-			filterable:   false
-			copyable:     false
-			getIn:        "systemInfo.appVersion"
-			editable:     false
-			headerStyle:
-				minWidth: "100px"
-			entryInTable: true
+	defaultColumns: [
+		columnIndex:  0
+		columnWidth:  25
+		copyable:     false
+		defaultValue: false
+		entryInTable: true
+		filterable:   true
+		format:       "status"
+		getIn:        "status"
+		headerName:   "Status"
+		sortable:     true
+	,
+		columnIndex:   10
+		columnWidth:   200
+		copyable:      false
+		defaultValue:  "Idle"
+		entryInDetail: true
+		entryInTable:  true
+		filterable:    true
+		format:        "updateState"
+		getIn:         "updateState.short"
+		getInTitle:    "updateState.long"
+		headerName:    "State"
+		sortable:      true
+	,
+		columnIndex:  30
+		columnWidth:  100
+		copyable:     false
+		defaultValue: ""
+		editable:     false
+		entryInTable: true
+		filterable:   false
+		format:       "fromNow"
+		getIn:        "lastSeenTimestamp"
+		headerName:   "Last seen"
+		sortable:     true
+	,
+		columnIndex:   40
+		columnWidth:   100
+		copyable:      true
+		defaultValue:  ""
+		editable:      false
+		entryInDetail: true
+		entryInTable:  true
+		filterable:    true
+		getIn:         "deviceId"
+		headerName:    "Device ID"
+		sortable:      true
+	,
+		columNWidth:  100
+		columnIndex:  50
+		copyable:     false
+		defaultValue: ""
+		editable:     false
+		entryInTable: false
+		filterable:   true
+		getIn:        "groups"
+		headerName:   "Groups"
+		sortable:     true
+	,
+		columnIndex:  60
+		columnWidth:  100
+		copyable:     false
+		defaultValue: ""
+		editable:     false
+		entryInTable: true
+		filterable:   false
+		getIn:        "systemInfo.appVersion"
+		headerName:   "App Version"
+		sortable:     true
+	]
