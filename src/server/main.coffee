@@ -212,6 +212,7 @@ do ->
 						devices.mergeIn [deviceId], data
 					, Map()
 
+				deviceStates = deviceStates.mergeDeep stateUpdates
 				broadcaster.broadcast "devicesState", stateUpdates
 
 		[
