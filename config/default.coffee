@@ -39,7 +39,7 @@ module.exports =
 
 	defaultColumns: [
 		columnIndex:  0
-		columnWidth:  100
+		columnWidth:  25
 		copyable:     false
 		defaultValue: false
 		entryInTable: true

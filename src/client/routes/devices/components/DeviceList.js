@@ -128,37 +128,29 @@ class DeviceList extends PureComponent {
 							</tr>
 						</thead>
 						<tbody>
-							{this.props.filter && !this.props.devices.size ? (
-								<tr className="tr--no-hover">
-									<td colSpan="10000">
-										<h6 className="text-center text-secondary my-5">No devices were found with this search query</h6>
-									</td>
-								</tr>
-							) : !this.props.devices.size ? (
-								<tr className="tr--no-hover">
-									<td colSpan="10000">
-										<h6 className="text-center text-secondary my-5">No devices were found</h6>
-									</td>
-								</tr>
-							) : (
-								<PaginationTableBody
-									renderData={this.props.devices.valueSeq()}
-									component={info => {
-										return (
-											<DeviceListItem
-												key={info.get('deviceId')}
-												info={info}
-												onSelectionToggle={this.onSelectionToggle}
-												selected={this.props.multiSelectedDevices.includes(info.get('deviceId'))}
-												configurations={this.props.configurations}
-												deviceSources={this.props.deviceSources}
-											/>
-										)
-									}}
-								/>
-							)}
+							<PaginationTableBody
+								renderData={this.props.devices.valueSeq()}
+								component={info => {
+									return (
+										<DeviceListItem
+											key={info.get('deviceId')}
+											info={info}
+											onSelectionToggle={this.onSelectionToggle}
+											selected={this.props.multiSelectedDevices.includes(info.get('deviceId'))}
+											configurations={this.props.configurations}
+											deviceSources={this.props.deviceSources}
+										/>
+									)
+								}}
+							/>
 						</tbody>
 					</table>
+
+					{this.props.filter && !this.props.devices.size ? (
+						<h6 className="text-center text-secondary my-5">No devices were found with this search query</h6>
+					) : !this.props.devices.size ? (
+						<h6 className="text-center text-secondary my-5">No devices were found</h6>
+					) : null}
 				</div>
 			)
 		}

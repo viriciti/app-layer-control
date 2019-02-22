@@ -26,18 +26,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Treat staging as production, but with a different `NODE_ENV`.
 - Reduce visibility of devices with incomplete state from the devices table.
-
-### Fixed
-
-.
-
-- Bump the amount of max listeners to 15 for MQTT.
 - Alphabetically sort the groups when adding them to a device.
 - Reduce the amount of state updates sent by the server.
 
+### Fixed
+
+- Bump the amount of max listeners to 15 for MQTT to prevent memory leak warning.
+
 ## 4.8.1
 
-### Added
+### Changed
 
 - Database hosts can now configured through environment variables (comma-separated).
 - MQTT host and port can now be configured through environment variables.
@@ -58,11 +56,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Show effective version for applications instead of the range.
 - Merge multiple filter fields into a single field.
+- Improve rendering performance for devices by reducing the frequency of sorting and filtering.
 
 ### Fixed
 
 - Fix the inability to add, update or remove a source.
-- Improve rendering performance for devices by reducing the frequency of sorting and filtering.
 - Fix bug where adding or updating a source would not update the UI.
 
 ### Removed
