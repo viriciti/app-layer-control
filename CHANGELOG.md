@@ -5,18 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 4.9.0
 
 ### Changed
 
 - Completely hide devices with incomplete state from the devices table.
-- Update the way sources are handled internally: create them if they do not exist in the database, leave as is if they do exist.
+- Update the way sources are handled internally: create them if they do not exist in the database, leave as is if they do exist. **Note**: you must remove the current sources in order for this to have effect.
 
 ### Fixed
 
 - Fix controls not updating their async activity due to incorrect state update.
 - Fix jumping table by enforcing a fixed table layout.
-  **Note**: This requires you to specify a width when adding a source..
+  **Note**: This requires you to specify a width when adding a source.
 - Fix logs not appearing for devices.
 - Fix memory leak caused by incorrectly assigning IDs (LastSeenInterval).
 - Fix preview from not responding to changes to the position.
@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix outdated Dockerfile from failing to build.
 
-## [4.8.0]
+## 4.8.0
 
 ### Added
 
