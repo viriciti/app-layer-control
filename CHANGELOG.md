@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Persist search query when navigating away from the page.
+- Do not reset search query when navigating away from the page.
+- Fix incorrect sorting
 
 ## 4.9.2
 
