@@ -30,8 +30,7 @@ export default createImmutableSelector(
 						}
 					})
 			)
-			.sortBy(device => device.getIn(sort.get('field'), ''))
-			.sort(device => -device.has('connected'))
+			.sortBy(device => device.getIn(sort.get('field').split('.'), ''))
 
 		return sort.get('ascending') ? devicesWithMutations : devicesWithMutations.reverse()
 	}
