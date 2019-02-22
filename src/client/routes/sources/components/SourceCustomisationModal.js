@@ -132,15 +132,7 @@ class SourceCustomisationModal extends PureComponent {
 							deviceSources={this.props.deviceSources}
 							deviceSource={this.props.editing}
 						/>
-						<Field
-							name="columnWidth"
-							label="Width"
-							placeholder="Width of the column"
-							component={TextInput}
-							type="number"
-							min="10"
-							max="250"
-						/>
+						<Field name="columnWidth" label="Column width" component={TextInput} type="number" min="10" max="250" />
 						<Field name="sortable" label="Sortable" component={ToggleInput} type="checkbox" />
 						<Field name="filterable" label="Filterable" component={ToggleInput} type="checkbox" />
 						<Field name="copyable" label="Copyable" component={ToggleInput} type="copyable" />

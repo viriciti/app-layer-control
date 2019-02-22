@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   **Note**: This requires you to specify a width when adding a source..
 - Fix logs not appearing for devices.
 - Fix memory leak caused by incorrectly assigning IDs (LastSeenInterval).
+- Fix preview from not responding to changes to the position.
 
 ## 4.8.2
 
