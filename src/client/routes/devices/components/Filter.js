@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 
 import { applyFilter } from '/store/globalReducers/ui'
 
-function Filter ({ applyFilter }) {
-	const [query, setQuery] = useState('')
+function Filter ({ applyFilter, lastQuery }) {
+	const [query, setQuery] = useState(lastQuery)
 	const onChange          = event => {
 		setQuery(event.target.value)
 		applyFilter(event.target.value)
@@ -21,7 +21,11 @@ function Filter ({ applyFilter }) {
 }
 
 export default connect(
-	null,
+	state => {
+		return {
+			lastQuery: state.getIn(['ui', 'filter'], ''),
+		}
+	},
 	{
 		applyFilter,
 	}
