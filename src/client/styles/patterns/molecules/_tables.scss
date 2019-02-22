@@ -1,3 +1,7 @@
+.table--fixed {
+	table-layout: fixed;
+}
+
 .th {
 	min-width: 7.5rem;
 }
@@ -40,6 +44,12 @@
 	}
 }
 
+.tr--cursor {
+	&:hover {
+		cursor: pointer;
+	}
+}
+
 .table-selected {
 	background: darken(#fff, 5%);
 }
@@ -48,13 +58,20 @@
 	&,
 	&:hover,
 	&:focus,
-	&:active {
+	&:active,
+	*::before,
+	*::after {
 		background-color: darken(#fff, 3%);
 	}
 
 	&,
 	*::before,
 	*::after {
-		color: darken(#fff, 25%);
+		&,
+		&:hover,
+		&:focus,
+		&:active {
+			color: darken(#fff, 25%);
+		}
 	}
 }

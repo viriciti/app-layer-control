@@ -107,8 +107,6 @@ class Versioning
 				return cb error                             if error
 				return cb null, versions: [], access: false if response.statusCode is 404
 
-				debug "[getImage] Request result", body?.toString()
-
 				try
 					json = JSON.parse body?.toString()
 				catch error
@@ -195,7 +193,7 @@ class Versioning
 
 		url.format
 			protocol: "https"
-			host:     @registry.host
+			host:     @registry.url
 			pathname: "v2/#{image}/tags/list"
 
 	getDockerHeaders: ({ token }) ->

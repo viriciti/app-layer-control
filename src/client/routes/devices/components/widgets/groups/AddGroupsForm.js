@@ -3,10 +3,10 @@ import { connect } from 'react-redux'
 import { without, isEmpty, defaultTo, partial } from 'lodash'
 import semver from 'semver'
 
-import { asyncStoreGroups } from '/routes/devices/modules/actions'
+import { asyncStoreGroups } from '/routes/devices/actions'
 import AsyncButton from '/components/common/AsyncButton'
 import getAsyncState from '/store/selectors/getAsyncState'
-import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
+import getSelectedDevice from '/routes/devices/selectors/getSelectedDevice'
 
 class AddGroupsForm extends PureComponent {
 	state = {

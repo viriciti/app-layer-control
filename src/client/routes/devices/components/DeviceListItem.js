@@ -5,7 +5,7 @@ import { partialRight } from 'lodash'
 import classNames from 'classnames'
 
 import formats from '/routes/devices/components/table/formats'
-import { selectDevice, multiSelectDevice } from '/routes/devices/modules/actions'
+import { selectDevice, multiSelectDevice } from '/routes/devices/actions'
 import toReactKey from '/utils/toReactKey'
 
 const Clipboard = ({ onClick }) => (
@@ -37,7 +37,7 @@ class DeviceListItem extends PureComponent {
 
 		return (
 			<tr
-				className={classNames('device-item', {
+				className={classNames('device-item', 'tr--cursor', {
 					'table-selected': this.props.selected,
 					'table-faded':    !this.props.info.has('connected'),
 				})}
@@ -74,7 +74,7 @@ class DeviceListItem extends PureComponent {
 						})
 
 						return (
-							<td key={toReactKey(info.get('deviceId'), options.get('name'))}>
+							<td key={toReactKey(info.get('deviceId'), options.get('headerName'))}>
 								{span}
 								{options.get('copyable') && value ? <Clipboard onClick={partialRight(this.onCopy, value)} /> : null}
 							</td>

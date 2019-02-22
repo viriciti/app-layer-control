@@ -1,14 +1,13 @@
-import { applyMiddleware, compose, createStore } from 'redux'
-
+import createDebounce from 'redux-debounced'
 import thunk from 'redux-thunk'
 import { Map } from 'immutable'
-import createDebounce from 'redux-debounced'
+import { applyMiddleware, compose, createStore } from 'redux'
 
+import ws from '/store/middleware/ws'
 import makeRootReducer from '/store/reducers'
-import hydrate from '/store/hydrate'
 
 export default (initialState = Map({})) => {
-	const middleware = [createDebounce(), thunk]
+	const middleware = [createDebounce(), thunk, ws(new WebSocket(`ws://${window.location.host}`))]
 	const enhancers  = []
 
 	let composeEnhancers = compose
@@ -38,7 +37,6 @@ export default (initialState = Map({})) => {
 		}
 	}
 
-	const ws    = new WebSocket(`ws://${window.location.host}`)
 	const store = createStore(
 		makeRootReducer(),
 		initialState,
@@ -46,7 +44,6 @@ export default (initialState = Map({})) => {
 	)
 
 	store.asyncReducers = {}
-	store.dispatch(hydrate(ws))
 
 	if (module.hot) {
 		module.hot.accept(() => {

@@ -7,8 +7,8 @@ export function asyncEditSource (name, payload) {
 	return async dispatch => {
 		dispatch(setAsyncState('isSubmittingSource', true))
 
-		const { name } = payload
-		const { data } = await axios.put(`/api/v1/administration/source/${name}`, payload)
+		const { headerName } = payload
+		const { data }       = await axios.put(`/api/v1/administration/source/${headerName}`, payload)
 
 		toast.success(data.message)
 
@@ -20,8 +20,8 @@ export function asyncAddSource (payload) {
 	return async dispatch => {
 		dispatch(setAsyncState('isSubmittingSource', true))
 
-		const { name } = payload
-		const { data } = await axios.put(`/api/v1/administration/source/${name}`, payload)
+		const { headerName } = payload
+		const { data }       = await axios.put(`/api/v1/administration/source/${headerName}`, payload)
 
 		toast.success(data.message)
 
@@ -29,11 +29,11 @@ export function asyncAddSource (payload) {
 	}
 }
 
-export function asyncRemoveSource (name) {
+export function asyncRemoveSource (headerName) {
 	return async dispatch => {
 		dispatch(setAsyncState('isRemovingSource', true))
 
-		await axios.delete(`/api/v1/administration/source/${name}`)
+		await axios.delete(`/api/v1/administration/source/${headerName}`)
 
 		toast.success('Source deleted')
 

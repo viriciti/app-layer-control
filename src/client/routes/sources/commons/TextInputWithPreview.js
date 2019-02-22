@@ -5,12 +5,8 @@ const Preview = ({ deviceSources, editing, value }) => {
 	return (
 		<div className="sources-preview mt-4 mb-3 mx-0 row">
 			{deviceSources
-				.filter(source => {
-					return source.get('headerName').toLowerCase() !== editing.get('headerName').toLowerCase()
-				})
-				.sort((left, right) => {
-					return left.get('columnIndex') - right.get('columnIndex')
-				})
+				.setIn([editing.get('getIn'), 'columnIndex'], parseInt(value))
+				.sortBy(source => source.get('columnIndex'))
 				.valueSeq()
 				.map(field => {
 					return (

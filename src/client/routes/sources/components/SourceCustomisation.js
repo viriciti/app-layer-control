@@ -5,7 +5,7 @@ import { partial } from 'lodash'
 
 import SourceCustomisationModal from './SourceCustomisationModal'
 import { asyncEditSource, asyncAddSource, asyncRemoveSource } from '/routes/sources/modules/actions'
-import { fetchSources } from '/routes/devices/modules/actions'
+import { fetchSources } from '/routes/devices/actions'
 import getAsyncState from '/store/selectors/getAsyncState'
 
 const StateIcon = ({ value }) => {
@@ -23,21 +23,21 @@ const EditButtons = ({ visible, onEdit, onRemove, isRemovingSource }) => {
 		return (
 			<div className="text-center">
 				<button
-					className="btn btn-light btn--icon mr-2"
+					className="btn btn-light btn-sm mr-2"
 					title="Edit this source"
 					onClick={onEdit}
 					disabled={isRemovingSource}
 				>
-					<span className="fas fa-pencil-alt" />
+					<span className="fas fa-pencil-alt" /> Edit
 				</button>
 
 				<button
-					className="btn btn-danger btn--icon"
+					className="btn btn-light btn-sm"
 					title="Remove this source"
 					onClick={onRemove}
 					disabled={isRemovingSource}
 				>
-					<span className="fas fa-trash" />
+					<span className="fas fa-trash" /> Delete
 				</button>
 			</div>
 		)
@@ -62,7 +62,7 @@ class SourceCustomisation extends PureComponent {
 
 	onRemove = deviceSource => {
 		if (confirm(`Are you sure you want to remove source '${deviceSource.get('headerName')}'?`)) {
-			this.props.asyncRemoveSource(deviceSource.get('name'))
+			this.props.asyncRemoveSource(deviceSource.get('headerName'))
 		}
 	}
 
@@ -208,7 +208,7 @@ class SourceCustomisation extends PureComponent {
 												<StateIcon value={deviceSource.get('copyable')} />
 											</td>
 											<td>{this.renderVisibility(deviceSource)}</td>
-											<td>
+											<td width="175">
 												<EditButtons
 													visible={deviceSource.get('editable', true)}
 													onEdit={partial(this.onEdit, deviceSource)}

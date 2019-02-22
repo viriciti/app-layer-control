@@ -78,14 +78,7 @@ const formats = {
 	status: ({ info }) => {
 		const defaultClassName = classNames('fas', 'ml-3', 'd-block')
 
-		if (!info.has('connected')) {
-			return (
-				<span
-					className={classNames(defaultClassName, 'fa-exclamation-circle', 'text-muted')}
-					title="Unknown (state is incomplete)"
-				/>
-			)
-		} else if (info.get('connected')) {
+		if (info.get('connected')) {
 			return <span className={classNames(defaultClassName, 'fa-circle', 'text-success')} title="Online" />
 		} else {
 			return <span className={classNames(defaultClassName, 'fa-circle', 'text-danger')} title="Offline" />

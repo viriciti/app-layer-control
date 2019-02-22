@@ -2,7 +2,7 @@ import axios from 'axios'
 import { get } from 'lodash'
 import { Promise } from 'q'
 import { REGISTRY_IMAGES, ALLOWED_IMAGES } from '/store/globalReducers/actions'
-import { updateAsyncState } from '/store/globalReducers/ui'
+import { setAsyncState } from '/store/globalReducers/ui'
 import { toast } from 'react-toastify'
 
 export const CONFIGURATIONS = 'CONFIGURATIONS'
@@ -30,7 +30,7 @@ export function configurationSelected (configuration) {
 
 export function asyncRemoveApplication (name) {
 	return async dispatch => {
-		dispatch(updateAsyncState('isRemovingApplication', true))
+		dispatch(setAsyncState('isRemovingApplication', true))
 
 		try {
 			await axios.delete(`/api/v1/administration/application/${name}`)
@@ -38,14 +38,14 @@ export function asyncRemoveApplication (name) {
 		} catch ({ response }) {
 			toast.success(response.data.message)
 		} finally {
-			dispatch(updateAsyncState('isRemovingApplication', false))
+			dispatch(setAsyncState('isRemovingApplication', false))
 		}
 	}
 }
 
 export function asyncAddRegistryImage (name) {
 	return async dispatch => {
-		dispatch(updateAsyncState('isAddingRegistryImage', true))
+		dispatch(setAsyncState('isAddingRegistryImage', true))
 
 		try {
 			await axios.post(`/api/v1/administration/registry`, { name })
@@ -54,14 +54,14 @@ export function asyncAddRegistryImage (name) {
 		} catch ({ response }) {
 			toast.error(response.data.message)
 		} finally {
-			dispatch(updateAsyncState('isAddingRegistryImage', false))
+			dispatch(setAsyncState('isAddingRegistryImage', false))
 		}
 	}
 }
 
 export function asyncRemoveRegistryImage (name) {
 	return async dispatch => {
-		dispatch(updateAsyncState('isRemovingRegistryImage', true))
+		dispatch(setAsyncState('isRemovingRegistryImage', true))
 
 		try {
 			await axios.delete(`/api/v1/administration/registry/${encodeURIComponent(name)}`)
@@ -70,60 +70,60 @@ export function asyncRemoveRegistryImage (name) {
 		} catch ({ response }) {
 			toast.error(response.data.message)
 		} finally {
-			dispatch(updateAsyncState('isRemovingRegistryImage', false))
+			dispatch(setAsyncState('isRemovingRegistryImage', false))
 		}
 	}
 }
 
 export function asyncRemoveGroup (label) {
 	return async dispatch => {
-		dispatch(updateAsyncState('isRemovingGroup', true))
+		dispatch(setAsyncState('isRemovingGroup', true))
 
 		const { status } = await axios.delete(`/api/v1/administration/group/${label}`)
 		if (status === 204) {
 			toast.success('Group deleted')
 		}
 
-		dispatch(updateAsyncState('isRemovingGroup', true))
+		dispatch(setAsyncState('isRemovingGroup', true))
 	}
 }
 
-export function asyncRefreshRegistry() {
+export function asyncRefreshRegistry () {
 	return async dispatch => {
-		dispatch(updateAsyncState('isRefreshingRegistry', true))
+		dispatch(setAsyncState('isRefreshingRegistry', true))
 
 		const { data } = await axios.put('/api/v1/administration/registry')
 		toast.success(data.message)
 
-		dispatch(updateAsyncState('isRefreshingRegistry', false))
+		dispatch(setAsyncState('isRefreshingRegistry', false))
 	}
 }
 
 export function fetchApplications () {
 	return async dispatch => {
-		dispatch(updateAsyncState('isFetchingApplications', true))
+		dispatch(setAsyncState('isFetchingApplications', true))
 		dispatch({
 			type:    CONFIGURATIONS,
 			payload: get(await axios.get('/api/v1/administration/applications'), 'data.data'),
 		})
-		dispatch(updateAsyncState('isFetchingApplications', false))
+		dispatch(setAsyncState('isFetchingApplications', false))
 	}
 }
 
 export function fetchGroups () {
 	return async dispatch => {
-		dispatch(updateAsyncState('isFetchingGroups', true))
+		dispatch(setAsyncState('isFetchingGroups', true))
 		dispatch({
 			type:    GROUPS,
 			payload: get(await axios.get('/api/v1/administration/groups'), 'data.data'),
 		})
-		dispatch(updateAsyncState('isFetchingGroups', false))
+		dispatch(setAsyncState('isFetchingGroups', false))
 	}
 }
 
 export function fetchRegistry () {
 	return async dispatch => {
-		dispatch(updateAsyncState('isFetchingRegistry', true))
+		dispatch(setAsyncState('isFetchingRegistry', true))
 
 		const [images, allowed] = await Promise.all([
 			axios.get('/api/v1/administration/registry?only=images'),
@@ -138,6 +138,6 @@ export function fetchRegistry () {
 			type:    ALLOWED_IMAGES,
 			payload: get(allowed, 'data.data'),
 		})
-		dispatch(updateAsyncState('isFetchingRegistry', false))
+		dispatch(setAsyncState('isFetchingRegistry', false))
 	}
 }

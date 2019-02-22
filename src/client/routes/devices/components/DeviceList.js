@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react'
 import naturalCompareLite from 'natural-compare-lite'
-import { Map, List } from 'immutable'
+import { List } from 'immutable'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
 
@@ -11,8 +11,8 @@ import PaginationControl from './pagination/PaginationControl'
 import PaginationTableBody from './pagination/PaginationTableBody'
 import TableHead from './table/TableHead'
 
-import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
-import getDevices from '/routes/devices/modules/selectors/getDevices'
+import getSelectedDevice from '/routes/devices/selectors/getSelectedDevice'
+import getDevices from '/routes/devices/selectors/getDevices'
 import {
 	selectDevice,
 	storeGroups,
@@ -26,7 +26,7 @@ import {
 	resetPagination,
 	fetchDevices,
 	fetchSources,
-} from '/routes/devices/modules/actions'
+} from '/routes/devices/actions'
 import { applySort } from '/store/globalReducers/ui'
 import { fetchGroups, fetchApplications } from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'
@@ -91,24 +91,17 @@ class DeviceList extends PureComponent {
 		} else {
 			return (
 				<div className="table-responsive">
-					<table className="table table-hover">
+					<table className="table table-hover table--fixed">
 						<thead>
 							<tr>
-								<th className="align-middle">
+								<th className="align-middle" style={{ width: 15 }}>
 									<div className="custom-control custom-checkbox">
 										<input
 											className="custom-control-input"
 											id="selectAll"
 											title="Select all devices"
 											type="checkbox"
-											onChange={() => {
-												this.props.multiSelectDevices(
-													this.props.devices
-														.valueSeq()
-														.map(device => device.get('deviceId'))
-														.toList()
-												)
-											}}
+											onChange={() => this.props.multiSelectDevices(this.props.devices.keySeq().toList())}
 											checked={this.props.multiSelectedDevices.size === this.props.devices.size}
 										/>
 
@@ -117,19 +110,17 @@ class DeviceList extends PureComponent {
 								</th>
 
 								{this.props.deviceSources
-									.filter(deviceSource => {
-										return deviceSource.get('entryInTable')
-									})
+									.filter(deviceSource => deviceSource.get('entryInTable'))
 									.map((column, key) => {
 										return (
 											<TableHead
 												key={`header-${key}`}
-												onClick={partial(this.onSort, key)}
+												onSort={partial(this.onSort, key)}
 												sortable={column.get('sortable')}
 												ascending={this.props.sort.get('ascending')}
 												sorted={this.props.sort.get('field') === key}
 												headerName={column.get('headerName')}
-												headerStyle={column.get('headerStyle', Map()).toJS()}
+												columnWidth={column.get('columnWidth')}
 											/>
 										)
 									})
@@ -137,31 +128,29 @@ class DeviceList extends PureComponent {
 							</tr>
 						</thead>
 						<tbody>
-							{this.props.devices.size ? (
-								<PaginationTableBody
-									renderData={this.props.devices.valueSeq()}
-									component={info => {
-										return (
-											<DeviceListItem
-												key={info.get('deviceId')}
-												info={info}
-												onSelectionToggle={this.onSelectionToggle}
-												selected={this.props.multiSelectedDevices.includes(info.get('deviceId'))}
-												configurations={this.props.configurations}
-												deviceSources={this.props.deviceSources}
-											/>
-										)
-									}}
-								/>
-							) : (
-								<tr className="tr--no-hover">
-									<td colSpan="10000">
-										<h4 className="text-center text-secondary my-5">No results matching this criteria</h4>
-									</td>
-								</tr>
-							)}
+							<PaginationTableBody
+								renderData={this.props.devices.valueSeq()}
+								component={info => {
+									return (
+										<DeviceListItem
+											key={info.get('deviceId')}
+											info={info}
+											onSelectionToggle={this.onSelectionToggle}
+											selected={this.props.multiSelectedDevices.includes(info.get('deviceId'))}
+											configurations={this.props.configurations}
+											deviceSources={this.props.deviceSources}
+										/>
+									)
+								}}
+							/>
 						</tbody>
 					</table>
+
+					{this.props.filter && !this.props.devices.size ? (
+						<h6 className="text-center text-secondary my-5">No devices were found with this search query</h6>
+					) : !this.props.devices.size ? (
+						<h6 className="text-center text-secondary my-5">No devices were found</h6>
+					) : null}
 				</div>
 			)
 		}
@@ -275,6 +264,7 @@ export default connect(
 			multiSelectedAction:   state.getIn(['multiSelect', 'action']),
 			deviceSources:         state.get('deviceSources'),
 			configurations:        state.get('configurations'),
+			filter:                state.getIn(['ui', 'filter']),
 			sort:                  state.getIn(['ui', 'sort']),
 			isStoringMultiGroups:  getAsyncState('isStoringMultiGroups')(state),
 			isRemovingMultiGroups: getAsyncState('isRemovingMultiGroups')(state),

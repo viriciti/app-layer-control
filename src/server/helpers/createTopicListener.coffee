@@ -1,5 +1,6 @@
 { Observable } = require "rxjs"
 MQTTPattern    = require "mqtt-pattern"
+{ noop }       = require "lodash"
 
 module.exports = (socket, matcher) ->
 	Observable.create (observer) ->
@@ -15,9 +16,11 @@ module.exports = (socket, matcher) ->
 				topic:    topic
 
 		onClose = ->
-			socket.removeListener "message", onMessage
+			socket.removeListener "packetreceive", onMessage
 			observer.complete()
 
 		socket
 			.on   "packetreceive", onMessage
 			.once "close",         onClose
+
+		noop

@@ -4,8 +4,8 @@ import { connect } from 'react-redux'
 import { partial } from 'lodash'
 
 import Modal from '/components/common/Modal'
-import { asyncRefreshState, selectDevice } from '/routes/devices/modules/actions'
-import getSelectedDevice from '/routes/devices/modules/selectors/getSelectedDevice'
+import { asyncRefreshState, selectDevice } from '/routes/devices/actions'
+import getSelectedDevice from '/routes/devices/selectors/getSelectedDevice'
 import AsyncButton from '/components/common/AsyncButton'
 
 import { SystemInfo, Logs, Applications, DeviceImages, DeviceGroups, Queue } from './widgets'
@@ -41,7 +41,7 @@ class DeviceDetail extends PureComponent {
 									<div className="col-12">
 										<div className="alert alert-danger">
 											<span className="fas fa-exclamation-triangle mr-2" />
-											{this.props.selectedDevice.getIn(['updateState', 'long'], <i>No description available</i>)}
+											{this.props.selectedDevice.getIn(['updateState', 'long'], 'No description available')}
 										</div>
 									</div>
 								</div>
