@@ -24,7 +24,8 @@ module.exports =
 		hosts: process.env.DB_HOSTS or "localhost:27017"
 		name: "app-layer-control"
 		options:
-			replSet: process.env.DB_REPLICA_SET or "rs0"
+			replSet:    process.env.DB_REPLICA_SET or "rs0"
+			replicaSet: process.env.DB_REPLICA_SET or "rs0"
 
 	versioning:
 		maxTokenAttempts: 3
