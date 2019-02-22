@@ -41,7 +41,7 @@ class DeviceDetail extends PureComponent {
 									<div className="col-12">
 										<div className="alert alert-danger">
 											<span className="fas fa-exclamation-triangle mr-2" />
-											{this.props.selectedDevice.getIn(['updateState', 'long'], <i>No description available</i>)}
+											{this.props.selectedDevice.getIn(['updateState', 'long'], 'No description available')}
 										</div>
 									</div>
 								</div>
