@@ -47,7 +47,6 @@ getDeviceStates = -> deviceStates
 log.info "NPM authentication enabled: #{if every config.server.npm then 'yes' else 'no'}"
 log.info "Docker registry: #{config.versioning.registry.url}"
 log.info "GitLab endpoint: #{config.versioning.registry.host}"
-log.warn "Not publishing messages to MQTT: read only" if config.mqtt.readOnly
 
 app.use cors()
 app.use compression()
@@ -238,7 +237,7 @@ do ->
 			DeviceGroups.topic
 		]
 
-		log.info "MQTT subscriptions set"
+		log.info "Subscribed to MQTT topics"
 
 	onError = (error) ->
 		log.error error.message
