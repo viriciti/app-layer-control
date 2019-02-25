@@ -76,8 +76,6 @@ module.exports = (getDeviceStates) ->
 			next error
 
 	router.use (error, req, res, next) ->
-		log.error error.stack
-
 		if error.message.match /communication timeout/i
 			res
 				.status 504
@@ -85,6 +83,7 @@ module.exports = (getDeviceStates) ->
 					status:  "error"
 					message: "Communication timeout"
 		else
+			log.error error.stack
 			res.sendStatus 500
 
 	router

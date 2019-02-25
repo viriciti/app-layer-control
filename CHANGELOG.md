@@ -5,12 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.9.4
+
+### Changed
+
+- Cancel click when the user is trying to copy the text in the devices table.
+- Allow database name to be configured from environment variable.
+
+### Removed
+- Remove support for read-only mode (MQTT).
+
 ## 4.9.3
 
 ### Fixed
 
 - Do not reset search query when navigating away from the page.
-- Fix incorrect sorting
+- Fix incorrect sorting for devices.
 
 ## 4.9.2
 

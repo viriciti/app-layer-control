@@ -49,6 +49,7 @@ We recommend using environment variables, since these will cause the least confi
 - `MQTT_HOST` (_Optional_): MQTT endpoint. Default: localhost
 - `MQTT_PORT` (_Optional_): MQTT port. Default: 1883
 - `DB_HOSTS` (_Optional_): Comma-separated database hosts. Default: localhost:27017
+- `DB_NAME` (_Optional_): Name of the database. Default: app-layer-control
 - `DB_REPLICA_SET` (_Optional_): Name of the replica set. Default: rs0
 - `NPM_USERNAME` (_Optional_): NPM username. Allow you to install private packages
 - `NPM_PASSWORD` (_Optional_): NPM password. Allow you to install private packages
