@@ -24,8 +24,16 @@ class DeviceListItem extends PureComponent {
 		this.props.multiSelectDevice(this.props.info.get('deviceId'))
 	}
 
-	onSelectDevice = () => {
-		this.props.selectDevice(this.props.info.get('deviceId'))
+	onSelectDevice = event => {
+		const selection   = window
+			.getSelection()
+			.toString()
+			.trim()
+		const textContent = event.target.textContent.trim()
+
+		if (!selection || !textContent.includes(selection)) {
+			this.props.selectDevice(this.props.info.get('deviceId'))
+		}
 	}
 
 	stopPropagation = event => {
