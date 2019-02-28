@@ -12,12 +12,9 @@ const Version = ({ name, range, effectiveVersion }) => {
 	if (effectiveVersion) {
 		return (
 			<li>
-				{name}@{effectiveVersion}
-				<small
-					className="label label-sm label--inline float-right"
-					title={`Calculated from semantic versioning range ${range}`}
-				>
-					Effective version
+				{name}@{range}
+				<small className="label label-sm label--inline float-right" title="Effective version for this application">
+					{effectiveVersion}
 				</small>
 			</li>
 		)
