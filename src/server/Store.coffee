@@ -70,7 +70,6 @@ class Store
 
 		fromJS deviceGroups
 
-
 	getDeviceSources: ->
 		sources = await @db
 			.DeviceSource
