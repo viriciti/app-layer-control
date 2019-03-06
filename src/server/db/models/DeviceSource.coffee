@@ -1,48 +1,53 @@
-{ Schema } = require "mongoose"
+mongoose          = require "mongoose"
+addImmutableQuery = require "../addImmutableQuery"
 
-module.exports = (mongoose) ->
-	mongoose.model "DeviceSource",
-		headerName:
-			type:     String
-			required: true
-			unique:   true
+{ Schema } = mongoose
+schema     = new Schema
+	headerName:
+		type:     String
+		required: true
+		unique:   true
 
-		getIn:
-			type:     String
-			required: true
+	getIn:
+		type:     String
+		required: true
 
-		getInTitle:
-			type:    String
-			default: ""
+	getInTitle:
+		type:    String
+		default: ""
 
-		defaultValue: Schema.Types.Mixed
+	defaultValue: Schema.Types.Mixed
 
-		columnIndex:
-			type:    Number
-			default: -1
+	columnIndex:
+		type:    Number
+		default: -1
 
-		columnWidth: Number
+	columnWidth: Number
 
-		sortable:
-			type:    Boolean
-			default: false
+	sortable:
+		type:    Boolean
+		default: false
 
-		copyable:
-			type:    Boolean
-			default: false
+	copyable:
+		type:    Boolean
+		default: false
 
-		filterable:
-			type:    Boolean
-			default: false
+	filterable:
+		type:    Boolean
+		default: false
 
-		format:
-			type:    String
-			default: "default"
+	format:
+		type:    String
+		default: "default"
 
-		entryInTable:
-			type:    Boolean
-			default: false
+	entryInTable:
+		type:    Boolean
+		default: false
 
-		entryInDetail:
-			type:    Boolean
-			default: false
+	entryInDetail:
+		type:    Boolean
+		default: false
+
+schema = addImmutableQuery schema
+
+module.exports = mongoose.model "DeviceSource", schema

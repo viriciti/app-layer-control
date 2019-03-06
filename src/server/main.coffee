@@ -69,7 +69,6 @@ do ->
 	await bundle app
 	await db.connect()
 	await runUpdates db: db, store: store
-
 	await installPlugins config.plugins
 
 	await store.ensureDefaultDeviceSources()

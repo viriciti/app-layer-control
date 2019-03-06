@@ -3,13 +3,13 @@ mongodbURI  = require "mongodb-uri"
 mongoose    = require "mongoose"
 { forEach } = require "lodash"
 
-models     =
-	AllowedImage:   (require "./models/AllowedImage")   mongoose
-	Configuration:  (require "./models/Configuration")  mongoose
-	DeviceGroup:    (require "./models/DeviceGroup")    mongoose
-	DeviceSource:   (require "./models/DeviceSource")   mongoose
-	Group:          (require "./models/Group")          mongoose
-	RegistryImages: (require "./models/RegistryImages") mongoose
+models =
+	AllowedImage:   require "./models/AllowedImage"
+	Application:    require "./models/Application"
+	DeviceGroup:    require "./models/DeviceGroup"
+	DeviceSource:   require "./models/DeviceSource"
+	Group:          require "./models/Group"
+	RegistryImages: require "./models/RegistryImages"
 
 class Database
 	constructor: (@options) ->

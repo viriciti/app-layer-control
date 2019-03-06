@@ -16,7 +16,7 @@ class Watcher extends EventEmitter
 	watch: ->
 		@unwatch()
 
-		applicationChangeStream    = @db.Configuration.watch()
+		applicationChangeStream    = @db.Application.watch()
 		groupChangeStream          = @db.Group.watch()
 		deviceGroupChangeStream    = @db.DeviceGroup.watch [], fullDocument: "updateLookup"
 		registryImagesChangeStream = @db.RegistryImages.watch()

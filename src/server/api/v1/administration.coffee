@@ -30,12 +30,17 @@ isRegistryImageDependentOn = (image, configurations) ->
 
 # Application
 router.get "/applications", ({ app }, res, next) ->
+	{ db } = app.locals
+
 	try
 		res
 			.status 200
 			.json
 				status: "success"
-				data:   await store.getConfigurations()
+				data:   await db
+					.Application
+					.find()
+					.immutable()
 	catch error
 		next error
 
@@ -46,7 +51,7 @@ router.put "/application/:name", ({ app, params, body }, res, next) ->
 
 	try
 		body = { ...body, applicationName: name }
-		doc  = await db.Configuration.findOneAndUpdate query, body,
+		doc  = await db.Application.findOneAndUpdate query, body,
 			upsert:              true
 			setDefaultsOnInsert: true
 
@@ -58,7 +63,7 @@ router.put "/application/:name", ({ app, params, body }, res, next) ->
 				status:  "success"
 				message: "Application was succesfully #{if doc? then "updated" else "created"}"
 				data:    await db
-					.Configuration
+					.Application
 					.findOne query
 					.select "-_id -__v"
 					.lean()
@@ -70,7 +75,7 @@ router.delete "/application/:name", ({ app, params }, res, next) ->
 	{ name }            = params
 
 	try
-		groups     = await store.getGroups()
+		groups     = await db.Group.find().immutable()
 		dependents = getDependents groups, name
 
 		if dependents.length
@@ -81,7 +86,7 @@ router.delete "/application/:name", ({ app, params }, res, next) ->
 					message: "One or more groups depend on this application"
 					data:    dependents
 
-		await db.Configuration.deleteMany applicationName: name
+		await db.Application.deleteMany applicationName: name
 
 		broadcaster.broadcastApplications()
 
@@ -93,12 +98,17 @@ router.delete "/application/:name", ({ app, params }, res, next) ->
 
 # Sources
 router.get "/sources", ({ app }, res, next) ->
+	{ db } = app.locals
+
 	try
 		res
 			.status 200
 			.json
 				status: "success"
-				data:   await store.getDeviceSources()
+				data:   await db
+					.DeviceSource
+					.find()
+					.immutable()
 	catch error
 		next error
 
@@ -145,12 +155,17 @@ router.delete "/source/:name", ({ app, params }, res, next) ->
 
 # Groups
 router.get "/groups", ({ app }, res, next) ->
+	{ db } = app.locals
+
 	try
 		res
 			.status 200
 			.json
 				status: "success"
-				data:   await store.getGroups()
+				data:   await db
+					.Group
+					.find()
+					.immutable()
 	catch error
 		next error
 
@@ -161,7 +176,7 @@ router.put "/group/:label", ({ app, params, body }, res, next) ->
 
 	try
 		unless label is "default"
-			defaultGroup = await db.Group.find label: "default"
+			defaultGroup = await db.Group.findByLabel "default"
 			exists       = not not defaultGroup.length
 
 			unless exists
@@ -173,7 +188,7 @@ router.put "/group/:label", ({ app, params, body }, res, next) ->
 
 		missing = await filter applications, (name) ->
 			0 is await db
-				.Configuration
+				.Application
 				.find applicationName: name
 				.countDocuments()
 
