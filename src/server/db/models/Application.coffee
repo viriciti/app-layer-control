@@ -21,4 +21,7 @@ schema                    = addImmutableQuery schema
 schema.statics.findByName = (name) ->
 	@findOne applicationName: name
 
+schema.query.hasDocuments = ->
+	@countDocuments() isnt 0
+
 module.exports = mongoose.model "Configuration", schema

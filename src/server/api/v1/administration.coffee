@@ -176,26 +176,23 @@ router.put "/group/:label", ({ app, params, body }, res, next) ->
 
 	try
 		unless label is "default"
-			defaultGroup = await db
+			hasDefaultGroup = await db
 				.Group
 				.findByLabel "default"
 				.hasDocuments()
-			console.log defaultGroup
-			# exists       = not not defaultGroup.length
 
-			return
-			# unless exists
-			# 	return res
-			# 		.status 409
-			# 		.json
-			# 			status:  "error"
-			# 			message: "The default group must be configured before you can configure other groups"
+			unless hasDefaultGroup
+				return res
+					.status 409
+					.json
+						status:  "error"
+						message: "The default group must be configured before you can configure other groups"
 
 		missing = await filter applications, (name) ->
-			0 is await db
+			not db
 				.Application
 				.findByName name
-				.countDocuments()
+				.hasDocuments()
 
 		if missing.length
 			return res

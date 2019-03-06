@@ -136,20 +136,20 @@ class GroupsTable extends PureComponent {
 										<tbody>
 											{this.props.groups
 												.sortBy((_, label) => label)
-												.map(group => (
-													<tr key={group.get('label')}>
-														<td>{group.get('label')}</td>
+												.entrySeq()
+												.map(([label, applications]) => (
+													<tr key={label}>
+														<td>{label}</td>
 														<td>
 															<ul className="list-unstyled">
-																{group.get('applications', List()).size ? (
-																	group
-																		.get('applications')
+																{applications.size ? (
+																	applications
 																		.entrySeq()
 																		.map(([application, version]) =>
 																			version ? (
 																				<LockedVersion
 																					key={toReactKey(
-																						group.get('label'),
+																						label,
 																						application,
 																						version
 																					)}
@@ -158,10 +158,7 @@ class GroupsTable extends PureComponent {
 																				/>
 																			) : (
 																				<Version
-																					key={toReactKey(
-																						group.get('label'),
-																						application
-																					)}
+																					key={toReactKey(label, application)}
 																					name={application}
 																					range={this.getRange(application)}
 																					effectiveVersion={this.getEffectiveVersion(
@@ -178,10 +175,7 @@ class GroupsTable extends PureComponent {
 														<td className="text-right">
 															<button
 																className="btn btn--text btn--icon"
-																onClick={this.onEditGroup.bind(
-																	this,
-																	group.get('label')
-																)}
+																onClick={this.onEditGroup.bind(this, label)}
 																title="Edit group"
 															>
 																<span
@@ -190,14 +184,11 @@ class GroupsTable extends PureComponent {
 																/>
 															</button>
 
-															{group.get('label') !== 'default' ? (
+															{label !== 'default' ? (
 																<button
 																	disabled={this.state.deleting}
 																	className="btn btn--text btn--icon"
-																	onClick={this.onRemoveGroup.bind(
-																		this,
-																		group.get('label')
-																	)}
+																	onClick={this.onRemoveGroup.bind(this, label)}
 																>
 																	<span
 																		className="fas fa-trash"
@@ -235,7 +226,7 @@ export default connect(
 	state => {
 		return {
 			groups:           state.get('groups'),
-			configurations:   state.get('configurations', List()),
+			configurations:   state.get('configurations', Map()),
 			registryImages:   state.get('registryImages'),
 			isFetchingGroups: getAsyncState('isFetchingGroups')(state),
 		}
