@@ -1,21 +1,21 @@
 import { Map, fromJS } from 'immutable'
+import { omit } from 'lodash'
 
 import { CONFIGURATIONS } from '/routes/administration/modules/actions'
+import createReducer from '/store/createReducer'
 
-// ------------------------------------
-// Action Handlers
-// ------------------------------------
-const ACTION_HANDLERS = {
-	[CONFIGURATIONS]: (_, action) => {
-		return fromJS(action.payload)
+export default createReducer(
+	{
+		[CONFIGURATIONS] (state, action) {
+			return action.payload.reduce(
+				(applications, application) =>
+					applications.mergeIn(
+						[application.applicationName],
+						fromJS(omit(application, ['__v', '_id']))
+					),
+				state
+			)
+		},
 	},
-}
-
-// ------------------------------------
-// Reducer
-// ------------------------------------
-const initialState = Map()
-export default function configurationsReducer (state = initialState, action) {
-	const handler = ACTION_HANDLERS[action.type]
-	return handler ? handler(state, action) : state
-}
+	Map()
+)

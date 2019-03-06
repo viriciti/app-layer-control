@@ -2,9 +2,13 @@ import axios from 'axios'
 import { get } from 'lodash'
 import { toast } from 'react-toastify'
 
-import { DEVICE_SOURCES } from '/store/globalReducers/actions'
+import { DEVICE_SOURCES } from '/routes/sources/modules/actions'
 import { SELECT_DEVICE } from '/store/constants'
-import { updateAsyncState, updateDeviceActivity, setAsyncState } from '/store/globalReducers/ui'
+import {
+	updateAsyncState,
+	updateDeviceActivity,
+	setAsyncState,
+} from '/store/globalReducers/ui'
 
 export const MULTISELECT_DEVICE = 'MULTISELECT_DEVICE'
 export const MULTISELECT_DEVICES = 'MULTISELECT_DEVICES'
@@ -159,32 +163,44 @@ export function asyncMultiRemoveGroup (devices, group) {
 
 export function asyncRestartApplication (deviceId, application) {
 	return async dispatch => {
-		dispatch(setAsyncState(['isRestartingApplication', deviceId, application], true))
+		dispatch(
+			setAsyncState(['isRestartingApplication', deviceId, application], true)
+		)
 
 		try {
-			const { data } = await axios.put(`/api/devices/${deviceId}/restart/${application}`)
+			const { data } = await axios.put(
+				`/api/devices/${deviceId}/restart/${application}`
+			)
 
 			toast.success(data.message)
 		} catch ({ response }) {
 			toast.error(response.data.message)
 		} finally {
-			dispatch(setAsyncState(['isRestartingApplication', deviceId, application], false))
+			dispatch(
+				setAsyncState(['isRestartingApplication', deviceId, application], false)
+			)
 		}
 	}
 }
 
 export function asyncRemoveApplication (deviceId, application) {
 	return async dispatch => {
-		dispatch(setAsyncState(['isRemovingApplication', deviceId, application], true))
+		dispatch(
+			setAsyncState(['isRemovingApplication', deviceId, application], true)
+		)
 
 		try {
-			const { data } = await axios.delete(`/api/devices/${deviceId}/${application}`)
+			const { data } = await axios.delete(
+				`/api/devices/${deviceId}/${application}`
+			)
 
 			toast.success(data.message)
 		} catch ({ response }) {
 			toast.error(response.data.message)
 		} finally {
-			dispatch(setAsyncState(['isRemovingApplication', deviceId, application], false))
+			dispatch(
+				setAsyncState(['isRemovingApplication', deviceId, application], false)
+			)
 		}
 	}
 }
@@ -210,7 +226,9 @@ export function fetchApplicationLogs (deviceId, application) {
 		dispatch(setAsyncState(['isFetchingLogs', deviceId, application], true))
 
 		try {
-			const { data } = await axios.get(`/api/devices/${deviceId}/logs/${application}`)
+			const { data } = await axios.get(
+				`/api/devices/${deviceId}/logs/${application}`
+			)
 
 			dispatch({
 				type:    CONTAINER_LOGS,
@@ -248,7 +266,10 @@ export function fetchSources () {
 		dispatch(setAsyncState('isFetchingSources', true))
 		dispatch({
 			type:    DEVICE_SOURCES,
-			payload: get(await axios.get('/api/v1/administration/sources'), 'data.data'),
+			payload: get(
+				await axios.get('/api/v1/administration/sources'),
+				'data.data'
+			),
 		})
 		dispatch(setAsyncState('isFetchingSources', false))
 	}

@@ -29,6 +29,7 @@ class GroupsForm extends PureComponent {
 		if (this.props.isEditing && !nextProps.isEditing) {
 			this.props.initialize(initialFormValues)
 		} else if (!this.props.isEditing && nextProps.isEditing) {
+			console.log(nextProps.editing)
 			this.props.initialize({
 				label:        nextProps.editing.get('label'),
 				applications: nextProps.editing.get('applications').toJS(),

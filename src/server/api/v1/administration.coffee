@@ -176,15 +176,20 @@ router.put "/group/:label", ({ app, params, body }, res, next) ->
 
 	try
 		unless label is "default"
-			defaultGroup = await db.Group.findByLabel "default"
-			exists       = not not defaultGroup.length
+			defaultGroup = await db
+				.Group
+				.findByLabel "default"
+				.hasDocuments()
+			console.log defaultGroup
+			# exists       = not not defaultGroup.length
 
-			unless exists
-				return res
-					.status 409
-					.json
-						status:  "error"
-						message: "The default group must be configured before you can configure other groups"
+			return
+			# unless exists
+			# 	return res
+			# 		.status 409
+			# 		.json
+			# 			status:  "error"
+			# 			message: "The default group must be configured before you can configure other groups"
 
 		missing = await filter applications, (name) ->
 			0 is await db
@@ -285,8 +290,6 @@ router.post "/registry", ({ app, params, body }, res, next) ->
 	{ db, broadcaster } = app.locals
 	{ name }            = body
 
-	console.log "name", name
-
 	try
 		await db.AllowedImage.create name: name
 
@@ -355,7 +358,7 @@ router.get "/registry", ({ app, query }, res, next) ->
 
 	# If only one part has been requested
 	# put the data on root level instead
-	data                = data[first Object.keys data]    if 1 is size data
+	data = data[first Object.keys data] if 1 is size data
 
 	try
 		res

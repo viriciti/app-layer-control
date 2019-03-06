@@ -12,4 +12,7 @@ schema                     = addImmutableQuery schema
 schema.statics.findByLabel = (name) ->
 	@findOne label: name
 
+schema.query.hasDocuments = ->
+	@countDocuments() isnt 0
+
 module.exports = mongoose.model "Group", schema
