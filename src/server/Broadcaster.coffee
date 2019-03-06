@@ -35,7 +35,7 @@ class Broadcaster
 				data:   if isIterable data then data.toJS() else data
 
 	broadcastApplications: ->
-		@broadcast Broadcaster.APPLICATIONS, await @db.Configuration.find()
+		@broadcast Broadcaster.APPLICATIONS, await @db.Application.find()
 
 	broadcastRegistry: ->
 		@broadcast Broadcaster.ALLOWED_IMAGES,  await @db.AllowedImage.find()

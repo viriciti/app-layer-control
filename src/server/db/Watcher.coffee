@@ -1,6 +1,7 @@
 { EventEmitter } = require "events"
 { invokeMap }    = require "lodash"
 debug            = (require "debug") "app:Watcher"
+{ Observable }   = require "rxjs"
 
 populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
 
@@ -8,7 +9,7 @@ class Watcher extends EventEmitter
 	constructor: ({ @db, @store, @mqtt }) ->
 		super()
 
-		@changeStreams = []
+		@observables = []
 
 	unwatch: ->
 		invokeMap @changeStreams, "close"
@@ -37,6 +38,14 @@ class Watcher extends EventEmitter
 				.watch()
 				.on "change", @onCollectionChange
 		]
+
+	history: ->
+		Observable
+			.fromEvent(
+				@db.Application.watch [], fullDocument: "updateLookup"
+				"change"
+			)
+			# .map ()
 
 	onCollectionChange: ({ ns }) =>
 		debug "Collection change - #{ns.db}.#{ns.coll} changed"

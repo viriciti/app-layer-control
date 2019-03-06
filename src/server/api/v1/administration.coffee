@@ -253,8 +253,6 @@ router.post "/group/devices", ({ app, body }, res) ->
 		{ nModified } = await db.DeviceGroup.updateMany query, update
 		message       = "Removed groups #{groups.join ', '} for #{nModified} device(s)"
 
-		debug message
-
 		broadcaster.broadcastDeviceGroups target
 
 		res
@@ -271,8 +269,6 @@ router.post "/group/devices", ({ app, body }, res) ->
 
 		{ nModified } = await db.DeviceGroup.updateMany query, update, options
 		message       = "Added groups #{groups.join ', '} to #{nModified} device(s)"
-
-		debug message
 
 		broadcaster.broadcastDeviceGroups target
 
