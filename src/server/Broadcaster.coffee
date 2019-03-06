@@ -7,14 +7,15 @@ Database          = require "./db/Database"
 { isIterable } = Iterable
 
 class Broadcaster
-	ALLOWED_IMAGES:  "allowedImages"
-	APPLICATIONS:    "configurations"
-	GROUPS:          "groups"
-	REGISTRY_IMAGES: "registryImages"
-	SOURCES:         "deviceSources"
-	STATE:           "devicesState"
-	NS_STATE:        "devicesNsState"
-	STATUS:          "devicesStatus"
+	@ALLOWED_IMAGES:  "allowedImages"
+	@APPLICATIONS:    "configurations"
+	@GROUPS:          "groups"
+	@LOGS:            "deviceLogs"
+	@NS_STATE:        "devicesNsState"
+	@REGISTRY_IMAGES: "registryImages"
+	@SOURCES:         "deviceSources"
+	@STATE:           "devicesState"
+	@STATUS:          "devicesStatus"
 
 	constructor: (@ws) ->
 		@db = new Database autoConnect: true

@@ -99,7 +99,7 @@ do ->
 
 		# device logs
 		devicesLogs$.subscribe (message) ->
-			broadcaster.broadcast "deviceLogs", message
+			broadcaster.broadcast Broadcaster.LOGS, message
 
 		# state updates
 		devicesState$
