@@ -7,29 +7,44 @@ Database          = require "./db/Database"
 { isIterable } = Iterable
 
 class Broadcaster
+	ALLOWED_IMAGES:  "allowedImages"
+	APPLICATIONS:    "configurations"
+	GROUPS:          "groups"
+	REGISTRY_IMAGES: "registryImages"
+	SOURCES:         "deviceSources"
+	STATE:           "devicesState"
+	NS_STATE:        "devicesNsState"
+	STATUS:          "devicesStatus"
+
 	constructor: (@ws) ->
 		@db = new Database autoConnect: true
 
 	broadcast: (type, data) ->
 		debug "Broadcasting '#{type}' (#{constantCase type}) to #{size @ws.clients} client(s)"
 
+		if type.startsWith "@"
+			[namespace, type] = type.split "/"
+			namespace        += "/"
+		else
+			namespace = ""
+
 		@ws.clients.forEach (client) ->
 			client.send JSON.stringify
-				action: constantCase type
+				action: [namespace, constantCase type].join ""
 				data:   if isIterable data then data.toJS() else data
 
 	broadcastApplications: ->
-		@broadcast "configurations", await @db.Configuration.find()
+		@broadcast Broadcaster.APPLICATIONS, await @db.Configuration.find()
 
 	broadcastRegistry: ->
-		@broadcast "allowedImages",  await @db.AllowedImage.find()
-		@broadcast "registryImages", await @db.RegistryImages.find()
+		@broadcast Broadcaster.ALLOWED_IMAGES,  await @db.AllowedImage.find()
+		@broadcast Broadcaster.REGISTRY_IMAGES, await @db.RegistryImages.find()
 
 	broadcastGroups: ->
-		@broadcast "groups", await @db.Group.find()
+		@broadcast Broadcaster.GROUPS, await @db.Group.find()
 
 	broadcastSources: ->
-		@broadcast "deviceSources", await @db.DeviceSource.find()
+		@broadcast Broadcaster.SOURCES, await @db.DeviceSource.find()
 
 	broadcastDeviceGroups: (deviceIds) ->
 		deviceGroups = await @db.DeviceGroup.findByDevices deviceIds
@@ -37,6 +52,6 @@ class Broadcaster
 			devices.setIn [device.get("deviceId"), "groups"], device.get "groups"
 		, Map()
 
-		@broadcast "devicesState", deviceGroups
+		@broadcast Broadcaster.STATE, deviceGroups
 
 module.exports = Broadcaster
