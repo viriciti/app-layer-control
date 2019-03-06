@@ -3,11 +3,11 @@ debug        = (require "debug") "app:Broadcaster"
 constantCase = require "constant-case"
 { Map }      = require "immutable"
 
-Store = require "./Store"
+Database = require "./db/Database"
 
 class Broadcaster
 	constructor: (@ws) ->
-		@store = new Store
+		@db = new Database autoConnect: true
 
 	broadcast: (type, data) ->
 		debug "Broadcasting '#{type}' (#{constantCase type}) to #{size @ws.clients} client(s)"
@@ -18,20 +18,20 @@ class Broadcaster
 				data:   data.toJS()
 
 	broadcastApplications: ->
-		@broadcast "configurations", await @store.getConfigurations()
+		@broadcast "configurations", await @db.Configuration.find()
 
 	broadcastRegistry: ->
-		@broadcast "allowedImages",  await @store.getAllowedImages()
-		@broadcast "registryImages", await @store.getRegistryImages()
+		@broadcast "allowedImages",  await @db.AllowedImage.find()
+		@broadcast "registryImages", await @db.RegistryImages.find()
 
 	broadcastGroups: ->
-		@broadcast "groups", await @store.getGroups()
+		@broadcast "groups", await @db.Group.find()
 
 	broadcastSources: ->
-		@broadcast "deviceSources", await @store.getDeviceSources()
+		@broadcast "deviceSources", await @db.DeviceSource.find()
 
 	broadcastDeviceGroups: (deviceIds) ->
-		deviceGroups = await @store.getDeviceGroups deviceIds
+		deviceGroups = await @db.DeviceGroup.findByDevices deviceIds
 		deviceGroups = deviceGroups.reduce (devices, device) ->
 			devices.setIn [device.get("deviceId"), "groups"], device.get "groups"
 		, Map()

@@ -7,7 +7,7 @@ import { CONFIGURATIONS } from '/routes/administration/modules/actions'
 // ------------------------------------
 const ACTION_HANDLERS = {
 	[CONFIGURATIONS]: (_, action) => {
-		return Map(fromJS(action.payload))
+		return fromJS(action.payload)
 	},
 }
 

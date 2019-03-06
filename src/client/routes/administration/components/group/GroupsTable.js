@@ -125,25 +125,25 @@ class GroupsTable extends PureComponent {
 										<tbody>
 											{this.props.groups
 												.sortBy((_, label) => label)
-												.entrySeq()
-												.map(([label, applications]) => (
-													<tr key={label}>
-														<td>{label}</td>
+												.map(group => (
+													<tr key={group.get('label')}>
+														<td>{group.get('label')}</td>
 														<td>
 															<ul className="list-unstyled">
-																{applications.size ? (
-																	applications
+																{group.get('applications', List()).size ? (
+																	group
+																		.get('applications')
 																		.entrySeq()
 																		.map(([application, version]) =>
 																			version ? (
 																				<LockedVersion
-																					key={toReactKey(label, application, version)}
+																					key={toReactKey(group.get('label'), application, version)}
 																					name={application}
 																					version={version}
 																				/>
 																			) : (
 																				<Version
-																					key={toReactKey(label, application)}
+																					key={toReactKey(group.get('label'), application)}
 																					name={application}
 																					range={this.getRange(application)}
 																					effectiveVersion={this.getEffectiveVersion(application)}
@@ -158,17 +158,17 @@ class GroupsTable extends PureComponent {
 														<td className="text-right">
 															<button
 																className="btn btn--text btn--icon"
-																onClick={this.onEditGroup.bind(this, label)}
+																onClick={this.onEditGroup.bind(this, group.get('label'))}
 																title="Edit group"
 															>
 																<span className="fas fa-pen" data-toggle="tooltip" />
 															</button>
 
-															{label !== 'default' ? (
+															{group.get('label') !== 'default' ? (
 																<button
 																	disabled={this.state.deleting}
 																	className="btn btn--text btn--icon"
-																	onClick={this.onRemoveGroup.bind(this, label)}
+																	onClick={this.onRemoveGroup.bind(this, group.get('label'))}
 																>
 																	<span className="fas fa-trash" data-toggle="tooltip" title="Delete group" />
 																</button>
@@ -202,7 +202,7 @@ export default connect(
 	state => {
 		return {
 			groups:           state.get('groups'),
-			configurations:   state.get('configurations', Map()),
+			configurations:   state.get('configurations', List()),
 			registryImages:   state.get('registryImages'),
 			isFetchingGroups: getAsyncState('isFetchingGroups')(state),
 		}

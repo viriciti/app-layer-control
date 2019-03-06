@@ -13,6 +13,8 @@ schema     = new Schema
 		required: true
 		default:  ["default"]
 
-schema = addImmutableQuery schema
+schema                       = addImmutableQuery schema
+schema.statics.findByDevices = (devices) ->
+	@find deviceId: $in: devices
 
 module.exports = mongoose.model "DeviceGroup", schema

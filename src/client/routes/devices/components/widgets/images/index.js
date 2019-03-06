@@ -9,11 +9,11 @@ import ImageOverview from './ImageOverview'
 
 class DeviceImages extends Component {
 	state = {
-		selectedImage: null,
-		selectedVersion: null
+		selectedImage:   null,
+		selectedVersion: null,
 	}
 
-	shouldComponentUpdate(nextProps, nextState) {
+	shouldComponentUpdate (nextProps, nextState) {
 		return (
 			this.props.images !== nextProps.images ||
 			this.state.selectedImage !== nextState.selectedImage ||
@@ -34,12 +34,12 @@ class DeviceImages extends Component {
 			this.setState({ selectedVersion: null })
 		} else {
 			this.setState({
-				selectedVersion: version
+				selectedVersion: version,
 			})
 		}
 	}
 
-	groupImages() {
+	groupImages () {
 		if (!this.props.images) {
 			return
 		}
@@ -47,8 +47,8 @@ class DeviceImages extends Component {
 		return this.props.images
 			.valueSeq()
 			.map(image => {
-				const parts = image.get('name').split(':')
-				const name = initial(parts).join('')
+				const parts   = image.get('name').split(':')
+				const name    = initial(parts).join('')
 				const version = last(parts)
 
 				return Map({ name, version })
@@ -61,7 +61,7 @@ class DeviceImages extends Component {
 			})
 	}
 
-	renderImages() {
+	renderImages () {
 		const images = this.groupImages()
 
 		if (!images || images.isEmpty()) {
@@ -69,7 +69,7 @@ class DeviceImages extends Component {
 		} else {
 			return images.entrySeq().map(([name, image]) => {
 				const selectedImage = this.state.selectedImage && this.state.selectedImage.first().get('name')
-				const isActive = name === selectedImage
+				const isActive      = name === selectedImage
 
 				return (
 					<li className="mb-2" key={name}>
@@ -87,7 +87,7 @@ class DeviceImages extends Component {
 		}
 	}
 
-	renderImageVersions() {
+	renderImageVersions () {
 		if (this.state.selectedImage) {
 			return this.state.selectedImage
 				.sort((previous, next) => {
@@ -130,13 +130,13 @@ class DeviceImages extends Component {
 				const findByVersion = image => {
 					return image.get('version') === this.state.selectedVersion
 				}
-				const findByName = name => {
+				const findByName    = name => {
 					return image => {
 						return image.get('name') === `${name}:${this.state.selectedVersion}`
 					}
 				}
 				const selectedImage = this.state.selectedImage.find(findByVersion)
-				const image = this.props.images.find(findByName(selectedImage.get('name')))
+				const image         = this.props.images.find(findByName(selectedImage.get('name')))
 
 				return <ImageOverview selectedImage={image} selectedDevice={this.props.selectedDevice} />
 			} else {
@@ -145,7 +145,7 @@ class DeviceImages extends Component {
 		}
 	}
 
-	render() {
+	render () {
 		return (
 			<div>
 				<h5>

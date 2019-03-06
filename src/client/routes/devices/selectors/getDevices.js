@@ -1,4 +1,4 @@
-import { Map } from 'immutable'
+import { List, Map } from 'immutable'
 import { isString } from 'lodash'
 import createImmutableSelector from '/store/createImmutableSelector'
 
@@ -7,10 +7,9 @@ const getFilter  = state => state.getIn(['ui', 'filter'], '')
 const getSort    = state => state.getIn(['ui', 'sort'])
 const getSources = state =>
 	state
-		.get('deviceSources', Map())
+		.get('deviceSources', List())
 		.filter(source => source.get('filterable'))
-		.keySeq()
-		.toList()
+		.map(source => source.get('getIn'))
 
 export default createImmutableSelector(
 	[getDevices, getFilter, getSort, getSources],

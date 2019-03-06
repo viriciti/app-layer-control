@@ -89,20 +89,6 @@ do ->
 		await populateMqttWithGroups db, socket
 		await populateMqttWithDeviceGroups db, socket
 
-		[
-			configurations
-			registryImages
-			groups
-		] = await Promise.all [
-			store.getConfigurations()
-			store.getRegistryImages()
-			store.getGroups()
-		]
-
-		store.set "configurations", configurations
-		store.set "registry",       registryImages
-		store.set "groups",         groups
-
 		log.info "Cache succesfully populated with configurations, registry images and groups"
 
 		devicesLogs$    = DevicesLogs.observable    socket

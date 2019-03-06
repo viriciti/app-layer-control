@@ -119,9 +119,7 @@ class DeviceDetail extends PureComponent {
 					</div>
 
 					<div className="row">
-						<div className="col-12">
-							<DeviceImages images={selectedDevice.get('images')} selectedDevice={deviceId} />
-						</div>
+						<div className="col-12" />
 					</div>
 				</div>
 			</div>

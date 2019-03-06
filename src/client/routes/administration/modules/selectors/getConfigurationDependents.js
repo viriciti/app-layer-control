@@ -4,15 +4,15 @@ const getGroups = state => {
 	return state.get('groups')
 }
 
-const getConfigurations = state => {
+const getApplications = state => {
 	return state.get('configurations')
 }
 
-const getDependents = (groups, configurations) => {
-	return configurations.map(configuration => {
+const getDependents = (groups, applications) => {
+	return applications.map(application => {
 		return groups
 			.filter(group => {
-				return group.keySeq().includes(configuration.get('applicationName'))
+				return group.keySeq().includes(application.get('applicationName'))
 			})
 			.map((_, group) => {
 				return group
@@ -22,6 +22,6 @@ const getDependents = (groups, configurations) => {
 }
 
 export default createSelector(
-	[getGroups, getConfigurations],
+	[getGroups, getApplications],
 	getDependents
 )

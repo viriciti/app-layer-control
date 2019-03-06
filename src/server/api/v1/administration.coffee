@@ -189,7 +189,7 @@ router.put "/group/:label", ({ app, params, body }, res, next) ->
 		missing = await filter applications, (name) ->
 			0 is await db
 				.Application
-				.find applicationName: name
+				.findByName name
 				.countDocuments()
 
 		if missing.length
@@ -324,7 +324,7 @@ router.delete "/registry/:name", ({ app, params, body }, res, next) ->
 	image  = "#{host}#{name}"
 
 	try
-		if isRegistryImageDependentOn image, await store.getConfigurations()
+		if isRegistryImageDependentOn image, await db.Application.find().immutable()
 			return res
 				.status 409
 				.json
@@ -344,13 +344,14 @@ router.delete "/registry/:name", ({ app, params, body }, res, next) ->
 	catch error
 		next error
 
-router.get "/registry", ({ query }, res, next) ->
+router.get "/registry", ({ app, query }, res, next) ->
+	{ db }       = app.locals
 	only         = query.only or ""
 	queryOptions = only.split ","
 
 	data                = {}
-	data.allowedImages  = await store.getAllowedImages()  if queryOptions.includes "allowed"
-	data.registryImages = await store.getRegistryImages() if queryOptions.includes "images"
+	data.allowedImages  = await db.AllowedImage.find().immutable()  if queryOptions.includes "allowed"
+	data.registryImages = await db.RegistryImages.find().immutable() if queryOptions.includes "images"
 
 	# If only one part has been requested
 	# put the data on root level instead
