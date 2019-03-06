@@ -1,9 +1,10 @@
-{ size }     = require "lodash"
-debug        = (require "debug") "app:Broadcaster"
-constantCase = require "constant-case"
-{ Map }      = require "immutable"
+{ size }          = require "lodash"
+debug             = (require "debug") "app:Broadcaster"
+constantCase      = require "constant-case"
+{ Map, Iterable } = require "immutable"
+Database          = require "./db/Database"
 
-Database = require "./db/Database"
+{ isIterable } = Iterable
 
 class Broadcaster
 	constructor: (@ws) ->
@@ -15,7 +16,7 @@ class Broadcaster
 		@ws.clients.forEach (client) ->
 			client.send JSON.stringify
 				action: constantCase type
-				data:   data.toJS()
+				data:   if isIterable data then data.toJS() else data
 
 	broadcastApplications: ->
 		@broadcast "configurations", await @db.Configuration.find()
