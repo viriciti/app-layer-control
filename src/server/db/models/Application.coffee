@@ -1,5 +1,5 @@
 mongoose          = require "mongoose"
-addImmutableQuery = require "../addImmutableQuery"
+addImmutableQuery = require "../plugins/addImmutableQuery"
 
 { Schema } = mongoose
 schema     = new Schema
@@ -17,11 +17,12 @@ schema     = new Schema
 	restartPolicy:   String
 	version:         String
 
-schema                    = addImmutableQuery schema
 schema.statics.findByName = (name) ->
 	@findOne applicationName: name
 
 schema.query.hasDocuments = ->
 	@countDocuments() isnt 0
+
+schema.plugin addImmutableQuery
 
 module.exports = mongoose.model "Configuration", schema

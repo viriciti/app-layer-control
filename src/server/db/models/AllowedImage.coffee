@@ -1,5 +1,5 @@
 mongoose          = require "mongoose"
-addImmutableQuery = require "../addImmutableQuery"
+addImmutableQuery = require "../plugins/addImmutableQuery"
 
 { Schema } = mongoose
 schema     = new Schema
@@ -8,6 +8,6 @@ schema     = new Schema
 		required: true
 		unique:   true
 
-schema = addImmutableQuery schema
+schema.plugin addImmutableQuery
 
 module.exports = mongoose.model "AllowedImage", schema

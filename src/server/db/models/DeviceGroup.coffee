@@ -1,5 +1,5 @@
 mongoose          = require "mongoose"
-addImmutableQuery = require "../addImmutableQuery"
+addImmutableQuery = require "../plugins/addImmutableQuery"
 
 { Schema } = mongoose
 schema     = new Schema
@@ -13,8 +13,9 @@ schema     = new Schema
 		required: true
 		default:  ["default"]
 
-schema                       = addImmutableQuery schema
 schema.statics.findByDevices = (devices) ->
 	@find deviceId: $in: devices
+
+schema.plugin addImmutableQuery
 
 module.exports = mongoose.model "DeviceGroup", schema

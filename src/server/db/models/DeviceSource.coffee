@@ -1,5 +1,5 @@
 mongoose          = require "mongoose"
-addImmutableQuery = require "../addImmutableQuery"
+addImmutableQuery = require "../plugins/addImmutableQuery"
 
 { Schema } = mongoose
 schema     = new Schema
@@ -48,6 +48,6 @@ schema     = new Schema
 		type:    Boolean
 		default: false
 
-schema = addImmutableQuery schema
+schema.plugin addImmutableQuery
 
 module.exports = mongoose.model "DeviceSource", schema

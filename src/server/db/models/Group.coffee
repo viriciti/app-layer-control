@@ -1,5 +1,5 @@
 mongoose          = require "mongoose"
-addImmutableQuery = require "../addImmutableQuery"
+addImmutableQuery = require "../plugins/addImmutableQuery"
 
 { Schema } = mongoose
 schema     = new Schema
@@ -8,11 +8,12 @@ schema     = new Schema
 ,
 	minimize: false # allows empty applications to be stored
 
-schema                     = addImmutableQuery schema
 schema.statics.findByLabel = (name) ->
 	@findOne label: name
 
 schema.query.hasDocuments = ->
 	@countDocuments() isnt 0
+
+schema.plugin addImmutableQuery
 
 module.exports = mongoose.model "Group", schema

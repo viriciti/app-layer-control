@@ -1,5 +1,5 @@
 mongoose          = require "mongoose"
-addImmutableQuery = require "../addImmutableQuery"
+addImmutableQuery = require "../plugins/addImmutableQuery"
 
 { Schema } = mongoose
 schema     = new Schema
@@ -9,6 +9,6 @@ schema     = new Schema
 	exists:         Boolean # deprecated, required to remove field from the document
 	enabledVersion: String  # deprecated, required to remove the field from the document
 
-schema = addImmutableQuery schema
+schema.plugin addImmutableQuery
 
 module.exports = mongoose.model "RegistryImages", schema
