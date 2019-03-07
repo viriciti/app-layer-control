@@ -39,14 +39,6 @@ class Watcher extends EventEmitter
 				.on "change", @onCollectionChange
 		]
 
-	history: ->
-		Observable
-			.fromEvent(
-				@db.Application.watch [], fullDocument: "updateLookup"
-				"change"
-			)
-			# .map ()
-
 	onCollectionChange: ({ ns }) =>
 		debug "Collection change - #{ns.db}.#{ns.coll} changed"
 

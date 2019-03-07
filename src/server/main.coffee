@@ -234,10 +234,6 @@ do ->
 
 	# start watching on database changes
 	watcher.watch()
-	watcher
-		.history()
-		.subscribe (data) ->
-			console.log "Data:", data
 
 	# provide tools for routes
 	app.locals.rpc         = rpc
