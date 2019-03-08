@@ -11,6 +11,10 @@ const getSources = state =>
 		.filter(source => source.get('filterable'))
 		.map(source => source.get('getIn'))
 
+function valueIncludes (value, filter) {
+	return value.toLowerCase().includes(filter.toLowerCase())
+}
+
 export default createImmutableSelector(
 	[getDevices, getFilter, getSort, getSources],
 	(devices, filter, sort, sources) => {
@@ -23,7 +27,11 @@ export default createImmutableSelector(
 						const value = device.getIn(field.split('.'), '')
 
 						if (isString(value)) {
-							return value.toLowerCase().includes(filter.toLowerCase())
+							return valueIncludes(value, filter)
+						} else if (List.isList(value)) {
+							return value.some(item =>
+								isString(item) ? valueIncludes(item, filter) : false
+							)
 						} else {
 							return false
 						}
@@ -31,6 +39,8 @@ export default createImmutableSelector(
 			)
 			.sortBy(device => device.getIn(sort.get('field').split('.'), ''))
 
-		return sort.get('ascending') ? devicesWithMutations : devicesWithMutations.reverse()
+		return sort.get('ascending')
+			? devicesWithMutations
+			: devicesWithMutations.reverse()
 	}
 )
