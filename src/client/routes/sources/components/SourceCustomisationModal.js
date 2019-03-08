@@ -102,7 +102,7 @@ class SourceCustomisationModal extends PureComponent {
 	renderForm () {
 		return (
 			<form onSubmit={this.props.handleSubmit(this.onSubmit.bind(this))}>
-				<Field name="entry" label="Entry" component={EntryFields} />
+				<Field name="entry" label="Visibility" component={EntryFields} />
 				<Field name="headerName" label="Label" component={TextInput} type="text" readOnly={this.props.isEditing} />
 				<Field
 					name="getIn"
