@@ -10,8 +10,8 @@ db = new Database autoConnect: true
 getApplicationsConfiguration = (names) ->
 	map names, (name) ->
 		db
-			.Configuration
-			.findOne applicationName: name
+			.Application
+			.findByName name
 			.orFail new Error "No configuration found for '#{name}'"
 			.select "-_id -__v"
 			.lean()
@@ -19,7 +19,7 @@ getApplicationsConfiguration = (names) ->
 getGroupConfiguration = (label) ->
 	db
 		.Group
-		.findOne label: label
+		.findByLabel label
 		.orFail new Error "Group '#{label}' does not exist"
 		.select "-_id -__v"
 		.lean()

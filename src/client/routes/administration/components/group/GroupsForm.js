@@ -22,7 +22,10 @@ const initialFormValues = {
 
 class GroupsForm extends PureComponent {
 	componentWillReceiveProps (nextProps) {
-		if ((this.props.isAdding || this.props.isEditing) && !this.props.hasDefaultGroup) {
+		if (
+			(this.props.isAdding || this.props.isEditing) &&
+			!this.props.hasDefaultGroup
+		) {
 			this.props.change('label', 'default')
 		}
 
@@ -44,7 +47,7 @@ class GroupsForm extends PureComponent {
 				return {
 					value: appName,
 					label: appName,
-					image: extractImageFromUrl(config.get('fromImage')),
+					image: extractImageFromUrl(config.get('fromImage', '')),
 				}
 			})
 			.toArray()
@@ -57,14 +60,24 @@ class GroupsForm extends PureComponent {
 
 	onSubmit = async ({ label, applications }) => {
 		if (this.props.isEditing) {
-			const affectingCount = this.props.devicesCountPerGroup.get(this.props.editing.get('label'))
+			const affectingCount = this.props.devicesCountPerGroup.get(
+				this.props.editing.get('label')
+			)
 
-			if (affectingCount && !confirm(`Editing this group will affect ${affectingCount} devices, are you sure?`)) {
+			if (
+				affectingCount &&
+				!confirm(
+					`Editing this group will affect ${affectingCount} devices, are you sure?`
+				)
+			) {
 				return
 			}
 		}
 
-		const { status, data } = await axios.put(`/api/v1/administration/group/${label}`, { label, applications })
+		const { status, data } = await axios.put(
+			`/api/v1/administration/group/${label}`,
+			{ label, applications }
+		)
 		if (status !== 200) {
 			toast.error(data.message)
 		} else {
@@ -87,7 +100,9 @@ class GroupsForm extends PureComponent {
 						component={ApplicationsTextInput}
 						type="text"
 						disabled={!this.props.hasDefaultGroup || this.props.isEditing}
-						helpText={!this.props.hasDefaultGroup ? 'This group is mandatory.' : ''}
+						helpText={
+							!this.props.hasDefaultGroup ? 'This group is mandatory.' : ''
+						}
 					/>
 					<Field
 						groupName={this.props.editing && this.props.editing.get('label')}
@@ -102,8 +117,14 @@ class GroupsForm extends PureComponent {
 					/>
 
 					<div className="form-group btn-group float-right">
-						<button className="btn btn-primary">{this.props.isAdding ? 'Add Group' : 'Edit Group'}</button>
-						<button className="btn btn-secondary" type="button" onClick={this.onRequestClose}>
+						<button className="btn btn-primary">
+							{this.props.isAdding ? 'Add Group' : 'Edit Group'}
+						</button>
+						<button
+							className="btn btn-secondary"
+							type="button"
+							onClick={this.onRequestClose}
+						>
 							Cancel
 						</button>
 					</div>

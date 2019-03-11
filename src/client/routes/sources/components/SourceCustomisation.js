@@ -188,7 +188,7 @@ class SourceCustomisation extends PureComponent {
 									} else if (this.state.showEntries === 'detail') {
 										return deviceSource.get('entryInDetail')
 									} else {
-										return deviceSource.get('entryInTable') || deviceSource.get('entryInDetail')
+										return true
 									}
 								})
 								.map((deviceSource, index) => {

@@ -5,13 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 4.9.5
+## 4.10.0
+### Changed
+- Leverage [mongoose](https://mongoosejs.com) to reduce maintenance cost.
+- Sources can now be invisible and filterable.
 
+### Removed
+- Remove legacy MQTT message pusher
+
+
+## 4.9.6
+### Fixed
+- Fix server from crashing if a repository is required, but is not available.
+
+
+## 4.9.5
 ### Changed
 - Make the effective version more apparent.
 
 ### Fixed
 - Fix unwanted behaviour when trying to select text in devices table row.
+
 
 ## 4.9.4
 ### Changed
@@ -21,20 +35,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Remove support for read-only mode (MQTT).
 
+
 ## 4.9.3
 ### Fixed
-
 - Do not reset search query when navigating away from the page.
 - Fix incorrect sorting for devices.
 
+
 ## 4.9.2
 ### Fixed
-
 - Fix state updates (from plugins) not being persisted after receiving state from App Layer Agent.
+
 
 ## 4.9.1
 ### Fixed
 - Set both replSet and replicaSet values for MongoDB.
+
 
 ## 4.9.0
 ### Changed
@@ -46,11 +62,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix jumping table by enforcing a fixed table layout.
   **Note**: This requires you to specify a width when adding a source.
 - Fix logs not appearing for devices.
-- Fix memory leak caused by incorrectly assigning IDs (LastSeenInterval).
-- Fix preview from not responding to changes to the position.
+- Fix memory leak caused by incorrectly assigning unique IDs (LastSeenInterval).
+- Fix sources preview from not responding to changes to column position.
+
 
 ## 4.8.2
-
 ### Changed
 - Treat staging as production, but with a different `NODE_ENV`.
 - Reduce visibility of devices with incomplete state from the devices table.
@@ -60,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Bump the amount of max listeners to 15 for MQTT to prevent memory leak warning.
 
+
 ## 4.8.1
 ### Changed
 - Database hosts can now configured through environment variables (comma-separated).
@@ -67,6 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fix outdated Dockerfile from failing to build.
+
 
 ## 4.8.0
 ### Added

@@ -12,28 +12,6 @@ class Store
 		@db  or= new Database autoConnect: true
 		@bag   = Map()
 
-	kick: ->
-		[
-			configurations
-			groups
-			registryImages
-			deviceSources
-			allowedImages
-		] = await Promise.all [
-			@getConfigurations()
-			@getGroups()
-			@getRegistryImages()
-			@getDeviceSources()
-			@getAllowedImages()
-		]
-
-		Map
-			configurations: configurations
-			groups:         groups
-			registryImages: registryImages
-			deviceSources:  deviceSources
-			allowedImages:  allowedImages
-
 	storeRegistryImages: (images) ->
 		pMap toPairs(images), ([name, { versions, access, exists }]) =>
 			await @db.RegistryImages.findOneAndUpdate { name },
@@ -91,7 +69,6 @@ class Store
 			.lean()
 
 		fromJS deviceGroups
-
 
 	getDeviceSources: ->
 		sources = await @db

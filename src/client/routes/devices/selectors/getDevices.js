@@ -1,4 +1,4 @@
-import { Map } from 'immutable'
+import { List, Map } from 'immutable'
 import { isString } from 'lodash'
 import createImmutableSelector from '/store/createImmutableSelector'
 
@@ -7,10 +7,13 @@ const getFilter  = state => state.getIn(['ui', 'filter'], '')
 const getSort    = state => state.getIn(['ui', 'sort'])
 const getSources = state =>
 	state
-		.get('deviceSources', Map())
+		.get('deviceSources', List())
 		.filter(source => source.get('filterable'))
-		.keySeq()
-		.toList()
+		.map(source => source.get('getIn'))
+
+function valueIncludes (value, filter) {
+	return value.toLowerCase().includes(filter.toLowerCase())
+}
 
 export default createImmutableSelector(
 	[getDevices, getFilter, getSort, getSources],
@@ -24,7 +27,11 @@ export default createImmutableSelector(
 						const value = device.getIn(field.split('.'), '')
 
 						if (isString(value)) {
-							return value.toLowerCase().includes(filter.toLowerCase())
+							return valueIncludes(value, filter)
+						} else if (List.isList(value)) {
+							return value.some(item =>
+								isString(item) ? valueIncludes(item, filter) : false
+							)
 						} else {
 							return false
 						}
@@ -32,6 +39,8 @@ export default createImmutableSelector(
 			)
 			.sortBy(device => device.getIn(sort.get('field').split('.'), ''))
 
-		return sort.get('ascending') ? devicesWithMutations : devicesWithMutations.reverse()
+		return sort.get('ascending')
+			? devicesWithMutations
+			: devicesWithMutations.reverse()
 	}
 )

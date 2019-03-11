@@ -8,7 +8,7 @@ import groupsReducer from '/routes/administration/modules/reducers/groupsReducer
 import registryImagesReducer from './globalReducers/registryImages'
 import configurationsReducer from '/routes/administration/modules/reducers/configurationsReducer'
 import paginateReducer from '/routes/devices/reducers/paginateReducer'
-import deviceSourcesReducer from './globalReducers/deviceSources'
+import deviceSourcesReducer from '../routes/sources/modules/reducer'
 import allowedImagesReducer from './globalReducers/allowedImages'
 import uiReducer from './globalReducers/ui'
 

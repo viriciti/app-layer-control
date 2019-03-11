@@ -1,20 +1,21 @@
 import { Map, fromJS } from 'immutable'
+import { pick } from 'lodash'
 
-import { REGISTRY_IMAGES } from './actions'
+import { REGISTRY_IMAGES } from '/store/globalReducers/actions'
+import createReducer from '/store/createReducer'
 
-// ------------------------------------
-// Specialized Action Creator
-// ------------------------------------
-const ACTION_HANDLERS = {
-	[REGISTRY_IMAGES]: (state, action) => {
-		return Map(fromJS(action.payload))
+export default createReducer(
+	{
+		[REGISTRY_IMAGES] (state, action) {
+			return action.payload.reduce(
+				(registry, image) =>
+					registry.setIn(
+						[image.name],
+						fromJS(pick(image, ['access', 'versions']))
+					),
+				state
+			)
+		},
 	},
-}
-// ------------------------------------
-// Reducer
-// ------------------------------------
-const initialState = Map()
-export default function registryImagesReducer (state = initialState, action) {
-	const handler = ACTION_HANDLERS[action.type]
-	return handler ? handler(state, action) : state
-}
+	Map()
+)

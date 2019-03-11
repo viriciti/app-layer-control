@@ -2,14 +2,21 @@ config      = require "config"
 mongodbURI  = require "mongodb-uri"
 mongoose    = require "mongoose"
 { forEach } = require "lodash"
+log         = (require "../lib/Logger") "Database"
 
-models     =
-	AllowedImage:   (require "./models/AllowedImage")   mongoose
-	Configuration:  (require "./models/Configuration")  mongoose
-	DeviceGroup:    (require "./models/DeviceGroup")    mongoose
-	DeviceSource:   (require "./models/DeviceSource")   mongoose
-	Group:          (require "./models/Group")          mongoose
-	RegistryImages: (require "./models/RegistryImages") mongoose
+readyStates =
+	DISCONNECTED:  0
+	CONNECTED:     1
+	CONNECTING:    2
+	DISCONNECTING: 3
+
+models =
+	AllowedImage:   require "./models/AllowedImage"
+	Application:    require "./models/Application"
+	DeviceGroup:    require "./models/DeviceGroup"
+	DeviceSource:   require "./models/DeviceSource"
+	Group:          require "./models/Group"
+	RegistryImages: require "./models/RegistryImages"
 
 class Database
 	constructor: (@options) ->
@@ -30,20 +37,26 @@ class Database
 				port: port
 
 	connect: ->
-		mongoose.Promise = global.Promise
-		url              = mongodbURI.format
-			hosts:    @expandHosts config.db.hosts
-			database: config.db.name
-			options:  config.db.options or undefined
-
 		forEach models, (model, name) =>
 			return if @[name]
 			@[name] = model
 
-		mongoose
-			.connect url,
+		if mongoose.connection.readyState is readyStates.DISCONNECTED
+			log.info "Connecting to MongoDB ..."
+
+			mongoose.Promise = global.Promise
+			url              = mongodbURI.format
+				hosts:    @expandHosts config.db.hosts
+				database: config.db.name
+				options:  config.db.options or undefined
+
+			await mongoose.connect url,
 				useCreateIndex:   true
 				useFindAndModify: false
 				useNewUrlParser:  true
+
+			log.info "Connected. Following calls will reuse the (open) connection"
+
+		mongoose
 
 module.exports = Database

@@ -46,6 +46,13 @@ const EntryFields = ({ input: { value, onChange, onBlur }, meta: { touched, erro
 					onBlur={onToggleBlur}
 				/>
 
+				{!value.length ? (
+					<p className="form-text text-muted">
+						<span className="fas fa-info-circle fa-fw" />
+						This source is not visible, but can be made filterable.
+					</p>
+				) : null}
+
 				{touched && error && !disabled ? (
 					<span className="form-text text-danger">
 						<span className="fas fa-exclamation-circle fa-fw" /> {error}
@@ -102,7 +109,7 @@ class SourceCustomisationModal extends PureComponent {
 	renderForm () {
 		return (
 			<form onSubmit={this.props.handleSubmit(this.onSubmit.bind(this))}>
-				<Field name="entry" label="Entry" component={EntryFields} />
+				<Field name="entry" label="Visibility" component={EntryFields} />
 				<Field name="headerName" label="Label" component={TextInput} type="text" readOnly={this.props.isEditing} />
 				<Field
 					name="getIn"
@@ -134,10 +141,11 @@ class SourceCustomisationModal extends PureComponent {
 						/>
 						<Field name="columnWidth" label="Column width" component={TextInput} type="number" min="10" max="250" />
 						<Field name="sortable" label="Sortable" component={ToggleInput} type="checkbox" />
-						<Field name="filterable" label="Filterable" component={ToggleInput} type="checkbox" />
 						<Field name="copyable" label="Copyable" component={ToggleInput} type="copyable" />
 					</Fragment>
 				) : null}
+
+				<Field name="filterable" label="Filterable" component={ToggleInput} type="checkbox" />
 
 				<div className="form-group btn-group float-right">
 					<AsyncButton

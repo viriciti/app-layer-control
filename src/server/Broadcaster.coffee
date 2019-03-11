@@ -1,41 +1,58 @@
-{ size }     = require "lodash"
-debug        = (require "debug") "app:Broadcaster"
-constantCase = require "constant-case"
-{ Map }      = require "immutable"
+{ size }          = require "lodash"
+debug             = (require "debug") "app:Broadcaster"
+constantCase      = require "constant-case"
+{ Map, Iterable } = require "immutable"
+Database          = require "./db/Database"
 
-Store = require "./Store"
+{ isIterable } = Iterable
 
 class Broadcaster
+	@ALLOWED_IMAGES:  "allowedImages"
+	@APPLICATIONS:    "configurations"
+	@GROUPS:          "groups"
+	@LOGS:            "deviceLogs"
+	@NS_STATE:        "devicesNsState"
+	@REGISTRY_IMAGES: "registryImages"
+	@SOURCES:         "deviceSources"
+	@STATE:           "devicesState"
+	@STATUS:          "devicesStatus"
+
 	constructor: (@ws) ->
-		@store = new Store
+		@db = new Database autoConnect: true
 
 	broadcast: (type, data) ->
 		debug "Broadcasting '#{type}' (#{constantCase type}) to #{size @ws.clients} client(s)"
 
+		if type.startsWith "@"
+			[namespace, type] = type.split "/"
+			namespace        += "/"
+		else
+			namespace = ""
+
 		@ws.clients.forEach (client) ->
 			client.send JSON.stringify
-				action: constantCase type
-				data:   data.toJS()
+				action: [namespace, constantCase type].join ""
+				data:   if isIterable data then data.toJS() else data
 
 	broadcastApplications: ->
-		@broadcast "configurations", await @store.getConfigurations()
+		@broadcast Broadcaster.APPLICATIONS, await @db.Application.find()
 
 	broadcastRegistry: ->
-		@broadcast "allowedImages",  await @store.getAllowedImages()
-		@broadcast "registryImages", await @store.getRegistryImages()
+		@broadcast Broadcaster.ALLOWED_IMAGES,  await @db.AllowedImage.find()
+		@broadcast Broadcaster.REGISTRY_IMAGES, await @db.RegistryImages.find()
 
 	broadcastGroups: ->
-		@broadcast "groups", await @store.getGroups()
+		@broadcast Broadcaster.GROUPS, await @db.Group.find()
 
 	broadcastSources: ->
-		@broadcast "deviceSources", await @store.getDeviceSources()
+		@broadcast Broadcaster.SOURCES, await @db.DeviceSource.find()
 
 	broadcastDeviceGroups: (deviceIds) ->
-		deviceGroups = await @store.getDeviceGroups deviceIds
+		deviceGroups = await @db.DeviceGroup.findByDevices deviceIds
 		deviceGroups = deviceGroups.reduce (devices, device) ->
 			devices.setIn [device.get("deviceId"), "groups"], device.get "groups"
 		, Map()
 
-		@broadcast "devicesState", deviceGroups
+		@broadcast Broadcaster.STATE, deviceGroups
 
 module.exports = Broadcaster

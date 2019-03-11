@@ -1,6 +1,7 @@
 { EventEmitter } = require "events"
 { invokeMap }    = require "lodash"
 debug            = (require "debug") "app:Watcher"
+{ Observable }   = require "rxjs"
 
 populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
 
@@ -8,7 +9,7 @@ class Watcher extends EventEmitter
 	constructor: ({ @db, @store, @mqtt }) ->
 		super()
 
-		@changeStreams = []
+		@observables = []
 
 	unwatch: ->
 		invokeMap @changeStreams, "close"
@@ -16,21 +17,26 @@ class Watcher extends EventEmitter
 	watch: ->
 		@unwatch()
 
-		applicationChangeStream    = @db.Configuration.watch()
-		groupChangeStream          = @db.Group.watch()
-		deviceGroupChangeStream    = @db.DeviceGroup.watch [], fullDocument: "updateLookup"
-		registryImagesChangeStream = @db.RegistryImages.watch()
-
-		applicationChangeStream.on    "change", @onCollectionChange
-		groupChangeStream.on          "change", @onCollectionChange
-		registryImagesChangeStream.on "change", @onCollectionChange
-		deviceGroupChangeStream.on    "change", @onDeviceGroupChange
-
 		@changeStreams = [
-			applicationChangeStream
-			groupChangeStream
-			deviceGroupChangeStream
-			registryImagesChangeStream
+			@db
+				.Application
+				.watch()
+				.on "change", @onCollectionChange
+
+			@db
+				.Group
+				.watch()
+				.on "change", @onCollectionChange
+
+			@db
+				.DeviceGroup
+				.watch [], fullDocument: "updateLookup"
+				.on "change", @onDeviceGroupChange
+
+			@db
+				.RegistryImages
+				.watch()
+				.on "change", @onCollectionChange
 		]
 
 	onCollectionChange: ({ ns }) =>

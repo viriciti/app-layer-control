@@ -2,18 +2,29 @@ import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
+import { List, Map } from 'immutable'
 
 import Modal from '/components/common/Modal'
 import { asyncRefreshState, selectDevice } from '/routes/devices/actions'
 import getSelectedDevice from '/routes/devices/selectors/getSelectedDevice'
 import AsyncButton from '/components/common/AsyncButton'
 
-import { SystemInfo, Logs, Applications, DeviceImages, DeviceGroups, Queue } from './widgets'
+import {
+	SystemInfo,
+	Logs,
+	Applications,
+	DeviceImages,
+	DeviceGroups,
+	Queue,
+	Images,
+} from './widgets'
 import getAsyncState from '/store/selectors/getAsyncState'
 
 class DeviceDetail extends PureComponent {
 	getDeviceSources () {
-		return this.props.deviceSources.filter(source => source.get('entryInDetail'))
+		return this.props.deviceSources.filter(source =>
+			source.get('entryInDetail')
+		)
 	}
 
 	onRefreshState = async () => {
@@ -29,23 +40,33 @@ class DeviceDetail extends PureComponent {
 
 		const deviceId    = selectedDevice.get('deviceId')
 		const connected   = selectedDevice.get('connected')
-		const statusLabel = classNames('label', 'label--inline', 'label--no-hover', 'float-right')
+		const statusLabel = classNames(
+			'label',
+			'label--inline',
+			'label--no-hover',
+			'float-right'
+		)
 
 		return (
 			<div className="row">
 				<div className="col">
 					<div className="row">
 						<div className="col-12">
-							{this.props.selectedDevice.getIn(['updateState', 'short'], '').match(/error/i) ? (
-								<div className="row">
-									<div className="col-12">
-										<div className="alert alert-danger">
-											<span className="fas fa-exclamation-triangle mr-2" />
-											{this.props.selectedDevice.getIn(['updateState', 'long'], 'No description available')}
+							{this.props.selectedDevice
+								.getIn(['updateState', 'short'], '')
+								.match(/error/i) ? (
+									<div className="row">
+										<div className="col-12">
+											<div className="alert alert-danger">
+												<span className="fas fa-exclamation-triangle mr-2" />
+												{this.props.selectedDevice.getIn(
+													['updateState', 'long'],
+													'No description available'
+												)}
+											</div>
 										</div>
 									</div>
-								</div>
-							) : null}
+								) : null}
 							<div className="row">
 								<div className="col-lg-5 mb-4">
 									<h5>
@@ -69,11 +90,15 @@ class DeviceDetail extends PureComponent {
 									<h5>
 										<span className="fas fa-sliders-h pr-1" /> Control
 										{connected ? (
-											<span className={classNames(statusLabel, 'label--success')}>
+											<span
+												className={classNames(statusLabel, 'label--success')}
+											>
 												<span className="fas fa-wifi" /> Online
 											</span>
 										) : (
-											<span className={classNames(statusLabel, 'label--danger')}>
+											<span
+												className={classNames(statusLabel, 'label--danger')}
+											>
 												<span className="fas fa-wifi" /> Offline
 											</span>
 										)}
@@ -99,7 +124,10 @@ class DeviceDetail extends PureComponent {
 						<div className="col-md-8">
 							<div className="row">
 								<div className="col-lg-12 mb-4">
-									<Applications containers={selectedDevice.get('containers')} selectedDevice={selectedDevice} />
+									<Applications
+										containers={selectedDevice.get('containers')}
+										selectedDevice={selectedDevice}
+									/>
 								</div>
 							</div>
 							<div className="row">
@@ -120,7 +148,14 @@ class DeviceDetail extends PureComponent {
 
 					<div className="row">
 						<div className="col-12">
-							<DeviceImages images={selectedDevice.get('images')} selectedDevice={deviceId} />
+							{Map.isMap(selectedDevice.get('images', List()).first()) ? (
+								<DeviceImages
+									images={selectedDevice.get('images')}
+									selectedDevice={deviceId}
+								/>
+							) : (
+								<Images images={selectedDevice.get('images')} />
+							)}
 						</div>
 					</div>
 				</div>
@@ -134,7 +169,9 @@ class DeviceDetail extends PureComponent {
 				? 'online'
 				: 'offline'
 			: 'offline'
-		const title           = this.props.selectedDevice ? `Device: ${this.props.selectedDevice.get('deviceId')}` : ''
+		const title           = this.props.selectedDevice
+			? `Device: ${this.props.selectedDevice.get('deviceId')}`
+			: ''
 		const headerClassName = `device-${status}`
 
 		return (
@@ -157,7 +194,10 @@ export default connect(
 
 		return {
 			selectedDevice:    selectedDevice,
-			isRefreshingState: getAsyncState(['isRefreshingState', ownProps.open && selectedDevice.get('deviceId')])(state),
+			isRefreshingState: getAsyncState([
+				'isRefreshingState',
+				ownProps.open && selectedDevice.get('deviceId'),
+			])(state),
 		}
 	},
 	{

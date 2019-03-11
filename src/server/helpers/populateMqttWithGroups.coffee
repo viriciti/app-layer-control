@@ -10,7 +10,7 @@ module.exports = (db, socket) ->
 	enrichedGroups = await reduce groups, (memo, { label, applications }) ->
 		try
 			memo[label] = await enrichAppsForMqtt label, applications
-		catch error
+		catch
 			log.warn "Failed to enrich applications for #{label}"
 
 		memo

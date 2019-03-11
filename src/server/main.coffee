@@ -69,7 +69,6 @@ do ->
 	await bundle app
 	await db.connect()
 	await runUpdates db: db, store: store
-
 	await installPlugins config.plugins
 
 	await store.ensureDefaultDeviceSources()
@@ -90,22 +89,6 @@ do ->
 		await populateMqttWithGroups db, socket
 		await populateMqttWithDeviceGroups db, socket
 
-		[
-			configurations
-			registryImages
-			groups
-		] = await Promise.all [
-			store.getConfigurations()
-			store.getRegistryImages()
-			store.getGroups()
-		]
-
-		store.set "configurations", configurations
-		store.set "registry",       registryImages
-		store.set "groups",         groups
-
-		log.info "Cache succesfully populated with configurations, registry images and groups"
-
 		devicesLogs$    = DevicesLogs.observable    socket
 		devicesNsState$ = DevicesNsState.observable socket
 		devicesState$   = DevicesState.observable   socket
@@ -113,11 +96,10 @@ do ->
 		deviceGroups$   = DeviceGroups.observable   socket
 		registry$       = DockerRegistry            config.versioning, db
 		source$         = new Subject
-		# cacheUpdate$    = cacheUpdate               store
 
 		# device logs
 		devicesLogs$.subscribe (message) ->
-			broadcaster.broadcast "deviceLogs", message
+			broadcaster.broadcast Broadcaster.LOGS, message
 
 		# state updates
 		devicesState$
@@ -139,7 +121,7 @@ do ->
 				, Map()
 
 				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast "devicesState", stateUpdates
+				broadcaster.broadcast Broadcaster.STATE, stateUpdates
 
 		# specific state updates
 		# these updates are broadcasted more frequently
@@ -158,7 +140,7 @@ do ->
 				, Map()
 
 				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast "devicesState", stateUpdates
+				broadcaster.broadcast Broadcaster.STATE, stateUpdates
 
 		# first time online devices
 		devicesStatus$
@@ -188,7 +170,7 @@ do ->
 				, Map()
 
 				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast "devicesState", stateUpdates
+				broadcaster.broadcast Broadcaster.STATE, stateUpdates
 
 		# docker registry
 		registry$.subscribe (images) ->
@@ -212,12 +194,12 @@ do ->
 					, Map()
 
 				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast "devicesState", stateUpdates
+				broadcaster.broadcast Broadcaster.STATE, stateUpdates
 
 		[
-			["devicesNsState", devicesNsState$]
-			["devicesState",   devicesState$]
-			["devicesStatus",  devicesStatus$]
+			[Broadcaster.NS_STATE, devicesNsState$]
+			[Broadcaster.STATE,    devicesState$]
+			[Broadcaster.STATUS,   devicesStatus$]
 		].forEach ([name, observable$]) ->
 			observable$
 				.map (data) ->

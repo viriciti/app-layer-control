@@ -4,7 +4,10 @@ import { Map, List } from 'immutable'
 import semver from 'semver'
 
 import GroupsForm from './GroupsForm'
-import { fetchGroups, asyncRemoveGroup } from '/routes/administration/modules/actions'
+import {
+	fetchGroups,
+	asyncRemoveGroup,
+} from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'
 import getAsyncState from '/store/selectors/getAsyncState'
 
@@ -13,7 +16,10 @@ const Version = ({ name, range, effectiveVersion }) => {
 		return (
 			<li>
 				{name}@{range}
-				<small className="label label-sm label--inline float-right" title="Effective version for this application">
+				<small
+					className="label label-sm label--inline float-right"
+					title="Effective version for this application"
+				>
 					{effectiveVersion}
 				</small>
 			</li>
@@ -23,7 +29,10 @@ const Version = ({ name, range, effectiveVersion }) => {
 			<li>
 				{name}@{range}
 				<span className="float-right text-warning">
-					<span className="fas fa-exclamation-triangle" title="Effective version could not be calculated" />
+					<span
+						className="fas fa-exclamation-triangle"
+						title="Effective version could not be calculated"
+					/>
 				</span>
 			</li>
 		)
@@ -60,7 +69,9 @@ class GroupsTable extends PureComponent {
 	}
 
 	getEffectiveVersion (name) {
-		const versions = this.getRepositoryVersions(this.props.configurations.getIn([name, 'fromImage']))
+		const versions = this.getRepositoryVersions(
+			this.props.configurations.getIn([name, 'fromImage'])
+		)
 		const range    = this.getRange(name)
 
 		return semver.maxSatisfying(versions.toArray(), range)
@@ -137,7 +148,11 @@ class GroupsTable extends PureComponent {
 																		.map(([application, version]) =>
 																			version ? (
 																				<LockedVersion
-																					key={toReactKey(label, application, version)}
+																					key={toReactKey(
+																						label,
+																						application,
+																						version
+																					)}
 																					name={application}
 																					version={version}
 																				/>
@@ -146,7 +161,9 @@ class GroupsTable extends PureComponent {
 																					key={toReactKey(label, application)}
 																					name={application}
 																					range={this.getRange(application)}
-																					effectiveVersion={this.getEffectiveVersion(application)}
+																					effectiveVersion={this.getEffectiveVersion(
+																						application
+																					)}
 																				/>
 																			)
 																		)
@@ -161,7 +178,10 @@ class GroupsTable extends PureComponent {
 																onClick={this.onEditGroup.bind(this, label)}
 																title="Edit group"
 															>
-																<span className="fas fa-pen" data-toggle="tooltip" />
+																<span
+																	className="fas fa-pen"
+																	data-toggle="tooltip"
+																/>
 															</button>
 
 															{label !== 'default' ? (
@@ -170,7 +190,11 @@ class GroupsTable extends PureComponent {
 																	className="btn btn--text btn--icon"
 																	onClick={this.onRemoveGroup.bind(this, label)}
 																>
-																	<span className="fas fa-trash" data-toggle="tooltip" title="Delete group" />
+																	<span
+																		className="fas fa-trash"
+																		data-toggle="tooltip"
+																		title="Delete group"
+																	/>
 																</button>
 															) : null}
 														</td>
