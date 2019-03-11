@@ -1,0 +1,77 @@
+.filter-input-group {
+	> .fas {
+		display: none;
+	}
+}
+
+.filter-input-group--empty {
+	position: relative;
+
+	> .fas {
+		color: $input-color;
+		display: unset;
+		left: 0.8125rem;
+		position: absolute;
+		top: 1rem;
+		z-index: 1;
+	}
+}
+
+.react-tags {
+	background-color: $input-bg;
+	border: 1px solid $input-border-color;
+	border-left: 0;
+	border-right: 0;
+	padding: 0 0.5rem;
+	position: relative;
+
+	.filter-input-group--empty & {
+		padding-left: 2.25rem;
+	}
+}
+
+.react-tags__selected {
+	display: inline;
+}
+
+.react-tags__selected-tag {
+	display: inline-block;
+	background-color: $color-gray-1;
+	border-radius: $border-radius;
+	margin-right: 0.5rem;
+}
+
+.react-tags__selected-tag-name {
+	padding: 0.15rem 0.5rem;
+}
+
+.react-tags__selected-tag-button {
+	background-color: darken($color-gray-1, 5%);
+	border-bottom-right-radius: $border-radius;
+	border-top-right-radius: $border-radius;
+	border: 0;
+	padding-left: 0.1875rem;
+	padding-right: 0.1875rem;
+}
+
+.react-tags__search {
+	display: inline-block;
+	max-width: 100%;
+	padding: 0.4375rem 0.125rem;
+}
+
+.react-tags__search-input {
+	border: 0;
+
+	input {
+		font-size: 0.875rem;
+		border: 0;
+		height: 1rem;
+		padding: 0.85rem 0 0.75rem;
+
+		&:focus {
+			box-shadow: none;
+			outline: none;
+		}
+	}
+}

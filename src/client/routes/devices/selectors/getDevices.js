@@ -1,5 +1,5 @@
 import { List, Map } from 'immutable'
-import { isString } from 'lodash'
+import { isString, map, stubTrue } from 'lodash'
 import createImmutableSelector from '/store/createImmutableSelector'
 
 const getDevices = state => state.get('devices', Map())
@@ -12,30 +12,36 @@ const getSources = state =>
 		.map(source => source.get('getIn'))
 
 function valueIncludes (value, filter) {
-	return value.toLowerCase().includes(filter.toLowerCase())
+	return map(filter, 'name').some(f =>
+		value.toLowerCase().includes(f.toLowerCase())
+	)
 }
 
 export default createImmutableSelector(
 	[getDevices, getFilter, getSort, getSources],
 	(devices, filter, sort, sources) => {
+		console.log(filter)
 		const devicesWithMutations = devices
+			.take(1)
 			.filter(
-				device =>
-					device.has('connected') &&
-					device.has('deviceId') &&
-					sources.some(field => {
-						const value = device.getIn(field.split('.'), '')
+				filter.length
+					? device =>
+						device.has('connected') &&
+							device.has('deviceId') &&
+							sources.some(field => {
+								const value = device.getIn(field.split('.'), '')
 
-						if (isString(value)) {
-							return valueIncludes(value, filter)
-						} else if (List.isList(value)) {
-							return value.some(item =>
-								isString(item) ? valueIncludes(item, filter) : false
-							)
-						} else {
-							return false
-						}
-					})
+								if (isString(value)) {
+									return valueIncludes(value, filter)
+								} else if (List.isList(value)) {
+									return value.some(item =>
+										isString(item) ? valueIncludes(item, filter) : false
+									)
+								} else {
+									return false
+								}
+							})
+					: stubTrue
 			)
 			.sortBy(device => device.getIn(sort.get('field').split('.'), ''))
 
