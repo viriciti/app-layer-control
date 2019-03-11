@@ -64,7 +64,11 @@ We recommend using environment variables, since these will cause the least confi
 App Layer Control allows you to add your own plugins. Plugins are powerful extensions that allow you to read data directly from the sources.  
 Additionally, plugins allow you to update the state of a device.
 
-Plugins are installed on-the-fly from NPM (no support for GitHub at the moment) and do not require you to install them yourself.  
+#### Installation
+Plugins are installed on-the-fly from NPM and do not require you to install them yourself.  
+For now, there is no support for GitHub. Instead, you can load a plugin from your filesystem by adding a `path` key to your configuration.
+
+#### Creating your plugin
 The plugin must export a function and can take up to two arguments:
 
 - source (_Rx.Subject_): The data stream itself. You can do anything you normally can with [Subjects](https://github.com/ReactiveX/rxjs/blob/master/doc/subject.md). Because Subjects are bidirectional, you can call `.next()` in order to update the state information on App Layer Control. The updated state information must consist of a `deviceId` and `data` property. Any update you make is buffered for a second and then merged with the state of the devices.

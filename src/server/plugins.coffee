@@ -23,8 +23,12 @@ installPlugins = (plugins) ->
 
 	await Promise.all plugins.map (plugin) ->
 		try
-			debug "Installing '#{plugin.name}', version: #{plugin.version or "latest"}"
-			await manager.install plugin.name, plugin.version
+			if plugin.path
+				debug "Loading '#{plugin.name}' from filesystem (source at: #{plugin.path})"
+				await manager.installFromPath plugin.path
+			else
+				debug "Installing '#{plugin.name}', version: #{plugin.version or "latest"}"
+				await manager.install plugin.name, plugin.version
 		catch error
 			if error.message.match /error 404/
 				log.error "Plugin '#{plugin.name}' not found"
