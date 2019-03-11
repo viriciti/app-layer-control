@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Changed
 - Leverage [mongoose](https://mongoosejs.com) to reduce maintenance cost.
+- Sources can now be invisible and filterable.
 
 ### Removed
 - Remove legacy MQTT message pusher

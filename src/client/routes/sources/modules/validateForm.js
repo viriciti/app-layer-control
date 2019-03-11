@@ -1,5 +1,5 @@
 import { Iterable } from 'immutable'
-import { every, isEmpty, defaultTo } from 'lodash'
+import { defaultTo } from 'lodash'
 
 function wrapValueGetter (key) {
 	return source => {
@@ -21,12 +21,14 @@ const getHeaderName = wrapValueGetter('headerName')
 export default (values, props) => {
 	const errors           = {}
 	const isHeaderNameUsed = props.deviceSources
-		.filter(customSource => getHeaderName(customSource) !== getHeaderName(props.editing))
-		.some(customSource => getHeaderName(customSource) === getHeaderName(values.headerName))
-
-	if (values.entry && (!values.entry.length || every(values.entry, isEmpty))) {
-		errors.entry = 'You must specify whether the source should be visible in the table, detail page or both'
-	}
+		.filter(
+			customSource =>
+				getHeaderName(customSource) !== getHeaderName(props.editing)
+		)
+		.some(
+			customSource =>
+				getHeaderName(customSource) === getHeaderName(values.headerName)
+		)
 
 	if (!values.headerName) {
 		errors.headerName = 'Enter a header name'
