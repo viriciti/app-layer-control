@@ -28,7 +28,10 @@ import {
 	fetchSources,
 } from '/routes/devices/actions'
 import { applySort } from '/store/globalReducers/ui'
-import { fetchGroups, fetchApplications } from '/routes/administration/modules/actions'
+import {
+	fetchGroups,
+	fetchApplications,
+} from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'
 import getAsyncState from '/store/selectors/getAsyncState'
 
@@ -49,7 +52,10 @@ class DeviceList extends PureComponent {
 
 	onSort = field => {
 		if (this.props.sort.get('field') === field) {
-			this.props.applySort({ field, ascending: !this.props.sort.get('ascending') })
+			this.props.applySort({
+				field,
+				ascending: !this.props.sort.get('ascending'),
+			})
 		} else {
 			this.props.applySort({ field, ascending: true })
 		}
@@ -57,7 +63,9 @@ class DeviceList extends PureComponent {
 
 	onStoreGroup = async label => {
 		const devices = this.props.multiSelectedDevices
-			.filterNot(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
+			.filterNot(deviceId =>
+				this.props.devices.getIn([deviceId, 'groups'], List()).includes(label)
+			)
 			.toArray()
 
 		if (confirm(`Add group '${label}' to ${devices.length} device(s)?`)) {
@@ -68,7 +76,9 @@ class DeviceList extends PureComponent {
 
 	onRemoveGroup = async label => {
 		const devices = this.props.multiSelectedDevices
-			.filter(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
+			.filter(deviceId =>
+				this.props.devices.getIn([deviceId, 'groups'], List()).includes(label)
+			)
 			.toArray()
 
 		if (confirm(`Remove group '${label}' from ${devices.length} device(s)?`)) {
@@ -101,29 +111,39 @@ class DeviceList extends PureComponent {
 											id="selectAll"
 											title="Select all devices"
 											type="checkbox"
-											onChange={() => this.props.multiSelectDevices(this.props.devices.keySeq().toList())}
-											checked={this.props.multiSelectedDevices.size === this.props.devices.size}
+											onChange={() =>
+												this.props.multiSelectDevices(
+													this.props.devices.keySeq().toList()
+												)
+											}
+											checked={
+												this.props.multiSelectedDevices.size ===
+												this.props.devices.size
+											}
 										/>
 
-										<label className="custom-control-label" htmlFor="selectAll" />
+										<label
+											className="custom-control-label"
+											htmlFor="selectAll"
+										/>
 									</div>
 								</th>
 
 								{this.props.deviceSources
 									.filter(deviceSource => deviceSource.get('entryInTable'))
-									.map((column, key) => {
-										return (
-											<TableHead
-												key={`header-${key}`}
-												onSort={partial(this.onSort, key)}
-												sortable={column.get('sortable')}
-												ascending={this.props.sort.get('ascending')}
-												sorted={this.props.sort.get('field') === key}
-												headerName={column.get('headerName')}
-												columnWidth={column.get('columnWidth')}
-											/>
-										)
-									})
+									.map(column => (
+										<TableHead
+											key={toReactKey(column.get('getIn'))}
+											onSort={partial(this.onSort, column.get('getIn'))}
+											sortable={column.get('sortable')}
+											ascending={this.props.sort.get('ascending')}
+											sorted={
+												this.props.sort.get('field') === column.get('getIn')
+											}
+											headerName={column.get('headerName')}
+											columnWidth={column.get('columnWidth')}
+										/>
+									))
 									.valueSeq()}
 							</tr>
 						</thead>
@@ -136,7 +156,9 @@ class DeviceList extends PureComponent {
 											key={info.get('deviceId')}
 											info={info}
 											onSelectionToggle={this.onSelectionToggle}
-											selected={this.props.multiSelectedDevices.includes(info.get('deviceId'))}
+											selected={this.props.multiSelectedDevices.includes(
+												info.get('deviceId')
+											)}
 											configurations={this.props.configurations}
 											deviceSources={this.props.deviceSources}
 										/>
@@ -147,9 +169,13 @@ class DeviceList extends PureComponent {
 					</table>
 
 					{this.props.filter && !this.props.devices.size ? (
-						<h6 className="text-center text-secondary my-5">No devices were found with this search query</h6>
+						<h6 className="text-center text-secondary my-5">
+							No devices were found with this search query
+						</h6>
 					) : !this.props.devices.size ? (
-						<h6 className="text-center text-secondary my-5">No devices were found</h6>
+						<h6 className="text-center text-secondary my-5">
+							No devices were found
+						</h6>
 					) : null}
 				</div>
 			)
@@ -165,7 +191,9 @@ class DeviceList extends PureComponent {
 					<span className="dashboard-header__icon fas fa-hdd" />
 					<div className="dashboard-header__titles-container">
 						<h1 className="dashboard-header__title">Devices</h1>
-						<h2 className="dashboard-header__subtitle">Configure your devices</h2>
+						<h2 className="dashboard-header__subtitle">
+							Configure your devices
+						</h2>
 					</div>
 				</header>
 
@@ -184,7 +212,8 @@ class DeviceList extends PureComponent {
 										}
 										type="button"
 									>
-										<span className="fas fa-plus-circle" /> Add Group ({this.props.multiSelectedDevices.size})
+										<span className="fas fa-plus-circle" /> Add Group (
+										{this.props.multiSelectedDevices.size})
 									</button>
 
 									<div className="dropdown-menu">
@@ -211,7 +240,8 @@ class DeviceList extends PureComponent {
 										}
 										type="button"
 									>
-										<span className="fas fa-minus-circle" /> Remove Group ({this.props.multiSelectedDevices.size})
+										<span className="fas fa-minus-circle" /> Remove Group (
+										{this.props.multiSelectedDevices.size})
 									</button>
 
 									<div className="dropdown-menu">
