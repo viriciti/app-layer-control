@@ -1,9 +1,9 @@
 import { List, Map } from 'immutable'
-import { isString, map, stubTrue } from 'lodash'
+import { isString, isEmpty, stubTrue } from 'lodash'
 import createImmutableSelector from '/store/createImmutableSelector'
 
 const getDevices = state => state.get('devices', Map())
-const getFilter  = state => state.getIn(['ui', 'filter'], '')
+const getFilter  = state => state.getIn(['ui', 'filter'], [])
 const getSort    = state => state.getIn(['ui', 'sort'])
 const getSources = state =>
 	state
@@ -12,36 +12,34 @@ const getSources = state =>
 		.map(source => source.get('getIn'))
 
 function valueIncludes (value, filter) {
-	return map(filter, 'name').some(f =>
-		value.toLowerCase().includes(f.toLowerCase())
-	)
+	return value.toLowerCase().includes(filter.toLowerCase())
 }
 
 export default createImmutableSelector(
 	[getDevices, getFilter, getSort, getSources],
 	(devices, filter, sort, sources) => {
-		console.log(filter)
 		const devicesWithMutations = devices
-			.take(1)
 			.filter(
-				filter.length
-					? device =>
+				isEmpty(filter)
+					? stubTrue
+					: device =>
 						device.has('connected') &&
 							device.has('deviceId') &&
-							sources.some(field => {
-								const value = device.getIn(field.split('.'), '')
+							filter.every(({ name: query }) =>
+								sources.some(field => {
+									const value = device.getIn(field.split('.'), '')
 
-								if (isString(value)) {
-									return valueIncludes(value, filter)
-								} else if (List.isList(value)) {
-									return value.some(item =>
-										isString(item) ? valueIncludes(item, filter) : false
-									)
-								} else {
-									return false
-								}
-							})
-					: stubTrue
+									if (isString(value)) {
+										return valueIncludes(value, query)
+									} else if (List.isList(value)) {
+										return value.some(item =>
+											isString(item) ? valueIncludes(item, query) : false
+										)
+									} else {
+										return false
+									}
+								})
+							)
 			)
 			.sortBy(device => device.getIn(sort.get('field').split('.'), ''))
 
