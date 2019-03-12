@@ -131,22 +131,19 @@ class DeviceList extends PureComponent {
 
 								{this.props.deviceSources
 									.filter(deviceSource => deviceSource.get('entryInTable'))
-									.map(column => {
-										return (
-											<TableHead
-												key={toReactKey(column.get('headerName'))}
-												onSort={partial(this.onSort, column.get('headerName'))}
-												sortable={column.get('sortable')}
-												ascending={this.props.sort.get('ascending')}
-												sorted={
-													this.props.sort.get('field') ===
-													column.get('headerName')
-												}
-												headerName={column.get('headerName')}
-												columnWidth={column.get('columnWidth')}
-											/>
-										)
-									})
+									.map(column => (
+										<TableHead
+											key={toReactKey(column.get('getIn'))}
+											onSort={partial(this.onSort, column.get('getIn'))}
+											sortable={column.get('sortable')}
+											ascending={this.props.sort.get('ascending')}
+											sorted={
+												this.props.sort.get('field') === column.get('getIn')
+											}
+											headerName={column.get('headerName')}
+											columnWidth={column.get('columnWidth')}
+										/>
+									))
 									.valueSeq()}
 							</tr>
 						</thead>
