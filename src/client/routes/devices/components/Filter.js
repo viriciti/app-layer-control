@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react'
 import ReactTags from 'react-tag-autocomplete'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
+import { noop } from 'lodash'
 
 import { applyFilter } from '/store/globalReducers/ui'
 
+// Array.splice without mutating source array
 const splice = (source, index) =>
 	source.slice(0, index).concat(source.slice(index + 1))
 
@@ -15,7 +17,7 @@ function Tag ({ classNames, onDelete, tag }) {
 			<button
 				className="react-tags__selected-tag-button"
 				onClick={onDelete}
-				title="Remove this tag"
+				title="Remove this query"
 			>
 				<span className="fas fa-times fa-fw" />
 			</button>
@@ -26,7 +28,7 @@ function Tag ({ classNames, onDelete, tag }) {
 function Filter ({ applyFilter, lastQuery }) {
 	const [tags, setTags] = useState(lastQuery)
 
-	const addTag    = tag => setTags(tags.concat(tag))
+	const addTag    = tag => (tags.length < 5 ? setTags(tags.concat(tag)) : noop)
 	const deleteTag = tag => setTags(splice(tags, tag))
 
 	useEffect(() => {
