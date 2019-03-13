@@ -35,7 +35,7 @@ export default createImmutableSelector(
 							return false
 						}
 					})
-				  )
+				  ) // eslint-disable-line no-mixed-spaces-and-tabs
 		const devicesWithMutations = devices
 			.filter(
 				device =>
