@@ -18,28 +18,30 @@ function valueIncludes (value, filter) {
 export default createImmutableSelector(
 	[getDevices, getFilter, getSort, getSources],
 	(devices, filter, sort, sources) => {
+		const containsEveryFilter = device =>
+			isEmpty(filter)
+				? stubTrue
+				: filter.every(({ name: query }) =>
+					sources.some(field => {
+						const value = device.getIn(field.split('.'), '')
+
+						if (isString(value)) {
+							return valueIncludes(value, query)
+						} else if (List.isList(value)) {
+							return value.some(item =>
+								isString(item) ? valueIncludes(item, query) : false
+							)
+						} else {
+							return false
+						}
+					})
+				  )
 		const devicesWithMutations = devices
 			.filter(
-				isEmpty(filter)
-					? stubTrue
-					: device =>
-						device.has('connected') &&
-							device.has('deviceId') &&
-							filter.every(({ name: query }) =>
-								sources.some(field => {
-									const value = device.getIn(field.split('.'), '')
-
-									if (isString(value)) {
-										return valueIncludes(value, query)
-									} else if (List.isList(value)) {
-										return value.some(item =>
-											isString(item) ? valueIncludes(item, query) : false
-										)
-									} else {
-										return false
-									}
-								})
-							)
+				device =>
+					device.has('connected') &&
+					device.has('deviceId') &&
+					containsEveryFilter(device)
 			)
 			.sortBy(device => device.getIn(sort.get('field').split('.'), ''))
 
