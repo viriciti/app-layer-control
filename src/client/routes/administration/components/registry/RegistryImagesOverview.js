@@ -19,7 +19,9 @@ const RegistryImage = ({ name, image, onRemoveImage, isRemovingAny }) => {
 		<tr>
 			<td>{name}</td>
 			{image.get('access') ? (
-				<td title={image.get('versions').toArray()}>{image.get('versions').size} available versions</td>
+				<td title={image.get('versions').toArray()}>
+					{image.get('versions').size} available versions
+				</td>
 			) : (
 				<td className="text-muted">
 					<span className="fas fa-user-lock fa-fw mr-2" />
@@ -59,7 +61,9 @@ class RegistryImagesOverview extends PureComponent {
 
 	withRegistryUrl = repository => {
 		const configuredHost = this.state.configuredHost
-		const registryUrl    = configuredHost.endsWith('/') ? configuredHost : configuredHost.concat('/')
+		const registryUrl    = configuredHost.endsWith('/')
+			? configuredHost
+			: configuredHost.concat('/')
 
 		return `${registryUrl}${repository}`
 	}
@@ -107,7 +111,10 @@ class RegistryImagesOverview extends PureComponent {
 							<div className="loader" />
 						) : (
 							<Fragment>
-								<RegistryImageForm imageNames={this.props.allowedImages} onSubmit={this.onAddImage} />
+								<RegistryImageForm
+									imageNames={this.props.allowedImages}
+									onSubmit={this.onAddImage}
+								/>
 
 								{this.props.allowedImages.size ? (
 									<div className="table-responsive">
@@ -125,8 +132,14 @@ class RegistryImagesOverview extends PureComponent {
 														<RegistryImage
 															key={name}
 															name={this.withRegistryUrl(name)}
-															image={this.props.registryImages.get(this.withRegistryUrl(name), Map())}
-															onRemoveImage={partial(this.onRemoveImage, { name, image: this.withRegistryUrl(name) })}
+															image={this.props.registryImages.get(
+																this.withRegistryUrl(name),
+																Map()
+															)}
+															onRemoveImage={partial(this.onRemoveImage, {
+																name,
+																image: this.withRegistryUrl(name),
+															})}
 															isRemovingAny={this.props.isRemovingRegistryImage}
 														/>
 													)
@@ -135,7 +148,9 @@ class RegistryImagesOverview extends PureComponent {
 										</table>
 									</div>
 								) : (
-									<div className="card-message">No registry images available, try to fetch versions first</div>
+									<div className="card-message">
+										No registry images available, try to fetch versions first
+									</div>
 								)}
 							</Fragment>
 						)}
@@ -157,5 +172,10 @@ export default connect(
 			isRefreshingRegistry:    getAsyncState('isRefreshingRegistry')(state),
 		}
 	},
-	{ fetchRegistry, asyncRefreshRegistry, asyncRemoveRegistryImage, asyncAddRegistryImage }
+	{
+		fetchRegistry,
+		asyncRefreshRegistry,
+		asyncRemoveRegistryImage,
+		asyncAddRegistryImage,
+	}
 )(RegistryImagesOverview)
