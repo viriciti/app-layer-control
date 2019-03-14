@@ -39,7 +39,7 @@ function Filter ({ applyFilter, lastQuery }) {
 		<div className="card-controls p-0 mb-3">
 			<div
 				className={classNames('filter-input-group', {
-					'filter-input-group--empty': tags.length === 0,
+					'filter-input-group--empty': !tags.length,
 				})}
 			>
 				<span className="fas fa-search" />
