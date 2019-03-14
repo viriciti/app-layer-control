@@ -1,10 +1,11 @@
 import { List, fromJS } from 'immutable'
+import { map } from 'lodash'
 
 import { ALLOWED_IMAGES } from './actions'
 
 const ACTION_HANDLERS = {
 	[ALLOWED_IMAGES]: (_, action) => {
-		return List(fromJS(action.payload))
+		return fromJS(map(action.payload, 'name'))
 	},
 }
 
