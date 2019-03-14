@@ -12,7 +12,7 @@ const getSources = state =>
 		.map(source => source.get('getIn'))
 
 function valueIncludes (value, filter) {
-	return value.includes(filter)
+	return value.toLowerCase().includes(filter.toLowerCase())
 }
 
 export default createImmutableSelector(

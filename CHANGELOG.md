@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 ### Changed
 - Replace existing single real-time filtering with multiple queries.
-- Querying is now case-sensitive, rather than case-insensitive.
 
 ## 4.10.2
 ### Fixed
