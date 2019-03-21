@@ -104,7 +104,7 @@ class DeviceList extends PureComponent {
 					<table className="table table-hover table--fixed">
 						<thead>
 							<tr>
-								<th className="align-middle" style={{ width: 15 }}>
+								<th className="align-middle" style={{ width: 25 }}>
 									<div className="custom-control custom-checkbox">
 										<input
 											className="custom-control-input"
@@ -117,9 +117,12 @@ class DeviceList extends PureComponent {
 												)
 											}
 											checked={
-												this.props.multiSelectedDevices.size ===
-												this.props.devices.size
+												!this.props.devices.size
+													? false
+													: this.props.multiSelectedDevices.size ===
+													  this.props.devices.size
 											}
+											disabled={!this.props.devices.size}
 										/>
 
 										<label

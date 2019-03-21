@@ -56,21 +56,11 @@
 
 .table-faded {
 	&,
-	&:hover,
-	&:focus,
-	&:active,
-	*::before,
-	*::after {
+	tr,
+	td {
 		background-color: darken(#fff, 3%);
-	}
 
-	&,
-	*::before,
-	*::after {
-		&,
-		&:hover,
-		&:focus,
-		&:active {
+		> span {
 			color: darken(#fff, 25%);
 		}
 	}
