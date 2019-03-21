@@ -7,6 +7,7 @@ import { noop } from 'lodash'
 import { applyFilter } from '/store/globalReducers/ui'
 
 // Array.splice without mutating source array
+// lodash#without does not support indexes
 const splice = (source, index) =>
 	source.slice(0, index).concat(source.slice(index + 1))
 
