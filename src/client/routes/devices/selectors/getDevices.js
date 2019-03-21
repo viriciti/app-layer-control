@@ -22,12 +22,23 @@ export default createImmutableSelector(
 			isEmpty(filter)
 				? stubTrue
 				: filter.every(({ name: query }) =>
+				// Even though every tag must be
+				// present in the device's state,
+				// it is not required for a single tag
+				// to be present in every filterable field.
 					sources.some(field => {
 						const value = device.getIn(field.split('.'), '')
 
 						if (isString(value)) {
+							// Handle fields whose value is a string
 							return valueIncludes(value, query)
 						} else if (List.isList(value)) {
+							// Handle fields whose value is a List
+							// If any of the values match the tag,
+							// the device is included in the search.
+							//
+							// Currently supports Lists with string values
+							// List[Map], List[List] and such are not suppported
 							return value.some(item =>
 								isString(item) ? valueIncludes(item, query) : false
 							)
@@ -36,7 +47,8 @@ export default createImmutableSelector(
 						}
 					})
 				  ) // eslint-disable-line no-mixed-spaces-and-tabs
-		const devicesWithMutations = devices
+
+		devices = devices
 			.filter(
 				device =>
 					device.has('connected') &&
@@ -45,8 +57,6 @@ export default createImmutableSelector(
 			)
 			.sortBy(device => device.getIn(sort.get('field').split('.'), ''))
 
-		return sort.get('ascending')
-			? devicesWithMutations
-			: devicesWithMutations.reverse()
+		return sort.get('ascending') ? devices : devices.reverse()
 	}
 )
