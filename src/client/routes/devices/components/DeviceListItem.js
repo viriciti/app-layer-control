@@ -8,7 +8,7 @@ import formats from '/routes/devices/components/table/formats'
 import { selectDevice, multiSelectDevice } from '/routes/devices/actions'
 import toReactKey from '/utils/toReactKey'
 
-const Clipboard = value => {
+const Clipboard = ({ value }) => {
 	const ref    = useRef()
 	const onCopy = event => {
 		const $element = $(ref.current)
