@@ -29,8 +29,9 @@ function Tag ({ classNames, onDelete, tag }) {
 function Filter ({ applyFilter, lastQuery }) {
 	const [tags, setTags] = useState(lastQuery)
 
-	const addTag    = tag => (tags.length < 5 ? setTags(tags.concat(tag)) : noop)
-	const deleteTag = tag => setTags(splice(tags, tag))
+	const addTag     = tag => (tags.length < 5 ? setTags(tags.concat(tag)) : noop)
+	const deleteTag  = tag => setTags(splice(tags, tag))
+	const previewTag = tag => applyFilter(tags.concat({ name: tag }))
 
 	useEffect(() => {
 		applyFilter(tags)
@@ -49,6 +50,7 @@ function Filter ({ applyFilter, lastQuery }) {
 					allowNew
 					handleAddition={addTag}
 					handleDelete={deleteTag}
+					handleInputChange={previewTag}
 					placeholder="Search for devices ..."
 					tagComponent={Tag}
 					tags={tags}
