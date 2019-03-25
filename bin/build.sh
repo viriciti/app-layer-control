@@ -16,12 +16,20 @@ fi
 cd $DIRECTORY
 
 VERSION="$(jq '.version' ${PKG} | cut -d'"' -f2)"
+read -p "Build App Layer Control v${VERSION}? [y/N] " CONTINUE
+if [[ ! $CONTINUE =~ ^[y|Y]$ ]]; then
+    echo -e "\e[33m×\e[0m Not building"
+    exit 0
+fi
+
 echo "Building viriciti/app-layer-control:${VERSION} ..."
 docker build -t viriciti/app-layer-control:${VERSION} .
 
 read -p "Push image to Docker Hub? [y/N] " PUSH
 if [[ ! $PUSH =~ ^[y|Y]$ ]]; then
-    echo "Not pushing"
-else
-    docker push viriciti/app-layer-control:${VERSION}
+    echo -e "\e[33m×\e[0m Not pushing"
+    exit 0
 fi
+
+docker push viriciti/app-layer-control:${VERSION}
+echo -e "\e[32m✓ Pushed ${VERSION} to the Docker Registry\e[0m"
