@@ -171,9 +171,9 @@ class DeviceList extends PureComponent {
 						</tbody>
 					</table>
 
-					{this.props.filter && !this.props.devices.size ? (
+					{this.props.filter.size && !this.props.devices.size ? (
 						<h6 className="text-center text-secondary my-5">
-							No devices were found with this search query
+							No devices were found with these search queries
 						</h6>
 					) : !this.props.devices.size ? (
 						<h6 className="text-center text-secondary my-5">
@@ -297,7 +297,7 @@ export default connect(
 			multiSelectedAction:   state.getIn(['multiSelect', 'action']),
 			deviceSources:         state.get('deviceSources'),
 			configurations:        state.get('configurations'),
-			filter:                state.getIn(['ui', 'filter']),
+			filter:                state.getIn(['ui', 'filter'], []),
 			sort:                  state.getIn(['ui', 'sort']),
 			isStoringMultiGroups:  getAsyncState('isStoringMultiGroups')(state),
 			isRemovingMultiGroups: getAsyncState('isRemovingMultiGroups')(state),
