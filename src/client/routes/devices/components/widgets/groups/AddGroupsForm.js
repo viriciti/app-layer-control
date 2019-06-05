@@ -14,8 +14,14 @@ class AddGroupsForm extends PureComponent {
 	}
 
 	getSupport () {
-		const dmVersion      = this.props.selectedDevice.getIn(['systemInfo', 'dmVersion'])
-		const appVersion     = this.props.selectedDevice.getIn(['systemInfo', 'appVersion'])
+		const dmVersion      = this.props.selectedDevice.getIn([
+			'systemInfo',
+			'dmVersion',
+		])
+		const appVersion     = this.props.selectedDevice.getIn([
+			'systemInfo',
+			'appVersion',
+		])
 		const version        = defaultTo(appVersion, dmVersion)
 		const supportedSince = '1.18.0'
 
@@ -60,14 +66,21 @@ class AddGroupsForm extends PureComponent {
 			return
 		}
 
-		this.props.asyncStoreGroups(this.props.selectedDevice.get('deviceId'), this.state.selectedGroups)
+		this.props.asyncStoreGroups(
+			this.props.selectedDevice.get('deviceId'),
+			this.state.selectedGroups
+		)
 		this.setState({ selectedGroups: [] })
 	}
 
 	renderSelectedGroups = () => {
 		return this.state.selectedGroups.map(group => {
 			return (
-				<span className="label d-inline-block m-1" style={{ border: '2px solid', borderRadius: '20px' }} key={group}>
+				<span
+					className="label d-inline-block m-1"
+					style={{ border: '2px solid', borderRadius: '20px' }}
+					key={group}
+				>
 					{group}
 					<span
 						className="fas fa-minus-circle font-size-sm pl-2"
@@ -116,7 +129,9 @@ class AddGroupsForm extends PureComponent {
 					<div className="col-12">
 						<form>
 							<div className="form-group">
-								<label htmlFor="groups">Insert the groups from low to high priority</label>
+								<label htmlFor="groups">
+									Insert the groups from low to high priority
+								</label>
 								<select
 									disabled={this.props.groups.length === 0}
 									className="form-control"
@@ -143,7 +158,8 @@ class AddGroupsForm extends PureComponent {
 									title={`Supported since ${supportedSince}, currently running ${current}`}
 								>
 									<span className="fas fa-exclamation-circle pr-2" />
-									This version of the agent does not support updating groups (since: {supportedSince}, currently: {current})
+									Agent does not support updating groups (since:{' '}
+									{supportedSince}, currently: {current})
 								</p>
 							)}
 						</form>
@@ -161,7 +177,10 @@ export default connect(
 		return {
 			selectedDevice,
 			groups:          state.get('groups'),
-			isStoringGroups: getAsyncState(['isStoringGroups', selectedDevice.get('deviceId')])(state),
+			isStoringGroups: getAsyncState([
+				'isStoringGroups',
+				selectedDevice.get('deviceId'),
+			])(state),
 		}
 	},
 	{ asyncStoreGroups }
