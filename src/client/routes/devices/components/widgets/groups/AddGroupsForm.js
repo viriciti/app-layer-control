@@ -16,7 +16,7 @@ class AddGroupsForm extends PureComponent {
 	getSupport () {
 		const dmVersion      = this.props.selectedDevice.getIn(['systemInfo', 'dmVersion'])
 		const appVersion     = this.props.selectedDevice.getIn(['systemInfo', 'appVersion'])
-		const version        = defaultTo(dmVersion, appVersion)
+		const version        = defaultTo(appVersion, dmVersion)
 		const supportedSince = '1.18.0'
 
 		if (!version) {
@@ -143,7 +143,7 @@ class AddGroupsForm extends PureComponent {
 									title={`Supported since ${supportedSince}, currently running ${current}`}
 								>
 									<span className="fas fa-exclamation-circle pr-2" />
-									Updating groups for this version is not supported
+									This version of the agent does not support updating groups (since: {supportedSince}, currently: {current})
 								</p>
 							)}
 						</form>
