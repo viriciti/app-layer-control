@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
-import { List, Map } from 'immutable'
+import { fromJS, List, Map } from 'immutable'
 
 import Modal from '/components/common/Modal'
 import { asyncRefreshState, selectDevice } from '/routes/devices/actions'

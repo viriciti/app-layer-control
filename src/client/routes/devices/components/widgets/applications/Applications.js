@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
-import { Map } from 'immutable'
+import { List } from 'immutable'
 import { connect } from 'react-redux'
 import { partial, defaultTo } from 'lodash'
 
@@ -14,7 +14,8 @@ class Applications extends Component {
 
 	shouldComponentUpdate (nextProps, nextState) {
 		return (
-			this.state.selectedContainer !== nextState.selectedContainer || this.props.containers !== nextProps.containers
+			this.state.selectedContainer !== nextState.selectedContainer ||
+			this.props.containers !== nextProps.containers
 		)
 	}
 
@@ -46,7 +47,10 @@ class Applications extends Component {
 	}
 
 	renderContainerHeader (container) {
-		return `${container.get('name')} - ${container.getIn(['labels', 'group'], 'manual')}`
+		return `${container.get('name')} - ${container.getIn(
+			['labels', 'group'],
+			'manual'
+		)}`
 	}
 
 	renderFrontEndButton ({ frontEndPort, deviceIp }) {
@@ -60,13 +64,22 @@ class Applications extends Component {
 
 		if (deviceIp) {
 			return (
-				<a className={className} href={`http://${deviceIp}:${frontEndPort}`} rel="noopener noreferrer" target="_blank">
+				<a
+					className={className}
+					href={`http://${deviceIp}:${frontEndPort}`}
+					rel="noopener noreferrer"
+					target="_blank"
+				>
 					{child}
 				</a>
 			)
 		} else {
 			return (
-				<button className={className} title="Apps with a front end can only be served over VPN" disabled>
+				<button
+					className={className}
+					title="Apps with a front end can only be served over VPN"
+					disabled
+				>
 					{child}
 				</button>
 			)
@@ -85,12 +98,19 @@ class Applications extends Component {
 				<div className="row">
 					<div className="col-md-6">
 						<ul className="list-group">
-							{defaultTo(this.props.containers, Map())
-								.valueSeq()
-								.sort((previous, next) => naturalCompare(previous.get('name'), next.get('name')))
+							{defaultTo(this.props.containers, List())
+								.toList()
+								.sort((previous, next) =>
+									naturalCompare(previous.get('name'), next.get('name'))
+								)
 								.map(container => {
-									const selectedContainer = this.state.selectedContainer && this.state.selectedContainer.get('name')
-									const frontEndPort      = this.props.configurations.getIn([container.get('name'), 'frontEndPort'])
+									const selectedContainer =
+										this.state.selectedContainer &&
+										this.state.selectedContainer.get('name')
+									const frontEndPort      = this.props.configurations.getIn([
+										container.get('name'),
+										'frontEndPort',
+									])
 									const deviceIp          = this.props.selectedDevice.getIn(
 										['systemInfo', 'tun0'],
 										this.props.selectedDevice.getIn(['systemInfo', 'tun0IP'])
@@ -104,11 +124,15 @@ class Applications extends Component {
 													active: container.get('name') === selectedContainer,
 												})}
 											>
-												{this.renderContainerIcon(container.getIn(['state', 'status']))}
+												{this.renderContainerIcon(
+													container.getIn(['state', 'status'])
+												)}
 												{this.renderContainerHeader(container)}
 											</button>
 
-											{frontEndPort ? this.renderFrontEndButton({ frontEndPort, deviceIp }) : null}
+											{frontEndPort
+												? this.renderFrontEndButton({ frontEndPort, deviceIp })
+												: null}
 										</li>
 									)
 								})}
