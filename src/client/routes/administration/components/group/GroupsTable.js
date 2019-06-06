@@ -130,7 +130,6 @@ class GroupsTable extends PureComponent {
 	}
 
 	render () {
-		console.log(this.props.devicesCountPerGroup)
 		return (
 			<Fragment>
 				<div className="card mb-3">

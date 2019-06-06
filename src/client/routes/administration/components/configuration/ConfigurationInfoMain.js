@@ -1,10 +1,12 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 
+import Advice from '/components/common/Advice'
 import ConfigurationsList from './ConfigurationsList'
 import ConfigurationInfo from './ConfigurationInfo'
 import ConfigurationsForm from './ConfigurationsForm'
 import getAsyncState from '/store/selectors/getAsyncState'
+import getApplicationsWithNoDependents from '../../modules/selectors/advice/getApplicationsWithNoDependents'
 
 class ConfigurationInfoMain extends PureComponent {
 	state = {
@@ -54,7 +56,15 @@ class ConfigurationInfoMain extends PureComponent {
 		return (
 			<Fragment>
 				<div className="card mb-3">
-					<div className="card-header">Applications</div>
+					<div className="card-header">
+						Applications
+						<Advice
+							show={this.props.dependents.size}
+							message={`${
+								this.props.dependents.size
+							} application(s) are not used and can be removed`}
+						/>
+					</div>
 
 					<div className="card-controls card-controls--transparent">
 						<button
@@ -100,6 +110,7 @@ class ConfigurationInfoMain extends PureComponent {
 const mapStateToProps = state => {
 	return {
 		configurations:         state.get('configurations'),
+		dependents:             getApplicationsWithNoDependents(state),
 		isFetchingApplications: getAsyncState('isFetchingApplications')(state),
 	}
 }

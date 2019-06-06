@@ -11,12 +11,10 @@ const getApplications = state => {
 const getDependents = (groups, applications) => {
 	return applications.map(application => {
 		return groups
-			.filter(group => {
-				return group.keySeq().includes(application.get('applicationName'))
-			})
-			.map((_, group) => {
-				return group
-			})
+			.filter(group =>
+				group.keySeq().includes(application.get('applicationName'))
+			)
+			.map((_, group) => group)
 			.toList()
 	})
 }
