@@ -3,11 +3,13 @@ import { connect } from 'react-redux'
 import { Map, List } from 'immutable'
 import semver from 'semver'
 
+import Advice from '/components/common/Advice'
 import countDevicesPerGroup from '/routes/administration/modules/selectors/countDevicesPerGroup'
 import GroupsForm from './GroupsForm'
 import { asyncRemoveGroup } from '/routes/administration/modules/actions'
 import getAsyncState from '/store/selectors/getAsyncState'
 import toReactKey from '/utils/toReactKey'
+import getRemovableGroups from '../../modules/selectors/advice/getRemovableGroups'
 
 const Version = ({ name, range, effectiveVersion }) => {
 	if (effectiveVersion) {
@@ -133,11 +135,19 @@ class GroupsTable extends PureComponent {
 		return (
 			<Fragment>
 				<div className="card mb-3">
-					<div className="card-header">Groups</div>
+					<div className="card-header">
+						Groups
+						<Advice
+							size={this.props.removableGroups.size}
+							items={this.props.removableGroups}
+							message="No devices in {}. These groups can be removed"
+							replaceComma="or"
+						/>
+					</div>
 
 					<div className="card-controls card-controls--transparent">
 						<button
-							className="btn btn-light btn-sm  float-right"
+							className="btn btn-light btn-sm float-right"
 							disabled={this.props.isFetchingGroups}
 							onClick={this.onAddGroup}
 						>
@@ -256,6 +266,7 @@ export default connect(
 			registryImages:       state.get('registryImages'),
 			isFetchingGroups:     getAsyncState('isFetchingGroups')(state),
 			devicesCountPerGroup: countDevicesPerGroup(state),
+			removableGroups:      getRemovableGroups(state),
 		}
 	},
 	{ asyncRemoveGroup }

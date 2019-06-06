@@ -6,7 +6,7 @@ import ConfigurationsList from './ConfigurationsList'
 import ConfigurationInfo from './ConfigurationInfo'
 import ConfigurationsForm from './ConfigurationsForm'
 import getAsyncState from '/store/selectors/getAsyncState'
-import getApplicationsWithNoDependents from '../../modules/selectors/advice/getApplicationsWithNoDependents'
+import getRemovableApplications from '../../modules/selectors/advice/getRemovableApplications'
 
 class ConfigurationInfoMain extends PureComponent {
 	state = {
@@ -59,10 +59,9 @@ class ConfigurationInfoMain extends PureComponent {
 					<div className="card-header">
 						Applications
 						<Advice
-							show={this.props.dependents.size}
-							message={`${
-								this.props.dependents.size
-							} application(s) are not used and can be removed`}
+							size={this.props.removableApplications.size}
+							items={this.props.removableApplications}
+							message="{} are not used and can be removed"
 						/>
 					</div>
 
@@ -110,7 +109,7 @@ class ConfigurationInfoMain extends PureComponent {
 const mapStateToProps = state => {
 	return {
 		configurations:         state.get('configurations'),
-		dependents:             getApplicationsWithNoDependents(state),
+		removableApplications:  getRemovableApplications(state),
 		isFetchingApplications: getAsyncState('isFetchingApplications')(state),
 	}
 }
