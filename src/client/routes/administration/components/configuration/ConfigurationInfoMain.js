@@ -1,7 +1,6 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 
-import { fetchApplications } from '/routes/administration/modules/actions'
 import ConfigurationsList from './ConfigurationsList'
 import ConfigurationInfo from './ConfigurationInfo'
 import ConfigurationsForm from './ConfigurationsForm'
@@ -14,14 +13,15 @@ class ConfigurationInfoMain extends PureComponent {
 		selectedConfiguration: null,
 	}
 
-	componentDidMount () {
-		this.props.fetchApplications()
-	}
-
 	componentDidUpdate (prevProps) {
-		if (prevProps.configurations !== this.props.configurations && this.state.selectedConfiguration) {
+		if (
+			prevProps.configurations !== this.props.configurations &&
+			this.state.selectedConfiguration
+		) {
 			this.setState({
-				selectedConfiguration: this.props.configurations.get(this.state.selectedConfiguration.get('applicationName')),
+				selectedConfiguration: this.props.configurations.get(
+					this.state.selectedConfiguration.get('applicationName')
+				),
 			})
 		}
 	}
@@ -104,9 +104,4 @@ const mapStateToProps = state => {
 	}
 }
 
-export default connect(
-	mapStateToProps,
-	{
-		fetchApplications,
-	}
-)(ConfigurationInfoMain)
+export default connect(mapStateToProps)(ConfigurationInfoMain)

@@ -4,8 +4,11 @@ import classNames from 'classnames'
 import { partial } from 'lodash'
 
 import SourceCustomisationModal from './SourceCustomisationModal'
-import { asyncEditSource, asyncAddSource, asyncRemoveSource } from '/routes/sources/modules/actions'
-import { fetchSources } from '/routes/devices/actions'
+import {
+	asyncEditSource,
+	asyncAddSource,
+	asyncRemoveSource,
+} from '/routes/sources/modules/actions'
 import getAsyncState from '/store/selectors/getAsyncState'
 
 const StateIcon = ({ value }) => {
@@ -18,7 +21,12 @@ const StateIcon = ({ value }) => {
 
 const EditButtons = ({ visible, onEdit, onRemove, isRemovingSource }) => {
 	if (!visible) {
-		return <span className="fas fa-lock text-center text-muted d-block" title="This source cannot be edited" />
+		return (
+			<span
+				className="fas fa-lock text-center text-muted d-block"
+				title="This source cannot be edited"
+			/>
+		)
 	} else {
 		return (
 			<div className="text-center">
@@ -52,16 +60,18 @@ class SourceCustomisation extends PureComponent {
 		showEntries: 'both',
 	}
 
-	componentDidMount () {
-		this.props.fetchSources()
-	}
-
 	onRequestClose = () => {
 		this.setState({ isAdding: false, isEditing: false, editing: undefined })
 	}
 
 	onRemove = deviceSource => {
-		if (confirm(`Are you sure you want to remove source '${deviceSource.get('headerName')}'?`)) {
+		if (
+			confirm(
+				`Are you sure you want to remove source '${deviceSource.get(
+					'headerName'
+				)}'?`
+			)
+		) {
 			this.props.asyncRemoveSource(deviceSource.get('headerName'))
 		}
 	}
@@ -91,13 +101,19 @@ class SourceCustomisation extends PureComponent {
 
 		if (source.get('entryInTable') && source.get('entryInDetail')) {
 			return (
-				<span className={defaultClassName} title="This entry is visible in the table and the detail page">
+				<span
+					className={defaultClassName}
+					title="This entry is visible in the table and the detail page"
+				>
 					Table &amp; Detail
 				</span>
 			)
 		} else if (source.get('entryInTable')) {
 			return (
-				<span className={classNames(defaultClassName, 'label--info')} title="This entry is only visible in the table">
+				<span
+					className={classNames(defaultClassName, 'label--info')}
+					title="This entry is only visible in the table"
+				>
 					Table only
 				</span>
 			)
@@ -112,7 +128,10 @@ class SourceCustomisation extends PureComponent {
 			)
 		} else {
 			return (
-				<span className={classNames(defaultClassName, 'label--danger')} title="This entry is not visible">
+				<span
+					className={classNames(defaultClassName, 'label--danger')}
+					title="This entry is not visible"
+				>
 					Not visible
 				</span>
 			)
@@ -193,7 +212,12 @@ class SourceCustomisation extends PureComponent {
 								})
 								.map((deviceSource, index) => {
 									return (
-										<tr key={index} className={classNames({ inactive: !deviceSource.get('editable', true) })}>
+										<tr
+											key={index}
+											className={classNames({
+												inactive: !deviceSource.get('editable', true),
+											})}
+										>
 											<td>{deviceSource.get('headerName')}</td>
 											<td>{deviceSource.get('columnIndex')}</td>
 											<td>{deviceSource.get('getIn')}</td>
@@ -245,5 +269,5 @@ export default connect(
 			isRemovingSource: getAsyncState('isRemovingSource')(state),
 		}
 	},
-	{ fetchSources, asyncEditSource, asyncAddSource, asyncRemoveSource }
+	{ asyncEditSource, asyncAddSource, asyncRemoveSource }
 )(SourceCustomisation)

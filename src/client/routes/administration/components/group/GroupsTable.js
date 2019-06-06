@@ -3,13 +3,11 @@ import { connect } from 'react-redux'
 import { Map, List } from 'immutable'
 import semver from 'semver'
 
+import countDevicesPerGroup from '/routes/administration/modules/selectors/countDevicesPerGroup'
 import GroupsForm from './GroupsForm'
-import {
-	fetchGroups,
-	asyncRemoveGroup,
-} from '/routes/administration/modules/actions'
-import toReactKey from '/utils/toReactKey'
+import { asyncRemoveGroup } from '/routes/administration/modules/actions'
 import getAsyncState from '/store/selectors/getAsyncState'
+import toReactKey from '/utils/toReactKey'
 
 const Version = ({ name, range, effectiveVersion }) => {
 	if (effectiveVersion) {
@@ -45,16 +43,44 @@ const LockedVersion = ({ name, version }) => (
 	</li>
 )
 
+const DeleteGroup = ({ devicesInGroup, onDelete, deleting }) => {
+	if (devicesInGroup === 0) {
+		return (
+			<button
+				disabled={deleting}
+				className="btn btn--text btn--icon"
+				onClick={onDelete}
+			>
+				<span
+					className="fas fa-trash"
+					data-toggle="tooltip"
+					title="Delete group"
+				/>
+			</button>
+		)
+	} else {
+		return (
+			<button
+				className="btn btn--text btn--icon btn--disabled text-muted"
+				disabled
+				onClick={onDelete}
+			>
+				<span
+					className="fas fa-trash"
+					data-toggle="tooltip"
+					title={`${devicesInGroup} device(s) are in this group`}
+				/>
+			</button>
+		)
+	}
+}
+
 class GroupsTable extends PureComponent {
 	state = {
 		isAdding:  false,
 		isEditing: false,
 		editing:   null,
 		deleting:  false,
-	}
-
-	componentDidMount () {
-		this.props.fetchGroups()
 	}
 
 	getRepositoryVersions (repository) {
@@ -104,6 +130,7 @@ class GroupsTable extends PureComponent {
 	}
 
 	render () {
+		console.log(this.props.devicesCountPerGroup)
 		return (
 			<Fragment>
 				<div className="card mb-3">
@@ -185,17 +212,17 @@ class GroupsTable extends PureComponent {
 															</button>
 
 															{label !== 'default' ? (
-																<button
-																	disabled={this.state.deleting}
-																	className="btn btn--text btn--icon"
-																	onClick={this.onRemoveGroup.bind(this, label)}
-																>
-																	<span
-																		className="fas fa-trash"
-																		data-toggle="tooltip"
-																		title="Delete group"
-																	/>
-																</button>
+																<DeleteGroup
+																	devicesInGroup={this.props.devicesCountPerGroup.get(
+																		label,
+																		0
+																	)}
+																	deleting={this.state.deleting}
+																	onDelete={this.onRemoveGroup.bind(
+																		this,
+																		label
+																	)}
+																/>
 															) : null}
 														</td>
 													</tr>
@@ -225,11 +252,12 @@ class GroupsTable extends PureComponent {
 export default connect(
 	state => {
 		return {
-			groups:           state.get('groups'),
-			configurations:   state.get('configurations', Map()),
-			registryImages:   state.get('registryImages'),
-			isFetchingGroups: getAsyncState('isFetchingGroups')(state),
+			groups:               state.get('groups'),
+			configurations:       state.get('configurations', Map()),
+			registryImages:       state.get('registryImages'),
+			isFetchingGroups:     getAsyncState('isFetchingGroups')(state),
+			devicesCountPerGroup: countDevicesPerGroup(state),
 		}
 	},
-	{ fetchGroups, asyncRemoveGroup }
+	{ asyncRemoveGroup }
 )(GroupsTable)

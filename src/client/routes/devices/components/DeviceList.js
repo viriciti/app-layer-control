@@ -24,14 +24,8 @@ import {
 	asyncMultiRemoveGroup,
 	paginateTo,
 	resetPagination,
-	fetchDevices,
-	fetchSources,
 } from '/routes/devices/actions'
 import { applySort } from '/store/globalReducers/ui'
-import {
-	fetchGroups,
-	fetchApplications,
-} from '/routes/administration/modules/actions'
 import toReactKey from '/utils/toReactKey'
 import getAsyncState from '/store/selectors/getAsyncState'
 
@@ -41,13 +35,6 @@ class DeviceList extends PureComponent {
 			field: 'deviceId',
 			asc:   true,
 		},
-	}
-
-	componentDidMount () {
-		this.props.fetchDevices()
-		this.props.fetchSources()
-		this.props.fetchGroups()
-		this.props.fetchApplications()
 	}
 
 	onSort = field => {
@@ -319,9 +306,5 @@ export default connect(
 		asyncMultiRemoveGroup,
 		paginateTo,
 		resetPagination,
-		fetchDevices,
-		fetchSources,
-		fetchGroups,
-		fetchApplications,
 	}
 )(DeviceList)

@@ -7,7 +7,6 @@ import { partial } from 'lodash'
 import AsyncButton from '/components/common/AsyncButton'
 import RegistryImageForm from './RegistryImageForm'
 import {
-	fetchRegistry,
 	asyncRefreshRegistry,
 	asyncRemoveRegistryImage,
 	asyncAddRegistryImage,
@@ -53,10 +52,6 @@ class RegistryImagesOverview extends PureComponent {
 		const { data } = await axios.get('/api/versioning')
 
 		this.setState({ configuredHost: data.data.host })
-	}
-
-	componentDidMount () {
-		this.props.fetchRegistry()
 	}
 
 	withRegistryUrl = repository => {
@@ -173,7 +168,6 @@ export default connect(
 		}
 	},
 	{
-		fetchRegistry,
 		asyncRefreshRegistry,
 		asyncRemoveRegistryImage,
 		asyncAddRegistryImage,
