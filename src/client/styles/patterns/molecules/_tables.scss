@@ -1,5 +1,9 @@
 .table--fixed {
-	table-layout: fixed;
+	table-layout: auto;
+
+	@include media-breakpoint-up(xl) {
+		table-layout: fixed;
+	}
 }
 
 .th {
