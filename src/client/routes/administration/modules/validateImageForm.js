@@ -10,7 +10,7 @@ export default (values, props) => {
 	} else if (props.imageNames.includes(values.name)) {
 		errors.name = 'This repository is already added'
 	} else if (!isRepository(values.name)) {
-		errors.name = 'This is not a valid repository'
+		errors.name = 'This is not a repository name'
 	}
 
 	return errors
