@@ -7,7 +7,9 @@ export default function Advice ({
 	message,
 	replaceComma = 'and',
 }) {
-	if (!forceHide && size) {
+	if (forceHide || !size) {
+		return null
+	} else {
 		return (
 			<div className="float-right card-header__advice">
 				<span
@@ -27,7 +29,5 @@ export default function Advice ({
 				</span>
 			</div>
 		)
-	} else {
-		return null
 	}
 }
