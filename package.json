@@ -8,7 +8,8 @@
 		"build": "npm run build:frontend && npm run build:backend",
 		"build:backend": "coffee --output dist/server --compile src/server && coffee --output dist/config --compile config",
 		"build:frontend": "NODE_ENV=production parcel build --out-dir dist/client src/client/index.html",
-		"start": "nodemon src/server/main.coffee"
+		"start": "nodemon src/server/main.coffee",
+		"release": "bin/build.sh"
 	},
 	"license": "GPL-3.0",
 	"repository": {
