@@ -1,18 +1,15 @@
 {
 	"name": "app-layer-control",
-<<<<<<< HEAD
-	"version": "4.11.3",
-=======
-	"version": "4.12.0",
->>>>>>> release/4.12.0
+	"version": "4.12.1",
 	"scripts": {
-		"test": "mocha",
+		"test": "mocha",,
 		"test:watch": "NODE_ENV=test mocha --watch-extensions coffee --watch",
 		"develop": "nodemon src/server/main.coffee",
 		"build": "npm run build:frontend && npm run build:backend",
 		"build:backend": "coffee --output dist/server --compile src/server && coffee --output dist/config --compile config",
 		"build:frontend": "NODE_ENV=production parcel build --out-dir dist/client src/client/index.html",
-		"start": "nodemon src/server/main.coffee"
+		"start": "nodemon src/server/main.coffee",
+		"release": "bin/build.sh"
 	},
 	"license": "GPL-3.0",
 	"repository": {

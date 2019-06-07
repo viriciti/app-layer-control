@@ -24,8 +24,8 @@ export default function Advice ({
 							: size
 					)}
 				>
-					<small>{items ? items.size : size} pending action(s)</small>
-					<span className="fas fa-hand-holding ml-1" />
+					<small>{items ? items.size : size} manual action(s)</small>
+					<span className="far fa-hourglass ml-2" />
 				</span>
 			</div>
 		)

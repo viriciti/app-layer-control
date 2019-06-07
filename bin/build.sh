@@ -16,8 +16,9 @@ fi
 cd $DIRECTORY
 
 VERSION="$(jq '.version' ${PKG} | cut -d'"' -f2)"
-read -p "Build App Layer Control v${VERSION}? [y/N] " CONTINUE
-if [[ ! $CONTINUE =~ ^[y|Y]$ ]]; then
+read -p "Build App Layer Control v${VERSION}? [Y/n] " CONTINUE
+CONTINUE=${CONTINUE:Y}
+if [[ $CONTINUE =~ ^[y|Y]$ ]]; then
     echo -e "\e[33m×\e[0m Not building"
     exit 0
 fi
