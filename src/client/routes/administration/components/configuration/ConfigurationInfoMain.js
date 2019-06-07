@@ -59,6 +59,7 @@ class ConfigurationInfoMain extends PureComponent {
 					<div className="card-header">
 						Applications
 						<Advice
+							forceHide={this.props.isFetchingApplications}
 							size={this.props.removableApplications.size}
 							items={this.props.removableApplications}
 							message="{} are not used and can be removed"

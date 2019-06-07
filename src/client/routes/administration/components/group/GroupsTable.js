@@ -138,6 +138,7 @@ class GroupsTable extends PureComponent {
 					<div className="card-header">
 						Groups
 						<Advice
+							forceHide={this.props.isFetchingGroups}
 							size={this.props.removableGroups.size}
 							items={this.props.removableGroups}
 							message="No devices in {}. These groups can be removed"

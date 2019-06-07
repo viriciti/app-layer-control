@@ -1,7 +1,13 @@
 import React from 'react'
 
-export default function Advice ({ size, items, message, replaceComma = 'and' }) {
-	if (size) {
+export default function Advice ({
+	forceHide = false,
+	size,
+	items,
+	message,
+	replaceComma = 'and',
+}) {
+	if (!forceHide && size) {
 		return (
 			<div className="float-right card-header__advice">
 				<span
@@ -16,7 +22,8 @@ export default function Advice ({ size, items, message, replaceComma = 'and' }) 
 							: size
 					)}
 				>
-					<span className="fas fa-hand-holding fa-fw" />
+					<small>{items ? items.size : size} pending action(s)</small>
+					<span className="fas fa-hand-holding ml-1" />
 				</span>
 			</div>
 		)
