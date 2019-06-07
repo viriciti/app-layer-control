@@ -13,12 +13,10 @@ store  = new Store
 
 getDependents = (groups, applicationName) ->
 	groups
-		.entrySeq()
-		.filter ([_, applications]) ->
-			applicationName in applications.keySeq().toArray()
-		.map ([name]) ->
-			name
-		.toArray()
+		.filter (group) ->
+			applicationName in Object.keys group.applications
+		.map ({ label }) ->
+			label
 
 isRegistryImageDependentOn = (image, configurations) ->
 	configurations
@@ -75,7 +73,7 @@ router.delete "/application/:name", ({ app, params }, res, next) ->
 	{ name }            = params
 
 	try
-		groups     = await db.Group.find().immutable()
+		groups     = await db.Group.find()
 		dependents = getDependents groups, name
 
 		if dependents.length

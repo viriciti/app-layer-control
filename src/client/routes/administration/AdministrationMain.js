@@ -11,14 +11,16 @@ const AdministrationMain = () => {
 				<i className="dashboard-header__icon fas fa-user-tie" />
 				<div className="dashboard-header__titles-container">
 					<h1 className="dashboard-header__title">Administration</h1>
-					<h2 className="dashboard-header__subtitle">Handle administration for your devices</h2>
+					<h2 className="dashboard-header__subtitle">
+						Handle administration for your devices
+					</h2>
 				</div>
 			</header>
 			<div className="row flex flex-grow">
-				<div className="col-6">
+				<div className="col-xl-6">
 					<ConfigurationInfoMain />
 				</div>
-				<div className="col-6">
+				<div className="col-xl-6">
 					<GroupsTable />
 				</div>
 			</div>

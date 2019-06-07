@@ -1,6 +1,10 @@
 {
 	"name": "app-layer-control",
+<<<<<<< HEAD
 	"version": "4.11.3",
+=======
+	"version": "4.12.0",
+>>>>>>> release/4.12.0
 	"scripts": {
 		"test": "mocha",
 		"test:watch": "NODE_ENV=test mocha --watch-extensions coffee --watch",

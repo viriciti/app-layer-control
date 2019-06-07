@@ -36,7 +36,7 @@ export function asyncRemoveApplication (name) {
 			await axios.delete(`/api/v1/administration/application/${name}`)
 			toast.success('Application deleted')
 		} catch ({ response }) {
-			toast.success(response.data.message)
+			toast.error(response.data.message)
 		} finally {
 			dispatch(setAsyncState('isRemovingApplication', false))
 		}

@@ -3,13 +3,13 @@ import { connect } from 'react-redux'
 import { Map, List } from 'immutable'
 import semver from 'semver'
 
+import Advice from '/components/common/Advice'
+import countDevicesPerGroup from '/routes/administration/modules/selectors/countDevicesPerGroup'
 import GroupsForm from './GroupsForm'
-import {
-	fetchGroups,
-	asyncRemoveGroup,
-} from '/routes/administration/modules/actions'
-import toReactKey from '/utils/toReactKey'
+import { asyncRemoveGroup } from '/routes/administration/modules/actions'
 import getAsyncState from '/store/selectors/getAsyncState'
+import toReactKey from '/utils/toReactKey'
+import getRemovableGroups from '../../modules/selectors/advice/getRemovableGroups'
 
 const Version = ({ name, range, effectiveVersion }) => {
 	if (effectiveVersion) {
@@ -45,16 +45,44 @@ const LockedVersion = ({ name, version }) => (
 	</li>
 )
 
+const DeleteGroup = ({ devicesInGroup, onDelete, deleting }) => {
+	if (devicesInGroup === 0) {
+		return (
+			<button
+				disabled={deleting}
+				className="btn btn--text btn--icon"
+				onClick={onDelete}
+			>
+				<span
+					className="fas fa-trash"
+					data-toggle="tooltip"
+					title="Delete group"
+				/>
+			</button>
+		)
+	} else {
+		return (
+			<button
+				className="btn btn--text btn--icon btn--disabled text-muted"
+				disabled
+				onClick={onDelete}
+			>
+				<span
+					className="fas fa-trash"
+					data-toggle="tooltip"
+					title={`${devicesInGroup} device(s) are in this group`}
+				/>
+			</button>
+		)
+	}
+}
+
 class GroupsTable extends PureComponent {
 	state = {
 		isAdding:  false,
 		isEditing: false,
 		editing:   null,
 		deleting:  false,
-	}
-
-	componentDidMount () {
-		this.props.fetchGroups()
 	}
 
 	getRepositoryVersions (repository) {
@@ -107,11 +135,20 @@ class GroupsTable extends PureComponent {
 		return (
 			<Fragment>
 				<div className="card mb-3">
-					<div className="card-header">Groups</div>
+					<div className="card-header">
+						Groups
+						<Advice
+							forceHide={this.props.isFetchingGroups}
+							size={this.props.removableGroups.size}
+							items={this.props.removableGroups}
+							message="No devices in {}. These groups can be removed"
+							replaceComma="or"
+						/>
+					</div>
 
 					<div className="card-controls card-controls--transparent">
 						<button
-							className="btn btn-light btn-sm  float-right"
+							className="btn btn-light btn-sm float-right"
 							disabled={this.props.isFetchingGroups}
 							onClick={this.onAddGroup}
 						>
@@ -185,17 +222,17 @@ class GroupsTable extends PureComponent {
 															</button>
 
 															{label !== 'default' ? (
-																<button
-																	disabled={this.state.deleting}
-																	className="btn btn--text btn--icon"
-																	onClick={this.onRemoveGroup.bind(this, label)}
-																>
-																	<span
-																		className="fas fa-trash"
-																		data-toggle="tooltip"
-																		title="Delete group"
-																	/>
-																</button>
+																<DeleteGroup
+																	devicesInGroup={this.props.devicesCountPerGroup.get(
+																		label,
+																		0
+																	)}
+																	deleting={this.state.deleting}
+																	onDelete={this.onRemoveGroup.bind(
+																		this,
+																		label
+																	)}
+																/>
 															) : null}
 														</td>
 													</tr>
@@ -225,11 +262,13 @@ class GroupsTable extends PureComponent {
 export default connect(
 	state => {
 		return {
-			groups:           state.get('groups'),
-			configurations:   state.get('configurations', Map()),
-			registryImages:   state.get('registryImages'),
-			isFetchingGroups: getAsyncState('isFetchingGroups')(state),
+			groups:               state.get('groups'),
+			configurations:       state.get('configurations', Map()),
+			registryImages:       state.get('registryImages'),
+			isFetchingGroups:     getAsyncState('isFetchingGroups')(state),
+			devicesCountPerGroup: countDevicesPerGroup(state),
+			removableGroups:      getRemovableGroups(state),
 		}
 	},
-	{ fetchGroups, asyncRemoveGroup }
+	{ asyncRemoveGroup }
 )(GroupsTable)

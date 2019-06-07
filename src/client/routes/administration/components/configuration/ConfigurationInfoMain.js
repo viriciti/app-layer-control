@@ -1,11 +1,12 @@
 import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 
-import { fetchApplications } from '/routes/administration/modules/actions'
+import Advice from '/components/common/Advice'
 import ConfigurationsList from './ConfigurationsList'
 import ConfigurationInfo from './ConfigurationInfo'
 import ConfigurationsForm from './ConfigurationsForm'
 import getAsyncState from '/store/selectors/getAsyncState'
+import getRemovableApplications from '../../modules/selectors/advice/getRemovableApplications'
 
 class ConfigurationInfoMain extends PureComponent {
 	state = {
@@ -14,14 +15,15 @@ class ConfigurationInfoMain extends PureComponent {
 		selectedConfiguration: null,
 	}
 
-	componentDidMount () {
-		this.props.fetchApplications()
-	}
-
 	componentDidUpdate (prevProps) {
-		if (prevProps.configurations !== this.props.configurations && this.state.selectedConfiguration) {
+		if (
+			prevProps.configurations !== this.props.configurations &&
+			this.state.selectedConfiguration
+		) {
 			this.setState({
-				selectedConfiguration: this.props.configurations.get(this.state.selectedConfiguration.get('applicationName')),
+				selectedConfiguration: this.props.configurations.get(
+					this.state.selectedConfiguration.get('applicationName')
+				),
 			})
 		}
 	}
@@ -54,7 +56,15 @@ class ConfigurationInfoMain extends PureComponent {
 		return (
 			<Fragment>
 				<div className="card mb-3">
-					<div className="card-header">Applications</div>
+					<div className="card-header">
+						Applications
+						<Advice
+							forceHide={this.props.isFetchingApplications}
+							size={this.props.removableApplications.size}
+							items={this.props.removableApplications}
+							message="{} are not used and can be removed"
+						/>
+					</div>
 
 					<div className="card-controls card-controls--transparent">
 						<button
@@ -100,13 +110,9 @@ class ConfigurationInfoMain extends PureComponent {
 const mapStateToProps = state => {
 	return {
 		configurations:         state.get('configurations'),
+		removableApplications:  getRemovableApplications(state),
 		isFetchingApplications: getAsyncState('isFetchingApplications')(state),
 	}
 }
 
-export default connect(
-	mapStateToProps,
-	{
-		fetchApplications,
-	}
-)(ConfigurationInfoMain)
+export default connect(mapStateToProps)(ConfigurationInfoMain)
