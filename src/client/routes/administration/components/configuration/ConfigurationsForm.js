@@ -10,7 +10,13 @@ import AsyncButton from '/components/common/AsyncButton'
 import Modal from '/components/common/Modal'
 import validate from '/routes/administration/modules/validateForm'
 
-import { TextInput, VersionInput, SelectInput, DoubleTextInput, SliderInput } from '/routes/administration/commons'
+import {
+	TextInput,
+	VersionInput,
+	SelectInput,
+	DoubleTextInput,
+	SliderInput,
+} from '/routes/administration/commons'
 
 const initialFormValues = {
 	detached:      true,
@@ -24,7 +30,11 @@ class ConfigurationsForm extends PureComponent {
 	componentDidUpdate (prevProps) {
 		if (prevProps.isEditing && !this.props.isEditing) {
 			this.props.initialize(initialFormValues)
-		} else if (!prevProps.isEditing && this.props.isEditing && this.props.editing) {
+		} else if (
+			!prevProps.isEditing &&
+			this.props.isEditing &&
+			this.props.editing
+		) {
 			this.props.initialize({
 				detached:   this.props.editing.get('detached'),
 				privileged: this.props.editing.get('privileged'),
@@ -131,7 +141,10 @@ class ConfigurationsForm extends PureComponent {
 		// normalize mounts
 		if (configuration.mounts) {
 			configuration.mounts = configuration.mounts.map(mount => {
-				return [removeTrailingSlash(mount.HostPath), removeTrailingSlash(mount.ContainerPath)].join(':')
+				return [
+					removeTrailingSlash(mount.HostPath),
+					removeTrailingSlash(mount.ContainerPath),
+				].join(':')
 			})
 		}
 
@@ -145,7 +158,10 @@ class ConfigurationsForm extends PureComponent {
 			configuration.restartPolicy = 'unless-stopped'
 		}
 
-		const { data } = await axios.put(`/api/v1/administration/application/${applicationName}`, configuration)
+		const { data } = await axios.put(
+			`/api/v1/administration/application/${applicationName}`,
+			configuration
+		)
 
 		this.props.onRequestClose()
 		this.props.reset()
@@ -173,7 +189,10 @@ class ConfigurationsForm extends PureComponent {
 				title={this.props.isAdding ? 'Add Application' : 'Edit Application'}
 				onClose={this.props.onRequestClose}
 			>
-				<form className="form-horizontal" onSubmit={this.props.handleSubmit(this.onSubmit.bind(this))}>
+				<form
+					className="form-horizontal"
+					onSubmit={this.props.handleSubmit(this.onSubmit.bind(this))}
+				>
 					<fieldset>
 						<Field
 							name="applicationName"
@@ -182,16 +201,27 @@ class ConfigurationsForm extends PureComponent {
 							readOnly={this.props.isEditing}
 							required
 						/>
-						<Field name="containerName" label="Container name" component={TextInput} required />
+						<Field
+							name="containerName"
+							label="Container name"
+							component={TextInput}
+							required
+						/>
 
 						<Field
 							name="fromImage"
 							label="Image"
 							component={SelectInput}
 							options={this.getAvailableImages()}
+							sortOnValue
 							required
 						/>
-						<Field name="version" label="Version" component={VersionInput} required />
+						<Field
+							name="version"
+							label="Version"
+							component={VersionInput}
+							required
+						/>
 						<Field
 							name="frontEndPort"
 							label="Front end port"
@@ -221,7 +251,12 @@ class ConfigurationsForm extends PureComponent {
 							name="restartPolicy"
 							label="Restart policy"
 							component={SelectInput}
-							options={['Do not automatically restart', 'On failure', 'If not explicitly stopped', 'Always restart']}
+							options={[
+								'Do not automatically restart',
+								'On failure',
+								'If not explicitly stopped',
+								'Always restart',
+							]}
 						/>
 						<div className="row">
 							<div className="col-4">
@@ -253,7 +288,10 @@ class ConfigurationsForm extends PureComponent {
 							</div>
 						</div>
 						<div className="row">
-							<div className="col-md-3 text-danger"> {this.props.error && <strong>{this.props.error}</strong>}</div>
+							<div className="col-md-3 text-danger">
+								{' '}
+								{this.props.error && <strong>{this.props.error}</strong>}
+							</div>
 							<div className="col-md-12">
 								<div className="btn-group float-right mt-2">
 									<AsyncButton

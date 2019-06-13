@@ -1,20 +1,39 @@
 import React from 'react'
 import classNames from 'classnames'
-import { map, isString } from 'lodash'
+import naturalCompare from 'natural-compare-lite'
+import { map, isString, get } from 'lodash'
 
-const VersionInput = ({ input, label, options, meta: { touched, error, disabled } }) => {
-	const renderOptions = () => {
-		return map(options, (option, i) => {
-			const title = isString(option.title) ? option.title : option
-			const value = isString(option.value) ? option.value : option
+function castToString (source, key) {
+	return isString(get(source, key)) ? get(source, key) : source
+}
 
-			return (
-				<option key={`option-${i}`} value={value}>
-					{title}
-				</option>
-			)
-		})
-	}
+const VersionInput = ({
+	input,
+	label,
+	options,
+	meta: { touched, error, disabled },
+}) => {
+	const renderOptions = () =>
+		map(
+			options
+				.slice()
+				.sort((left, right) =>
+					naturalCompare(
+						castToString(left, 'title'),
+						castToString(right, 'title')
+					)
+				),
+			(option, i) => {
+				const title = castToString(option, 'title')
+				const value = castToString(option, 'value')
+
+				return (
+					<option key={`option${i}`} value={value}>
+						{title}
+					</option>
+				)
+			}
+		)
 
 	return (
 		<div className="form-group row">
@@ -23,7 +42,12 @@ const VersionInput = ({ input, label, options, meta: { touched, error, disabled 
 			</label>
 
 			<div className="col-sm-10">
-				<select {...input} className={classNames('custom-select', { 'is-invalid': touched && error && !disabled })}>
+				<select
+					{...input}
+					className={classNames('custom-select', {
+						'is-invalid': touched && error && !disabled,
+					})}
+				>
 					<option />
 					{renderOptions()}
 				</select>
