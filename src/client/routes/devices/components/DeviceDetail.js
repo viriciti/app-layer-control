@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
-import { fromJS, List, Map } from 'immutable'
+import { List, Map } from 'immutable'
 
 import Modal from '/components/common/Modal'
 import { asyncRefreshState, selectDevice } from '/routes/devices/actions'
@@ -19,6 +19,7 @@ import {
 	Images,
 } from './widgets'
 import getAsyncState from '/store/selectors/getAsyncState'
+import getDevices from '../selectors/getDevices'
 
 class DeviceDetail extends PureComponent {
 	getDeviceSources () {
@@ -31,7 +32,42 @@ class DeviceDetail extends PureComponent {
 		this.props.asyncRefreshState(this.props.selectedDevice.get('deviceId'))
 	}
 
-	renderContent = () => {
+	renderCursor () {
+		const { selectedDevice } = this.props
+		if (!selectedDevice) {
+			return
+		}
+
+		const index    = this.props.deviceIds.indexOf(selectedDevice.get('deviceId'))
+		const previous = index > 1 ? this.props.deviceIds.get(index - 1) : null
+		const next     = index + 1 >= this.props.deviceIds.size
+			? null
+			: this.props.deviceIds.get(index + 1)
+
+		return (
+			<div className="btn-group">
+				{previous ? (
+					<button
+						className="btn btn-light btn-sm btn--reset-icon"
+						onClick={partial(this.props.selectDevice, previous)}
+					>
+						<span className="fas fa-angle-left mr-1" /> {previous}
+					</button>
+				) : null}
+
+				{next ? (
+					<button
+						className="btn btn-light btn-sm btn--reset-icon"
+						onClick={partial(this.props.selectDevice, next)}
+					>
+						{next} <span className="fas fa-angle-right ml-1" />
+					</button>
+				) : null}
+			</div>
+		)
+	}
+
+	renderContent () {
 		const { selectedDevice } = this.props
 
 		if (!selectedDevice) {
@@ -177,6 +213,7 @@ class DeviceDetail extends PureComponent {
 		return (
 			<Modal
 				title={title}
+				cursor={this.renderCursor()}
 				headerClassName={headerClassName}
 				visible={this.props.open}
 				onClose={partial(this.props.selectDevice, null)}
@@ -191,8 +228,12 @@ class DeviceDetail extends PureComponent {
 export default connect(
 	(state, ownProps) => {
 		const selectedDevice = getSelectedDevice(state)
+		const deviceIds      = getDevices(state)
+			.keySeq()
+			.toList()
 
 		return {
+			deviceIds,
 			selectedDevice:    selectedDevice,
 			isRefreshingState: getAsyncState([
 				'isRefreshingState',

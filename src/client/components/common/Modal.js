@@ -18,7 +18,15 @@ const modalStyling = {
 	},
 }
 
-function Modal ({ children, headerClassName, onClose, title, visible, wide }) {
+function Modal ({
+	children,
+	headerClassName,
+	onClose,
+	title,
+	visible,
+	wide,
+	cursor,
+}) {
 	return (
 		<ReactModal
 			className={classNames('mx-auto', { 'col-6': !wide, 'col-10': wide })}
@@ -30,10 +38,15 @@ function Modal ({ children, headerClassName, onClose, title, visible, wide }) {
 		>
 			<div className="card border-0 rounded-0">
 				<div className={classNames('card-header', 'rounded-0', headerClassName)}>
-					{title}
-					<button className="close" aria-label="Close" onClick={onClose}>
-						<span aria-hidden="true">&times;</span>
-					</button>
+					<div className="row">
+						<div className="col-sm-4">{title}</div>
+						<div className="col-sm-4 text-center">{cursor}</div>
+						<div className="col-sm-4 float-right">
+							<button className="close" aria-label="Close" onClick={onClose}>
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+					</div>
 				</div>
 				<div
 					className="card-body p-4"
