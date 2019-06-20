@@ -21,9 +21,7 @@ getDependents = (groups, applicationName) ->
 isRegistryImageDependentOn = (image, configurations) ->
 	configurations
 		.map (configuration) ->
-			configuration.get "fromImage"
-		.valueSeq()
-		.toArray()
+			configuration.fromImage
 		.includes image
 
 # Application

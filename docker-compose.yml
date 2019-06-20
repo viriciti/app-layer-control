@@ -15,7 +15,6 @@ services:
     image: mongo:3.6
     ports: ["27017:27017"]
     restart: always
-    network_mode: host
     volumes:
       - data:/data/db
 volumes:
