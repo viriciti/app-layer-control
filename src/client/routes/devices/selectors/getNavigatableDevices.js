@@ -12,7 +12,7 @@ export default createSelector(
 		} else {
 			const deviceIds = devices.keySeq().toList()
 			const index     = deviceIds.indexOf(selectedDevice.get('deviceId'))
-			const previous  = index > 1 ? deviceIds.get(index - 1) : null
+			const previous  = index > 0 ? deviceIds.get(index - 1) : null
 			const next      = index + 1 >= deviceIds.size ? null : deviceIds.get(index + 1)
 
 			return fromJS({ previous, next })
