@@ -42,44 +42,21 @@ class DeviceDetail extends PureComponent {
 		const prev = this.props.navigation.get('previous')
 		const next = this.props.navigation.get('next')
 
-		{
-			/* <button
-						className="btn btn-light btn-sm btn--reset-icon"
-						onClick={partial(this.props.selectDevice, prev.get('deviceId'))}
-					>
-						<span className="fas fa-angle-left mr-1" /> {prev.get('deviceId')}
-					</button>
-				) : null} */
-		}
-
-		// {next ? (
-		// 			<button
-		// 				className="btn btn-light btn-sm btn--reset-icon"
-		// 				onClick={partial(this.props.selectDevice, next.get('deviceId'))}
-		// 			>
-		// 				{next.get('deviceId')}
-
-		// 				<span className="fas fa-angle-right ml-1" />
-		// 			</button>
-		// 		) : null}
-
 		return (
 			<div className="btn-group">
 				{prev ? (
 					<Navigation
-						deviceId={prev.get('deviceId')}
+						deviceId={prev}
 						onSelect={this.props.selectDevice}
 						side="left"
-						status={prev.get('status')}
 					/>
 				) : null}
 
 				{next ? (
 					<Navigation
-						deviceId={next.get('deviceId')}
+						deviceId={next}
 						onSelect={this.props.selectDevice}
 						side="right"
-						status={next.get('status')}
 					/>
 				) : null}
 			</div>

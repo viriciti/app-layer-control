@@ -15,15 +15,7 @@ export default createSelector(
 			const previous  = index > 1 ? deviceIds.get(index - 1) : null
 			const next      = index + 1 >= deviceIds.size ? null : deviceIds.get(index + 1)
 
-			const pickValues = deviceId => ({
-				deviceId,
-				status: devices.getIn([deviceId, 'status']),
-			})
-
-			return fromJS({
-				previous: previous ? pickValues(previous) : null,
-				next:     next ? pickValues(next) : null,
-			})
+			return fromJS({ previous, next })
 		}
 	}
 )
