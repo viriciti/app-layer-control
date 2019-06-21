@@ -7,7 +7,9 @@ import { List, Map } from 'immutable'
 import Modal from '/components/common/Modal'
 import { asyncRefreshState, selectDevice } from '/routes/devices/actions'
 import getSelectedDevice from '/routes/devices/selectors/getSelectedDevice'
+import getNavigatableDevices from '/routes/devices/selectors/getNavigatableDevices'
 import AsyncButton from '/components/common/AsyncButton'
+import Navigation from '/routes/devices/components/Navigation'
 
 import {
 	SystemInfo,
@@ -19,7 +21,6 @@ import {
 	Images,
 } from './widgets'
 import getAsyncState from '/store/selectors/getAsyncState'
-import getDevices from '../selectors/getDevices'
 
 class DeviceDetail extends PureComponent {
 	getDeviceSources () {
@@ -38,30 +39,25 @@ class DeviceDetail extends PureComponent {
 			return
 		}
 
-		const index    = this.props.deviceIds.indexOf(selectedDevice.get('deviceId'))
-		const previous = index > 1 ? this.props.deviceIds.get(index - 1) : null
-		const next     = index + 1 >= this.props.deviceIds.size
-			? null
-			: this.props.deviceIds.get(index + 1)
+		const prev = this.props.navigation.get('previous')
+		const next = this.props.navigation.get('next')
 
 		return (
 			<div className="btn-group">
-				{previous ? (
-					<button
-						className="btn btn-light btn-sm btn--reset-icon"
-						onClick={partial(this.props.selectDevice, previous)}
-					>
-						<span className="fas fa-angle-left mr-1" /> {previous}
-					</button>
+				{prev ? (
+					<Navigation
+						deviceId={prev}
+						onSelect={this.props.selectDevice}
+						side="left"
+					/>
 				) : null}
 
 				{next ? (
-					<button
-						className="btn btn-light btn-sm btn--reset-icon"
-						onClick={partial(this.props.selectDevice, next)}
-					>
-						{next} <span className="fas fa-angle-right ml-1" />
-					</button>
+					<Navigation
+						deviceId={next}
+						onSelect={this.props.selectDevice}
+						side="right"
+					/>
 				) : null}
 			</div>
 		)
@@ -228,12 +224,9 @@ class DeviceDetail extends PureComponent {
 export default connect(
 	(state, ownProps) => {
 		const selectedDevice = getSelectedDevice(state)
-		const deviceIds      = getDevices(state)
-			.keySeq()
-			.toList()
 
 		return {
-			deviceIds,
+			navigation:        getNavigatableDevices(state),
 			selectedDevice:    selectedDevice,
 			isRefreshingState: getAsyncState([
 				'isRefreshingState',
