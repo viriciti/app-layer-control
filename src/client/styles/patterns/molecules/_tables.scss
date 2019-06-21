@@ -1,7 +1,7 @@
 .table--fixed {
 	table-layout: auto;
 
-	@include media-breakpoint-up(xl) {
+	@include media-breakpoint-up(lg) {
 		table-layout: fixed;
 	}
 }
