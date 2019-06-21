@@ -15,6 +15,7 @@ export default createSelector([getDevices, getGroups], (devices, groups) => {
 			name,
 			devices.filter(device => {
 				return (
+					device.has('status') &&
 					device.get('groups') &&
 					device
 						.get('groups')
