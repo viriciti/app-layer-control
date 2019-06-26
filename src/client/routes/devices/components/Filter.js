@@ -65,12 +65,11 @@ function Filter ({ applyFilter, lastQuery, invert, toggleInvert }) {
 						'btn--text',
 						'btn--icon',
 						{
-							'bg-secondary': invert,
-							'text-light':   invert,
+							'btn--select': invert,
 						}
 					)}
 				>
-					<span className="fas fa-random" />
+					<span className="fas fa-exchange-alt" />
 				</button>
 			</div>
 		</div>
