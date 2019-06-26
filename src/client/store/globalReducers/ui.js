@@ -9,6 +9,7 @@ import {
 	SET_ASYNC_STATE,
 	APPLY_FILTER,
 	APPLY_SORT,
+	APPLY_INVERT,
 } from '/store/constants'
 
 export function applyFilter (query) {
@@ -18,6 +19,18 @@ export function applyFilter (query) {
 		meta:    {
 			debounce: {
 				time: 250,
+			},
+		},
+	}
+}
+
+export function toggleInvert (toggle) {
+	return {
+		type:    APPLY_INVERT,
+		payload: toggle,
+		meta:    {
+			debounce: {
+				time: 50,
 			},
 		},
 	}
@@ -123,6 +136,9 @@ const actionHandlers = {
 	},
 	[APPLY_SORT] (state, { payload }) {
 		return state.set('sort', Map(payload))
+	},
+	[APPLY_INVERT] (state, { payload }) {
+		return state.set('invert', payload)
 	},
 }
 
