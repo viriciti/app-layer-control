@@ -2,15 +2,19 @@ import React, { Fragment } from 'react'
 import JSONPretty from 'react-json-pretty'
 import { connect } from 'react-redux'
 
-import { removeImage } from '/routes/devices/actions/index'
+import { asyncRemoveImage } from '/routes/devices/actions/index'
 
-const ImageOverview = ({ selectedImage, selectedDevice, removeImage }) => {
+const ImageOverview = ({ selectedImage, selectedDevice, asyncRemoveImage }) => {
 	const onRemoveImage = () => {
 		if (confirm('The image will be removed. Are you sure?')) {
-			removeImage({
-				dest:    selectedDevice,
-				payload: { id: selectedImage.get('name') },
-			})
+			asyncRemoveImage(
+				selectedDevice,
+				selectedImage
+					.get('id')
+					.split(':')
+					.slice(1)
+					.join('')
+			)
 		}
 	}
 
@@ -22,7 +26,11 @@ const ImageOverview = ({ selectedImage, selectedDevice, removeImage }) => {
 
 			<JSONPretty id="json-pretty" json={selectedImage.toJS()} />
 
-			<button className="btn btn-danger btn--icon float-right my-3" type="button" onClick={onRemoveImage}>
+			<button
+				className="btn btn-danger btn--icon float-right my-3"
+				type="button"
+				onClick={onRemoveImage}
+			>
 				<span className="fas fa-trash" />
 			</button>
 		</Fragment>
@@ -35,5 +43,5 @@ export default connect(
 			devices: state.get('devices'),
 		}
 	},
-	{ removeImage }
+	{ asyncRemoveImage }
 )(ImageOverview)
