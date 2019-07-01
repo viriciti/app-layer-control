@@ -8,10 +8,13 @@ function length (array) {
 	}
 }
 
-export function isFirstElement (_, index) {
-	return index === 0
-}
-
 export function isLastElement (array, index) {
 	return length(array) - 1 === index
+}
+
+export function moveElement (array, from, to) {
+    const item = array.get(from)
+    const list = array.delete(from).insert(to, item)
+
+    return list
 }

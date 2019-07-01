@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from 'react'
+import React, { Fragment, useState } from 'react'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
 import { List } from 'immutable'
@@ -6,7 +6,7 @@ import { List } from 'immutable'
 import AddGroupsForm from './AddGroupsForm'
 import { asyncRemoveGroup } from '/routes/devices/actions'
 import toReactKey from '/utils/toReactKey'
-import { isLastElement } from '/utils/position'
+import { isLastElement, moveElement } from '/utils/position'
 
 function DeviceGroups ({
 	groups,
@@ -14,8 +14,13 @@ function DeviceGroups ({
 	selectedDevice,
 	asyncRemoveGroup,
 }) {
-	const inGroups      = selectedDevice.get('groups')
-	const btnClass      = 'btn-light btn--icon btn--text'
+	const btnClass             = 'btn-light btn--icon btn--text'
+	const inGroups             = selectedDevice.get('groups')
+	const [draft, updateDraft] = useState(inGroups)
+
+	const onMoveDown = index => updateDraft(moveElement(draft, index, index + 1))
+	const onMoveUp   = index => updateDraft(moveElement(draft, index, index - 1))
+
 	const onRemoveGroup = group => {
 		if (confirm(`Removing group ${group}. Are you sure?`)) {
 			asyncRemoveGroup(selectedDevice.get('deviceId'), group)
@@ -43,28 +48,37 @@ function DeviceGroups ({
 								</tr>
 							</thead>
 							<tbody>
-								{inGroups.map((group, index) => (
+								{draft.map((group, index) => (
 									<tr key={group}>
 										<td>
 											{inGroups.size > 2 ? (
 												index === 0 ? null : isLastElement(inGroups, index) ? (
-													<button className={btnClass}>
-														<span className="fas fa-sort-up" title="Move up" />
+													<button
+														className={btnClass}
+														onClick={partial(onMoveUp, index)}
+													>
+														<span className="fas fa-arrow-up" title="Move up" />
 													</button>
 												) : (
 													<Fragment>
 														{index > 1 ? (
-															<button className={btnClass}>
+															<button
+																className={btnClass}
+																onClick={partial(onMoveUp, index)}
+															>
 																<span
-																	className="fas fa-sort-up"
+																	className="fas fa-arrow-up"
 																	title="Move up"
 																/>
 															</button>
 														) : null}
 
-														<button className={btnClass}>
+														<button
+															className={btnClass}
+															onClick={partial(onMoveDown, index)}
+														>
 															<span
-																className="fas fa-sort-down"
+																className="fas fa-arrow-down"
 																title="Move down"
 															/>
 														</button>
