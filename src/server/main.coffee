@@ -86,6 +86,7 @@ do ->
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{config.mqtt.host}:#{config.mqtt.port}"
 
+		log.info "mqtt: Populating ..."
 		await populateMqttWithGroups db, socket
 		await populateMqttWithDeviceGroups db, socket
 
@@ -211,6 +212,7 @@ do ->
 		# plugins
 		runPlugins config.plugins, source$
 
+		log.info "mqtt: Subscribing ..."
 		await socket.subscribe [
 			DevicesState.topic
 			DevicesLogs.topic
@@ -218,8 +220,6 @@ do ->
 			DevicesStatus.topic
 			DeviceGroups.topic
 		]
-
-		log.info "Subscribed to MQTT topics"
 
 	onError = (error) ->
 		log.error error.message
