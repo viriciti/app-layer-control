@@ -2,15 +2,29 @@ import React, { Fragment } from 'react'
 import JSONPretty from 'react-json-pretty'
 import { connect } from 'react-redux'
 
-import { removeImage } from '/routes/devices/actions/index'
+import { asyncRemoveImage } from '/routes/devices/actions/index'
+import PersistentAsyncButton from '/components/common/PersistentAsyncButton'
+import getIdFromHash from '/routes/devices/modules/getIdFromHash'
+import getAsyncState from '/store/selectors/getAsyncState'
 
-const ImageOverview = ({ selectedImage, selectedDevice, removeImage }) => {
+const ImageOverview = ({
+	selectedImage,
+	selectedDevice,
+	asyncRemoveImage,
+	isRemovingImage,
+}) => {
+	if (!selectedImage) {
+		return (
+			<p className="py-3 text-warning">
+				<span className="fas fa-exclamation-circle mr-2" />
+				Image not found
+			</p>
+		)
+	}
+
 	const onRemoveImage = () => {
 		if (confirm('The image will be removed. Are you sure?')) {
-			removeImage({
-				dest:    selectedDevice,
-				payload: { id: selectedImage.get('name') },
-			})
+			asyncRemoveImage(selectedDevice, getIdFromHash(selectedImage.get('id')))
 		}
 	}
 
@@ -22,18 +36,28 @@ const ImageOverview = ({ selectedImage, selectedDevice, removeImage }) => {
 
 			<JSONPretty id="json-pretty" json={selectedImage.toJS()} />
 
-			<button className="btn btn-danger btn--icon float-right my-3" type="button" onClick={onRemoveImage}>
+			<PersistentAsyncButton
+				busy={isRemovingImage}
+				className="btn btn-danger btn--icon float-right my-3"
+				onClick={onRemoveImage}
+				type="button"
+			>
 				<span className="fas fa-trash" />
-			</button>
+			</PersistentAsyncButton>
 		</Fragment>
 	)
 }
 
 export default connect(
-	state => {
+	(state, ownProps) => {
 		return {
-			devices: state.get('devices'),
+			devices:         state.get('devices'),
+			isRemovingImage: getAsyncState([
+				'isRemovingImage',
+				ownProps.selectedDevice,
+				ownProps.selectedImage && getIdFromHash(ownProps.selectedImage.get('id')),
+			])(state),
 		}
 	},
-	{ removeImage }
+	{ asyncRemoveImage }
 )(ImageOverview)

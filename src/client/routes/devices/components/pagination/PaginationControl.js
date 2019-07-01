@@ -5,7 +5,7 @@ import ReactPaginate from 'react-paginate'
 import { calculatePages } from './'
 import { paginateTo, setItemsPerPage } from '/routes/devices/actions'
 
-const itemsPerPageOptions = [10, 20, 50]
+const itemsPerPageOptions = [10, 20, 50, 200]
 
 const mapStateToProps    = state => {
 	return {

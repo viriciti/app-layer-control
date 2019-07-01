@@ -59,7 +59,7 @@ module.exports = (getDeviceStates) ->
 		catch error
 			next error
 
-	router.delete "/:id/:name", ({ app, params }, res, next) ->
+	router.delete "/:id/container/:name", ({ app, params }, res, next) ->
 		{ rpc }      = app.locals
 		{ id, name } = params
 		topic        = "actions/#{id}/removeContainer"
@@ -72,6 +72,22 @@ module.exports = (getDeviceStates) ->
 				.json
 					status:  "pending"
 					message: "Request to remove container '#{name}' sent"
+		catch error
+			next error
+
+	router.delete "/:id/image/:name", ({ app, params }, res, next) ->
+		{ rpc }      = app.locals
+		{ id, name } = params
+		topic        = "actions/#{id}/removeImage"
+
+		try
+			await rpc.call topic, id: name
+
+			res
+				.status 202
+				.json
+					status:  "pending"
+					message: "Request to remove image '#{name}' sent"
 		catch error
 			next error
 

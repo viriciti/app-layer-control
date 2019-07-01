@@ -191,7 +191,7 @@ export function asyncRemoveApplication (deviceId, application) {
 
 		try {
 			const { data } = await axios.delete(
-				`/api/devices/${deviceId}/${application}`
+				`/api/devices/${deviceId}/container/${application}`
 			)
 
 			toast.success(data.message)
@@ -217,6 +217,20 @@ export function asyncRefreshState (deviceId) {
 			toast.error(response.data.message)
 		} finally {
 			dispatch(setAsyncState(['isRefreshingState', deviceId], false))
+		}
+	}
+}
+
+export function asyncRemoveImage (deviceId, image) {
+	return async dispatch => {
+		dispatch(setAsyncState(['isRemovingImage', deviceId, image], true))
+
+		try {
+			const { data } = await axios.delete(`/api/devices/${deviceId}/image/${image}`)
+
+			toast.success(data.message)
+		} catch ({ response }) {
+			toast.error(response.data.message)
 		}
 	}
 }
