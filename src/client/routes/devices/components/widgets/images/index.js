@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
 import { Map } from 'immutable'
@@ -7,18 +7,10 @@ import { valid, gt } from 'semver'
 
 import ImageOverview from './ImageOverview'
 
-class DeviceImages extends Component {
+class DeviceImages extends PureComponent {
 	state = {
 		selectedImage:   null,
 		selectedVersion: null,
-	}
-
-	shouldComponentUpdate (nextProps, nextState) {
-		return (
-			this.props.images !== nextProps.images ||
-			this.state.selectedImage !== nextState.selectedImage ||
-			this.state.selectedVersion !== nextState.selectedVersion
-		)
 	}
 
 	onImageSelected = selectedImage => {
