@@ -3,7 +3,7 @@ import JSONPretty from 'react-json-pretty'
 import { connect } from 'react-redux'
 
 import { asyncRemoveImage } from '/routes/devices/actions/index'
-import AsyncButton from '/components/common/AsyncButton'
+import PersistentAsyncButton from '/components/common/PersistentAsyncButton'
 import getIdFromHash from '/routes/devices/modules/getIdFromHash'
 import getAsyncState from '/store/selectors/getAsyncState'
 
@@ -36,14 +36,14 @@ const ImageOverview = ({
 
 			<JSONPretty id="json-pretty" json={selectedImage.toJS()} />
 
-			<AsyncButton
+			<PersistentAsyncButton
+				busy={isRemovingImage}
 				className="btn btn-danger btn--icon float-right my-3"
 				onClick={onRemoveImage}
 				type="button"
-				busy={isRemovingImage}
 			>
 				<span className="fas fa-trash" />
-			</AsyncButton>
+			</PersistentAsyncButton>
 		</Fragment>
 	)
 }

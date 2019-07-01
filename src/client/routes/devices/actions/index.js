@@ -231,8 +231,6 @@ export function asyncRemoveImage (deviceId, image) {
 			toast.success(data.message)
 		} catch ({ response }) {
 			toast.error(response.data.message)
-		} finally {
-			dispatch(setAsyncState(['isRemovingImage', deviceId, image], false))
 		}
 	}
 }
