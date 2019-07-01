@@ -13,6 +13,15 @@ const ImageOverview = ({
 	asyncRemoveImage,
 	isRemovingImage,
 }) => {
+	if (!selectedImage) {
+		return (
+			<p className="py-3 text-warning">
+				<span className="fas fa-exclamation-circle mr-2" />
+				Image not found
+			</p>
+		)
+	}
+
 	const onRemoveImage = () => {
 		if (confirm('The image will be removed. Are you sure?')) {
 			asyncRemoveImage(selectedDevice, getIdFromHash(selectedImage.get('id')))
@@ -46,7 +55,7 @@ export default connect(
 			isRemovingImage: getAsyncState([
 				'isRemovingImage',
 				ownProps.selectedDevice,
-				getIdFromHash(ownProps.selectedImage.get('id')),
+				ownProps.selectedImage && getIdFromHash(ownProps.selectedImage.get('id')),
 			])(state),
 		}
 	},
