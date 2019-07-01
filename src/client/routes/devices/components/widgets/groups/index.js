@@ -1,9 +1,9 @@
-import React, { Fragment, useState } from 'react'
+import React, { Fragment, useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
 import { List } from 'immutable'
 
-import AddGroupsForm from './AddGroupsForm'
+import GroupsForm from './GroupsForm'
 import { asyncRemoveGroup } from '/routes/devices/actions'
 import toReactKey from '/utils/toReactKey'
 import { isLastElement, moveElement } from '/utils/position'
@@ -27,8 +27,14 @@ function DeviceGroups ({
 		}
 	}
 
+	useEffect(() => {
+		if (draft !== inGroups) {
+			updateDraft(inGroups)
+		}
+	}, [inGroups])
+
 	return (
-		<div>
+		<Fragment>
 			<h5>
 				<span className="fas fa-cubes pr-1" /> Groups
 			</h5>
@@ -41,7 +47,7 @@ function DeviceGroups ({
 						<table className="table table--wrap">
 							<thead className="thead-light">
 								<tr>
-									<th style={{ minWidth: 25 }} />
+									<th style={{ minWidth: 15 }} />
 									<th>Label</th>
 									<th>Applications</th>
 									<th style={{ minWidth: 25 }} />
@@ -145,10 +151,10 @@ function DeviceGroups ({
 			</div>
 			<div className="row">
 				<div className="col-12">
-					<AddGroupsForm groups={groups} />
+					<GroupsForm inGroups={draft} touched={draft !== inGroups} />
 				</div>
 			</div>
-		</div>
+		</Fragment>
 	)
 }
 
