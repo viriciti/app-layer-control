@@ -221,7 +221,7 @@ class DeviceList extends PureComponent {
 
 								<div className="btn-group">
 									<button
-										className="btn btn-danger btn-sm dropdown-toggle mr-2"
+										className="btn btn-light btn-sm dropdown-toggle mr-2"
 										data-toggle="dropdown"
 										disabled={
 											this.props.multiSelectedDevices.size === 0 ||
