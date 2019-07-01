@@ -91,7 +91,8 @@ class GroupsForm extends PureComponent {
 	}
 
 	renderOptions = () => {
-		const placeholder = (
+		const currentGroups = this.props.inGroups.toArray()
+		const placeholder   = (
 			<option key="group-select-placeholder" value="">
 				Please select a group
 			</option>
@@ -104,7 +105,7 @@ class GroupsForm extends PureComponent {
 		return [placeholder].concat(
 			this.props.groups
 				.keySeq()
-				.filterNot(group => group === 'default')
+				.filterNot(group => currentGroups.includes(group))
 				.sort()
 				.map(group => (
 					<option key={group} value={group}>
