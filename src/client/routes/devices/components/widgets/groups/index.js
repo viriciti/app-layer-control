@@ -14,10 +14,12 @@ function DeviceGroups ({
 	selectedDevice,
 	asyncRemoveGroup,
 }) {
-	const btnClass             = 'btn-light btn--icon btn--text'
-	const inGroups             = selectedDevice.get('groups')
-	const [draft, updateDraft] = useState(inGroups)
+	const btnClass              = 'btn-light btn--icon btn--text d-block'
+	const inGroups              = selectedDevice.get('groups')
+	const [draft, updateDraft]  = useState(inGroups)
+	const [touched, setTouched] = useState(false)
 
+	const onTouch    = () => setTouched(true)
 	const onMoveDown = index => updateDraft(moveElement(draft, index, index + 1))
 	const onMoveUp   = index => updateDraft(moveElement(draft, index, index - 1))
 
@@ -151,7 +153,11 @@ function DeviceGroups ({
 			</div>
 			<div className="row">
 				<div className="col-12">
-					<GroupsForm inGroups={draft} touched={draft !== inGroups} />
+					<GroupsForm
+						onTouch={onTouch}
+						inGroups={draft}
+						touched={touched || draft !== inGroups}
+					/>
 				</div>
 			</div>
 		</Fragment>

@@ -46,11 +46,13 @@ class GroupsForm extends PureComponent {
 		const selectedGroups = this.state.selectedGroups
 
 		if (!selectedGroups.includes(group)) {
+			this.props.onTouch()
 			this.setState({ selectedGroups: selectedGroups.concat(group) })
 		}
 	}
 
 	onGroupDeselected = group => {
+		this.props.onTouch()
 		this.setState({
 			selectedGroups: without(this.state.selectedGroups, group),
 		})
