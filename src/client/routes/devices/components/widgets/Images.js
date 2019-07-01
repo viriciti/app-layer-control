@@ -1,8 +1,9 @@
 import ImmutablePropTypes from 'react-immutable-proptypes'
 import PropTypes from 'prop-types'
 import React, { Fragment } from 'react'
-import { defaultTo } from 'lodash'
 import naturalCompare from 'natural-compare-lite'
+import { List } from 'immutable'
+import { defaultTo } from 'lodash'
 
 function Image ({ name, version }) {
 	version = defaultTo(version, <i>not parseable</i>)
@@ -24,7 +25,7 @@ function Images ({ images }) {
 			<hr />
 
 			<ul className="list list--lines">
-				{images.sort(naturalCompare).map(tag => {
+				{defaultTo(images, List()).sort(naturalCompare).map(tag => {
 					const [name, version] = tag.split(':')
 
 					return <Image key={tag} name={name} version={version} />

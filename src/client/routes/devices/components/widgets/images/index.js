@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
 import { Map } from 'immutable'
@@ -57,10 +57,16 @@ class DeviceImages extends PureComponent {
 		const images = this.groupImages()
 
 		if (!images || images.isEmpty()) {
-			return <span className="card-message card-message--vertical-only">No images on this device</span>
+			return (
+				<span className="card-message card-message--vertical-only">
+					No images on this device
+				</span>
+			)
 		} else {
 			return images.entrySeq().map(([name, image]) => {
-				const selectedImage = this.state.selectedImage && this.state.selectedImage.first().get('name')
+				const selectedImage =
+					this.state.selectedImage &&
+					this.state.selectedImage.first().get('name')
 				const isActive      = name === selectedImage
 
 				return (
@@ -102,7 +108,9 @@ class DeviceImages extends PureComponent {
 					return (
 						<button
 							key={`${image.get('name')}${image.get('version')}`}
-							className={classNames('btn', 'btn--select', 'mr-2', { active: isActive })}
+							className={classNames('btn', 'btn--select', 'mr-2', {
+								active: isActive,
+							})}
 							onClick={() => {
 								return this.onVersionSelected(image.get('version'))
 							}}
@@ -128,9 +136,16 @@ class DeviceImages extends PureComponent {
 					}
 				}
 				const selectedImage = this.state.selectedImage.find(findByVersion)
-				const image         = this.props.images.find(findByName(selectedImage.get('name')))
+				const image         = this.props.images.find(
+					findByName(selectedImage.get('name'))
+				)
 
-				return <ImageOverview selectedImage={image} selectedDevice={this.props.selectedDevice} />
+				return (
+					<ImageOverview
+						selectedImage={image}
+						selectedDevice={this.props.selectedDevice}
+					/>
+				)
 			} else {
 				return <span className="card-message">No version selected</span>
 			}
@@ -139,7 +154,7 @@ class DeviceImages extends PureComponent {
 
 	render () {
 		return (
-			<div>
+			<Fragment>
 				<h5>
 					<span className="fas fa-archive" /> Images
 				</h5>
@@ -156,7 +171,7 @@ class DeviceImages extends PureComponent {
 						{this.renderImageOverview()}
 					</div>
 				</div>
-			</div>
+			</Fragment>
 		)
 	}
 }
