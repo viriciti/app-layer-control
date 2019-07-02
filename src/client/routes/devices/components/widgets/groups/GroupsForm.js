@@ -143,14 +143,14 @@ class GroupsForm extends PureComponent {
 							{supported ? (
 								<AsyncButton
 									type="submit"
-									className={classNames('btn', {
+									className={classNames('float-right', 'btn', {
 										'btn-light':   !this.props.isStoringGroups && !this.props.touched,
 										'btn-warning': this.props.storingGroups || this.props.touched,
 									})}
 									onClick={this.onSubmit}
 									busy={this.props.isStoringGroups}
 								>
-									Save
+									<span className="fas fa-save" /> Save
 								</AsyncButton>
 							) : (
 								<p
