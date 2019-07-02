@@ -1,7 +1,7 @@
 .table--fixed {
 	table-layout: auto;
 
-	@include media-breakpoint-up(lg) {
+	@media (min-width: 1201px) {
 		table-layout: fixed;
 	}
 }

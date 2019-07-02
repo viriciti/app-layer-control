@@ -105,7 +105,7 @@ export function cleanLogs (payload) {
 
 export function asyncStoreGroups (device, groups) {
 	return async dispatch => {
-		dispatch(updateDeviceActivity('isStoringGroups', device, true))
+		dispatch(setAsyncState(['isStoringGroups', device], true))
 
 		await axios.post('/api/v1/administration/group/devices', {
 			operation: 'store',
@@ -113,13 +113,13 @@ export function asyncStoreGroups (device, groups) {
 			groups,
 		})
 
-		dispatch(updateDeviceActivity('isStoringGroups', device, false))
+		dispatch(setAsyncState(['isStoringGroups', device], false))
 	}
 }
 
 export function asyncRemoveGroup (device, group) {
 	return async dispatch => {
-		dispatch(updateDeviceActivity('isRemovingGroups', device, true))
+		dispatch(setAsyncState(['isRemovingGroups', device], true))
 
 		await axios.post('/api/v1/administration/group/devices', {
 			operation: 'remove',
@@ -127,7 +127,7 @@ export function asyncRemoveGroup (device, group) {
 			groups:    [group],
 		})
 
-		dispatch(updateDeviceActivity('isRemovingGroups', device, false))
+		dispatch(setAsyncState(['isRemovingGroups', device], false))
 	}
 }
 

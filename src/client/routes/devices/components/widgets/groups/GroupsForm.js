@@ -1,14 +1,15 @@
 import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
-import { without, isEmpty, defaultTo, partial } from 'lodash'
+import classNames from 'classnames'
 import semver from 'semver'
+import { connect } from 'react-redux'
+import { without, defaultTo, partial } from 'lodash'
 
 import { asyncStoreGroups } from '/routes/devices/actions'
 import AsyncButton from '/components/common/AsyncButton'
 import getAsyncState from '/store/selectors/getAsyncState'
 import getSelectedDevice from '/routes/devices/selectors/getSelectedDevice'
 
-class AddGroupsForm extends PureComponent {
+class GroupsForm extends PureComponent {
 	state = {
 		selectedGroups: [],
 	}
@@ -45,11 +46,13 @@ class AddGroupsForm extends PureComponent {
 		const selectedGroups = this.state.selectedGroups
 
 		if (!selectedGroups.includes(group)) {
+			this.props.onTouch()
 			this.setState({ selectedGroups: selectedGroups.concat(group) })
 		}
 	}
 
 	onGroupDeselected = group => {
+		this.props.onTouch()
 		this.setState({
 			selectedGroups: without(this.state.selectedGroups, group),
 		})
@@ -58,17 +61,13 @@ class AddGroupsForm extends PureComponent {
 	onSubmit = e => {
 		e.preventDefault()
 
-		if (isEmpty(this.state.selectedGroups)) {
-			return alert('You must select which groups you want to send')
-		}
-
-		if (!confirm('Sending groups. Are you sure?')) {
+		if (!confirm('Save groups for this device?')) {
 			return
 		}
 
 		this.props.asyncStoreGroups(
 			this.props.selectedDevice.get('deviceId'),
-			this.state.selectedGroups
+			this.props.inGroups.toArray().concat(this.state.selectedGroups)
 		)
 		this.setState({ selectedGroups: [] })
 	}
@@ -94,29 +93,27 @@ class AddGroupsForm extends PureComponent {
 	}
 
 	renderOptions = () => {
-		const placeholder = (
+		const currentGroups = this.props.inGroups.toArray()
+		const placeholder   = (
 			<option key="group-select-placeholder" value="">
 				Please select a group
 			</option>
 		)
 
-		if (!this.props.groups) return placeholder
+		if (!this.props.groups) {
+			return placeholder
+		}
 
 		return [placeholder].concat(
 			this.props.groups
 				.keySeq()
-				.filter(group => {
-					return group !== 'default'
-				})
+				.filterNot(group => currentGroups.includes(group))
 				.sort()
-				.map(group => {
-					return (
-						<option key={group} value={group}>
-							{' '}
-							{group}
-						</option>
-					)
-				})
+				.map(group => (
+					<option key={group} value={group}>
+						{group}
+					</option>
+				))
 		)
 	}
 
@@ -146,11 +143,14 @@ class AddGroupsForm extends PureComponent {
 							{supported ? (
 								<AsyncButton
 									type="submit"
-									className="btn btn-light"
+									className={classNames('float-right', 'btn', {
+										'btn-light':   !this.props.isStoringGroups && !this.props.touched,
+										'btn-warning': this.props.storingGroups || this.props.touched,
+									})}
 									onClick={this.onSubmit}
 									busy={this.props.isStoringGroups}
 								>
-									Send
+									<span className="fas fa-save" /> Save
 								</AsyncButton>
 							) : (
 								<p
@@ -184,4 +184,4 @@ export default connect(
 		}
 	},
 	{ asyncStoreGroups }
-)(AddGroupsForm)
+)(GroupsForm)

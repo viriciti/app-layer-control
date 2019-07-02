@@ -258,7 +258,7 @@ router.post "/group/devices", ({ app, body }, res) ->
 				message: message
 	else if operation is "store"
 		query   = deviceId: $in: target
-		update  = $addToSet: groups: $each: groups
+		update  = groups: groups
 		options =
 			upsert:              true
 			setDefaultsOnInsert: true

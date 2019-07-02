@@ -1,105 +1,167 @@
-import React, { PureComponent } from 'react'
+import React, { Fragment, useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
+import { List } from 'immutable'
 
-import AddGroupsForm from './AddGroupsForm'
+import GroupsForm from './GroupsForm'
 import { asyncRemoveGroup } from '/routes/devices/actions'
+import toReactKey from '/utils/toReactKey'
+import { isLastElement, moveElement } from '/utils/position'
 
-class DeviceGroups extends PureComponent {
-	onRemoveGroup = group => {
+function DeviceGroups ({
+	groups,
+	configurations,
+	selectedDevice,
+	asyncRemoveGroup,
+}) {
+	const btnClass              = 'btn-light btn--icon btn--text d-block'
+	const inGroups              = selectedDevice.get('groups')
+	const [draft, updateDraft]  = useState(inGroups)
+	const [touched, setTouched] = useState(false)
+
+	const onTouch    = () => setTouched(true)
+	const onMoveDown = index => updateDraft(moveElement(draft, index, index + 1))
+	const onMoveUp   = index => updateDraft(moveElement(draft, index, index - 1))
+
+	const onRemoveGroup = group => {
 		if (confirm(`Removing group ${group}. Are you sure?`)) {
-			this.props.asyncRemoveGroup(this.props.selectedDevice.get('deviceId'), group)
+			asyncRemoveGroup(selectedDevice.get('deviceId'), group)
 		}
 	}
 
-	renderGroups = () => {
-		const { groups, selectedDevice } = this.props
-		const deviceGroups               = selectedDevice.get('groups')
+	useEffect(() => {
+		if (draft !== inGroups) {
+			updateDraft(inGroups)
+		}
+	}, [inGroups])
 
-		return deviceGroups.map(group => {
-			return (
-				<tr key={group}>
-					<td>{group}</td>
-					<td>
-						<ul className="list-unstyled">
-							{groups.has(group) ? (
-								groups
-									.get(group)
-									.entrySeq()
-									.map(([name, version]) => {
-										if (version) {
-											return (
-												<li key={`${group}${name}${version}`} title="Locked version">
-													{[name, version].join('@')}
-												</li>
-											)
-										} else {
-											return (
-												<li key={`${group}${name}`} title="Semantic versioning">
-													{[name, this.props.configurations.getIn([name, 'version'])].join('@')}
-												</li>
-											)
-										}
-									})
-							) : (
-								<i>Not available</i>
-							)}
-						</ul>
-					</td>
-					<td className="text-right">
-						{group === 'default' ? (
-							''
-						) : (
-							<button
-								className="btn btn--text btn--icon float-right"
-								onClick={partial(this.onRemoveGroup, group)}
-								data-toggle="tooltip"
-								title="Delete group"
-							>
-								<span className="fas fa-times-circle text-danger" />
-							</button>
-						)}
-					</td>
-				</tr>
-			)
-		})
-	}
+	return (
+		<Fragment>
+			<h5>
+				<span className="fas fa-cubes pr-1" /> Groups
+			</h5>
 
-	render () {
-		return (
-			<div>
-				<h5>
-					<span className="fas fa-cubes pr-1" /> Groups
-				</h5>
+			<hr />
 
-				<hr />
+			<div className="row">
+				<div className="col-12">
+					{!selectedDevice.get('groups', List()).isEmpty() ? (
+						<table className="table table--wrap">
+							<thead className="thead-light">
+								<tr>
+									<th style={{ minWidth: 15 }} />
+									<th>Label</th>
+									<th>Applications</th>
+									<th style={{ minWidth: 25 }} />
+								</tr>
+							</thead>
+							<tbody>
+								{draft.map((group, index) => (
+									<tr key={group}>
+										<td>
+											{inGroups.size > 2 ? (
+												index === 0 ? null : isLastElement(inGroups, index) ? (
+													<button
+														className={btnClass}
+														onClick={partial(onMoveUp, index)}
+													>
+														<span className="fas fa-arrow-up" title="Move up" />
+													</button>
+												) : (
+													<Fragment>
+														{index > 1 ? (
+															<button
+																className={btnClass}
+																onClick={partial(onMoveUp, index)}
+															>
+																<span
+																	className="fas fa-arrow-up"
+																	title="Move up"
+																/>
+															</button>
+														) : null}
 
-				<div className="row">
-					<div className="col-12">
-						{this.props.selectedDevice.get('groups') && !this.props.selectedDevice.get('groups').isEmpty() ? (
-							<table className="table table--wrap">
-								<thead className="thead-light">
-									<tr>
-										<th>Label</th>
-										<th>Applications</th>
-										<th style={{ minWidth: 25 }} />
+														<button
+															className={btnClass}
+															onClick={partial(onMoveDown, index)}
+														>
+															<span
+																className="fas fa-arrow-down"
+																title="Move down"
+															/>
+														</button>
+													</Fragment>
+												)
+											) : null}
+										</td>
+										<td>{group}</td>
+										<td>
+											<ul className="list-unstyled">
+												{groups.has(group) ? (
+													groups
+														.get(group)
+														.entrySeq()
+														.map(([name, version]) =>
+															version ? (
+																<li
+																	key={toReactKey(group, name, version)}
+																	title="Locked version"
+																>
+																	{[name, version].join('@')}
+																</li>
+															) : (
+																<li
+																	key={toReactKey(group, name)}
+																	title="Semantic versioning"
+																>
+																	{[
+																		name,
+																		configurations.getIn([name, 'version']),
+																	].join('@')}
+																</li>
+															)
+														)
+												) : (
+													<i>Not available</i>
+												)}
+											</ul>
+										</td>
+										<td className="text-right">
+											{group === 'default' ? (
+												''
+											) : (
+												<button
+													className="btn btn--text btn--icon float-right"
+													onClick={partial(onRemoveGroup, group)}
+													data-toggle="tooltip"
+													title="Delete group"
+												>
+													<span className="fas fa-times-circle text-danger" />
+												</button>
+											)}
+										</td>
 									</tr>
-								</thead>
-								<tbody>{this.renderGroups()}</tbody>
-							</table>
-						) : (
-							<span className="d-inline-block text-secondary my-3">No groups on the device</span>
-						)}
-					</div>
-				</div>
-				<div className="row">
-					<div className="col-12">
-						<AddGroupsForm groups={this.props.groups} />
-					</div>
+								))}
+							</tbody>
+						</table>
+					) : (
+						<span className="d-inline-block text-secondary my-3">
+							No groups on the device
+						</span>
+					)}
 				</div>
 			</div>
-		)
-	}
+			<div className="row">
+				<div className="col-12">
+					<GroupsForm
+						onTouch={onTouch}
+						inGroups={draft}
+						touched={touched || draft !== inGroups}
+					/>
+				</div>
+			</div>
+		</Fragment>
+	)
 }
 
 export default connect(
