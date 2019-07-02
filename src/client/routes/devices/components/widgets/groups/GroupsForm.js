@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import classNames from 'classnames'
 import semver from 'semver'
 import { connect } from 'react-redux'
-import { without, isEmpty, defaultTo, partial } from 'lodash'
+import { without, defaultTo, partial } from 'lodash'
 
 import { asyncStoreGroups } from '/routes/devices/actions'
 import AsyncButton from '/components/common/AsyncButton'
@@ -144,8 +144,8 @@ class GroupsForm extends PureComponent {
 								<AsyncButton
 									type="submit"
 									className={classNames('btn', {
-										'btn-light':   !this.props.touched,
-										'btn-warning': this.props.touched,
+										'btn-light':   !this.props.isStoringGroups && !this.props.touched,
+										'btn-warning': this.props.storingGroups || this.props.touched,
 									})}
 									onClick={this.onSubmit}
 									busy={this.props.isStoringGroups}
