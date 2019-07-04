@@ -1,8 +1,8 @@
-debug                         = (require "debug") "app:api"
-filter                        = require "p-filter"
-{ Router }                    = require "express"
-{ isArray, first, map, size } = require "lodash"
-config                        = require "config"
+debug                                  = (require "debug") "app:api"
+filter                                 = require "p-filter"
+{ Router }                             = require "express"
+{ isArray, first, map, size, without } = require "lodash"
+config                                 = require "config"
 
 Store                  = require "../../Store"
 getRegistryImages      = require "../../lib/getRegistryImages"
@@ -257,6 +257,9 @@ router.post "/group/devices", ({ app, body }, res) ->
 				status:  "success"
 				message: message
 	else if operation is "store"
+		groups = without groups, "default"
+		groups = ["default", ...groups]
+
 		query   = deviceId: $in: target
 		update  = groups: groups
 		options =
