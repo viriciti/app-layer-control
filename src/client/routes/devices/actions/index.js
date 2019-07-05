@@ -111,6 +111,7 @@ export function asyncStoreGroups (device, groups) {
 			operation: 'store',
 			target:    [device],
 			groups,
+			multi:     false,
 		})
 
 		dispatch(setAsyncState(['isStoringGroups', device], false))
@@ -125,6 +126,7 @@ export function asyncRemoveGroup (device, group) {
 			operation: 'remove',
 			target:    [device],
 			groups:    [group],
+			multi:     false,
 		})
 
 		dispatch(setAsyncState(['isRemovingGroups', device], false))
@@ -139,6 +141,7 @@ export function asyncMultiStoreGroup (devices, group) {
 			operation: 'store',
 			target:    devices,
 			groups:    [group],
+			multi:     true,
 		})
 
 		toast.success(`${devices.length} devices updated`)
@@ -154,6 +157,7 @@ export function asyncMultiRemoveGroup (devices, group) {
 			operation: 'remove',
 			target:    devices,
 			groups:    [group],
+			multi:     true,
 		})
 
 		toast.success(`${devices.length} devices updated`)
