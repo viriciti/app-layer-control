@@ -238,9 +238,9 @@ router.delete "/group/:label", ({ app, params, body }, res, next) ->
 # Device Groups
 # Supported operations are "store" and "remove"
 router.post "/group/devices", ({ app, body }, res) ->
-	{ db, broadcaster }           = app.locals
-	{ operation, groups, target } = body
-	target                        = [target] unless isArray target
+	{ db, broadcaster }                  = app.locals
+	{ operation, groups, target, multi } = body
+	target                               = [target] unless isArray target
 
 	if operation is "remove"
 		query   = deviceId: $in: target
@@ -261,7 +261,7 @@ router.post "/group/devices", ({ app, body }, res) ->
 		groups = ["default", ...groups]
 
 		query   = deviceId: $in: target
-		update  = groups: groups
+		update  = if multi then $addToSet: groups: $each: groups else groups: groups
 		options =
 			upsert:              true
 			setDefaultsOnInsert: true
