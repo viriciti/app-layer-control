@@ -2,7 +2,7 @@
 	"name": "app-layer-control",
 	"version": "4.15.2",
 	"scripts": {
-		"test": "mocha",
+		"test": "mocha",,
 		"test:watch": "NODE_ENV=test mocha --watch-extensions coffee --watch",
 		"develop": "nodemon src/server/main.coffee",
 		"build": "npm run build:frontend && npm run build:backend",
