@@ -263,7 +263,7 @@ router.post "/group/devices", ({ app, body }, res) ->
 			setDefaultsOnInsert: true
 
 		if multi
-			update  = $addToSet: groups: $each: groups
+			update = $addToSet: groups: $each: groups
 		else
 			groups = without groups, "default"
 			groups = ["default", ...groups]
