@@ -131,6 +131,16 @@ updateDeviceGroups = ({ db, store, mqttClient }) ->
 
 		client.subscribe "devices/+/groups"
 
+updateNullGroups = ({ db }) ->
+	query  = groups: null
+	update = groups: ["default"]
+	count  = await db.DeviceGroup.find(query).countDocuments()
+
+	return log.warn "→ No nulled groups" unless count
+
+	{ nModified } = await db.DeviceGroup.updateMany query, update
+	log.info "→ Updated groups for #{nModified} device(s)"
+
 module.exports = ({ db, store }) ->
 	if config.server.skipUpdates
 		log.warn "Skipping updates"
@@ -141,6 +151,7 @@ module.exports = ({ db, store }) ->
 			updateGroups { db, store }
 			updateExists { db, store }
 			updateDeviceGroups { db, store }
+			updateNullGroups { db }
 		]
 
 		log.info "→ Done"
