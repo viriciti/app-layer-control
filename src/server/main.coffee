@@ -88,7 +88,7 @@ do ->
 
 		log.info "mqtt: Populating ..."
 		await populateMqttWithGroups db, socket
-		# await populateMqttWithDeviceGroups db, socket
+		await populateMqttWithDeviceGroups db, socket
 
 		devicesLogs$    = DevicesLogs.observable    socket
 		devicesNsState$ = DevicesNsState.observable socket
