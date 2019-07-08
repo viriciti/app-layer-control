@@ -257,14 +257,18 @@ router.post "/group/devices", ({ app, body }, res) ->
 				status:  "success"
 				message: message
 	else if operation is "store"
-		groups = without groups, "default"
-		groups = ["default", ...groups]
-
 		query   = deviceId: $in: target
-		update  = if multi then $addToSet: groups: $each: groups else groups: groups
 		options =
 			upsert:              true
 			setDefaultsOnInsert: true
+
+		if multi
+			update  = $addToSet: groups: $each: groups
+		else
+			groups = without groups, "default"
+			groups = ["default", ...groups]
+			update = groups: groups
+
 
 		{ nModified } = await db.DeviceGroup.updateMany query, update, options
 		message       = "Added groups #{groups.join ', '} to #{nModified} device(s)"
