@@ -147,12 +147,7 @@ module.exports = ({ db, store }) ->
 		return Promise.resolve()
 
 	try
-		await Promise.all [
-			updateGroups { db, store }
-			updateExists { db, store }
-			updateDeviceGroups { db, store }
-			updateNullGroups { db }
-		]
+		await updateNullGroups { db }
 
 		log.info "→ Done"
 		Promise.resolve()
