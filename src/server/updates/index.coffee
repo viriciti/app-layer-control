@@ -6,6 +6,7 @@ MQTTPattern                     = require "mqtt-pattern"
 
 log = (require "../lib/Logger") "updates"
 
+# @disabled since 4.15.7
 updateGroups = ({ db, store }) ->
 	groups = await store.getGroups()
 
@@ -44,6 +45,7 @@ updateGroups = ({ db, store }) ->
 			db.RegistryImages.update {}, updatePayloadUnset
 		]
 
+# @disabled since 4.15.7
 updateExists = ({ db, store }) ->
 	images = await store.getRegistryImages()
 
@@ -64,7 +66,7 @@ updateExists = ({ db, store }) ->
 		await db.RegistryImages.update updateQuery, updatePayload
 		await db.RegistryImages.update updateQuery, updateOptions
 
-
+# @disabled since 4.15.7
 updateDeviceGroups = ({ db, store, mqttClient }) ->
 	new Promise (resolve) ->
 		done = throttle (unsubscribeOnly) ->
@@ -147,12 +149,7 @@ module.exports = ({ db, store }) ->
 		return Promise.resolve()
 
 	try
-		await Promise.all [
-			updateGroups { db, store }
-			updateExists { db, store }
-			updateDeviceGroups { db, store }
-			updateNullGroups { db }
-		]
+		await updateNullGroups { db }
 
 		log.info "→ Done"
 		Promise.resolve()

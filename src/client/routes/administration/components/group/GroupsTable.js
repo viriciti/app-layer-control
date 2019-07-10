@@ -12,31 +12,31 @@ import toReactKey from '/utils/toReactKey'
 import getRemovableGroups from '../../modules/selectors/advice/getRemovableGroups'
 
 const Version = ({ name, range, effectiveVersion }) => {
-	if (effectiveVersion) {
-		return (
-			<li>
-				{name}@{range}
-				<small
-					className="label label-sm label--inline float-right"
-					title="Effective version for this application"
-				>
-					{effectiveVersion}
-				</small>
-			</li>
-		)
-	} else {
-		return (
-			<li>
-				{name}@{range}
-				<span className="float-right text-warning">
-					<span
-						className="fas fa-exclamation-triangle"
-						title="Effective version could not be calculated"
-					/>
-				</span>
-			</li>
-		)
-	}
+	return (
+		<li className="clearfix">
+			{effectiveVersion ? (
+				<Fragment>
+					{name}@{range}
+					<small
+						className="label label-sm label--inline float-right"
+						title="Effective version for this application"
+					>
+						{effectiveVersion}
+					</small>
+				</Fragment>
+			) : (
+				<Fragment>
+					{name}@{range}
+					<span className="float-right text-warning">
+						<span
+							className="fas fa-exclamation-triangle"
+							title="Effective version could not be calculated"
+						/>
+					</span>
+				</Fragment>
+			)}
+		</li>
+	)
 }
 
 const LockedVersion = ({ name, version }) => (
