@@ -1,5 +1,5 @@
 import { List, Map } from 'immutable'
-import { isString, isEmpty, stubTrue, negate, constant } from 'lodash'
+import { isString, isEmpty } from 'lodash'
 import createImmutableSelector from '/store/createImmutableSelector'
 
 const getDevices = state => state.get('devices', Map())
@@ -48,17 +48,15 @@ export default createImmutableSelector(
 			) // eslint-disable-line no-mixed-spaces-and-tabs
 
 		devices = devices
-			.filter(
-				device =>
-					device.has('connected') &&
-					device.has('deviceId') &&
-					(isEmpty(filter)
-						? true
-						: invert
-							? !containsEveryFilter(device)
-							: containsEveryFilter(device))
+			.filter(device =>
+				isEmpty(filter)
+					? true
+					: invert
+						? !containsEveryFilter(device)
+						: containsEveryFilter(device)
 			)
 			.sortBy(device => device.getIn(sort.get('field').split('.'), ''))
+			.sortBy(device => !device.has('connected'))
 
 		return sort.get('ascending') ? devices : devices.reverse()
 	}
