@@ -140,20 +140,18 @@ class DeviceList extends PureComponent {
 						<tbody>
 							<PaginationTableBody
 								renderData={this.props.devices.valueSeq()}
-								component={info => {
-									return (
-										<DeviceListItem
-											key={info.get('deviceId')}
-											info={info}
-											onSelectionToggle={this.onSelectionToggle}
-											selected={this.props.multiSelectedDevices.includes(
-												info.get('deviceId')
-											)}
-											configurations={this.props.configurations}
-											deviceSources={this.props.deviceSources}
-										/>
-									)
-								}}
+								component={info => (
+									<DeviceListItem
+										key={info.get('deviceId')}
+										info={info}
+										onSelectionToggle={this.onSelectionToggle}
+										selected={this.props.multiSelectedDevices.includes(
+											info.get('deviceId')
+										)}
+										configurations={this.props.configurations}
+										deviceSources={this.props.deviceSources}
+									/>
+								)}
 							/>
 						</tbody>
 					</table>

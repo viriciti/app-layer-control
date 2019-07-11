@@ -49,7 +49,6 @@ export default createImmutableSelector(
 
 		devices = devices
 			.filter(device =>
-				// device.has('deviceId') &&
 				isEmpty(filter)
 					? true
 					: invert
@@ -57,6 +56,7 @@ export default createImmutableSelector(
 						: containsEveryFilter(device)
 			)
 			.sortBy(device => device.getIn(sort.get('field').split('.'), ''))
+			.sortBy(device => !device.has('connected'))
 
 		return sort.get('ascending') ? devices : devices.reverse()
 	}
