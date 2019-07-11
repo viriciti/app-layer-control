@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React from 'react'
 import moment from 'moment'
 import { List } from 'immutable'
 import classNames from 'classnames'
@@ -38,7 +38,14 @@ const formats = {
 
 	fromNow: ({ value, info }) => {
 		if (value > 1e5) {
-			const title = moment(value).format('ddd MMM d - HH:mm')
+			const title = moment(value).calendar(undefined, {
+				lastDay:  '[Yesterday at] HH:mm',
+				sameDay:  '[Today at] HH:mm',
+				nextDay:  '[Tomorrow at] HH:mm',
+				lastWeek: '[last] dddd [at] HH:mm',
+				nextWeek: 'dddd [at] HH:mm',
+				sameElse: 'L',
+			})
 
 			return (
 				<LastSeenInterval
@@ -81,7 +88,14 @@ const formats = {
 
 		if (isStale) {
 			return (
-				<span className={classNames(defaultClassName, 'fa-hourglass-end', 'text-muted')} title="Stale" />
+				<span
+					className={classNames(
+						defaultClassName,
+						'fa-hourglass-end',
+						'text-muted'
+					)}
+					title="Stale"
+				/>
 			)
 		} else if (info.get('connected')) {
 			return (
