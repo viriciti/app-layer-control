@@ -3,6 +3,7 @@ filter                                 = require "p-filter"
 { Router }                             = require "express"
 { isArray, first, map, size, without } = require "lodash"
 config                                 = require "config"
+log                                    = (require "../../lib/Logger") "api:administration"
 
 Store                  = require "../../Store"
 getRegistryImages      = require "../../lib/getRegistryImages"
@@ -241,6 +242,8 @@ router.post "/group/devices", ({ app, body }, res) ->
 	{ db, broadcaster }                  = app.locals
 	{ operation, groups, target, multi } = body
 	target                               = [target] unless isArray target
+
+	log.info "Update groups for #{target.join ', '} - #{operation} #{groups.join ', '}"
 
 	if operation is "remove"
 		query   = deviceId: $in: target
