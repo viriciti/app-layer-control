@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import moment from 'moment'
 import { List } from 'immutable'
 import classNames from 'classnames'
@@ -77,11 +77,26 @@ const formats = {
 
 	status: ({ info }) => {
 		const defaultClassName = classNames('fas', 'ml-3', 'd-block')
+		const isStale          = !info.has('connected')
 
-		if (info.get('connected')) {
-			return <span className={classNames(defaultClassName, 'fa-circle', 'text-success')} title="Online" />
+		if (isStale) {
+			return (
+				<span className={classNames(defaultClassName, 'fa-hourglass-end', 'text-muted')} title="Stale" />
+			)
+		} else if (info.get('connected')) {
+			return (
+				<span
+					className={classNames(defaultClassName, 'fa-circle', 'text-success')}
+					title="Online"
+				/>
+			)
 		} else {
-			return <span className={classNames(defaultClassName, 'fa-circle', 'text-danger')} title="Offline" />
+			return (
+				<span
+					className={classNames(defaultClassName, 'fa-circle', 'text-danger')}
+					title="Offline"
+				/>
+			)
 		}
 	},
 }

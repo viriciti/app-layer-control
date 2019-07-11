@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
@@ -68,6 +68,10 @@ class DeviceDetail extends PureComponent {
 
 		if (!selectedDevice) {
 			return
+		} else if (!selectedDevice.has('connected')) {
+			return (
+				<div className="card-message">Stale devices cannot be inspected</div>
+			)
 		}
 
 		const deviceId    = selectedDevice.get('deviceId')
