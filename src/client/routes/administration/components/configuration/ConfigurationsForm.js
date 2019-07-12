@@ -28,18 +28,27 @@ const initialFormValues = {
 
 class ConfigurationsForm extends PureComponent {
 	componentDidUpdate (prevProps) {
-		if (prevProps.isEditing && !this.props.isEditing) {
-			this.props.initialize(initialFormValues)
-		} else if (
-			!prevProps.isEditing &&
-			this.props.isEditing &&
-			this.props.editing
+		if (
+			(prevProps.isEditing && !this.props.isEditing) ||
+			(prevProps.isCopying && !this.props.isCopying)
 		) {
-			this.props.initialize({
-				detached:   this.props.editing.get('detached'),
-				privileged: this.props.editing.get('privileged'),
-				...this.denormalizeGroupedValues(this.props.editing).toJS(),
-			})
+			this.props.initialize(initialFormValues)
+		} else if (this.props.configuration) {
+			if (!prevProps.isEditing && this.props.isEditing) {
+				this.props.initialize({
+					detached:   this.props.configuration.get('detached'),
+					privileged: this.props.configuration.get('privileged'),
+					...this.denormalizeGroupedValues(this.props.configuration).toJS(),
+				})
+			} else if (!prevProps.isCopying && this.props.isCopying) {
+				this.props.initialize({
+					detached:        this.props.configuration.get('detached'),
+					privileged:      this.props.configuration.get('privileged'),
+					...this.denormalizeGroupedValues(this.props.configuration).toJS(),
+					applicationName: undefined,
+					containerName:   undefined,
+				})
+			}
 		}
 	}
 
@@ -99,9 +108,10 @@ class ConfigurationsForm extends PureComponent {
 	}
 
 	onSubmit = async newConfiguration => {
-		const confirmMessage = this.props.isAdding
-			? 'A new configuration will be created. Are you sure?'
-			: 'The configuration will be updated. Are you sure?'
+		const confirmMessage =
+			this.props.isAdding || this.props.isCopying
+				? 'A new configuration will be created. Are you sure?'
+				: 'The configuration will be updated. Are you sure?'
 
 		const configuration       = { ...newConfiguration }
 		const { applicationName } = configuration
@@ -185,8 +195,14 @@ class ConfigurationsForm extends PureComponent {
 	render () {
 		return (
 			<Modal
-				visible={this.props.isAdding || this.props.isEditing}
-				title={this.props.isAdding ? 'Add Application' : 'Edit Application'}
+				visible={
+					this.props.isAdding || this.props.isEditing || this.props.isCopying
+				}
+				title={
+					this.props.isAdding || this.props.isCopying
+						? 'Add Application'
+						: 'Edit Application'
+				}
 				onClose={this.props.onRequestClose}
 			>
 				<form
@@ -300,7 +316,9 @@ class ConfigurationsForm extends PureComponent {
 										type="submit"
 										white
 									>
-										{this.props.isAdding ? 'Add' : 'Edit'}
+										{this.props.isAdding || this.props.isCopying
+											? 'Add'
+											: 'Edit'}
 									</AsyncButton>
 									<button
 										type="button"
@@ -320,11 +338,9 @@ class ConfigurationsForm extends PureComponent {
 	}
 }
 
-const mapStateToProps = state => {
-	return {
-		registryImages: state.get('registryImages'),
-	}
-}
+const mapStateToProps = state => ({
+	registryImages: state.get('registryImages'),
+})
 
 export default connect(mapStateToProps)(
 	reduxForm({

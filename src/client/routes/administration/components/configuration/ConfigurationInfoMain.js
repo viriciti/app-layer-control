@@ -10,8 +10,8 @@ import getRemovableApplications from '../../modules/selectors/advice/getRemovabl
 
 class ConfigurationInfoMain extends PureComponent {
 	state = {
-		isAdding:              false,
-		isEditing:             false,
+		action:                null,
+		configuration:         null,
 		selectedConfiguration: null,
 	}
 
@@ -28,12 +28,16 @@ class ConfigurationInfoMain extends PureComponent {
 		}
 	}
 
+	onCopyApplication = () => {
+		this.setState({ action: 'copy' })
+	}
+
 	onAddApplication = () => {
-		this.setState({ isAdding: true, isEditing: false })
+		this.setState({ action: 'add' })
 	}
 
 	onEditApplication = () => {
-		this.setState({ isEditing: true, isAdding: false })
+		this.setState({ action: 'edit' })
 	}
 
 	onConfigurationSelected = selectedConfiguration => {
@@ -46,9 +50,8 @@ class ConfigurationInfoMain extends PureComponent {
 
 	onRequestClose = () => {
 		this.setState({
-			isAdding:  false,
-			isEditing: false,
-			editing:   null,
+			action:        null,
+			configuration: null,
 		})
 	}
 
@@ -90,6 +93,7 @@ class ConfigurationInfoMain extends PureComponent {
 								<ConfigurationInfo
 									selectedConfiguration={this.state.selectedConfiguration}
 									onEditApplication={this.onEditApplication}
+									onCopyApplication={this.onCopyApplication}
 								/>
 							</div>
 						)}
@@ -97,9 +101,10 @@ class ConfigurationInfoMain extends PureComponent {
 				</div>
 
 				<ConfigurationsForm
-					isAdding={this.state.isAdding}
-					isEditing={this.state.isEditing}
-					editing={this.state.selectedConfiguration}
+					isAdding={this.state.action === 'add'}
+					isEditing={this.state.action === 'edit'}
+					isCopying={this.state.action === 'copy'}
+					configuration={this.state.selectedConfiguration}
 					onRequestClose={this.onRequestClose}
 				/>
 			</Fragment>
