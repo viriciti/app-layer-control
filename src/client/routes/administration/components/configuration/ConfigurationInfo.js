@@ -81,14 +81,15 @@ class ConfigurationInfo extends PureComponent {
 									type="button"
 									disabled={this.props.isRemovingApplication}
 								>
-									<span className="fas fa-paste" /> Edit
+									<span className="fas fa-edit" /> Edit
 								</button>
 
 								<AsyncButton
 									busy={this.props.isRemovingApplication}
-									className="btn btn-secondary btn--icon"
+									className="btn btn-danger btn--icon"
 									onClick={this.onDelete}
 									type="button"
+									title="Delete application"
 									white
 								>
 									<span className="fas fa-trash" />

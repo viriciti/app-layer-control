@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import { Field, FieldArray, reduxForm } from 'redux-form/immutable'
 import { Map, List } from 'immutable'
 import { connect } from 'react-redux'
@@ -305,7 +305,6 @@ class ConfigurationsForm extends PureComponent {
 						</div>
 						<div className="row">
 							<div className="col-md-3 text-danger">
-								{' '}
 								{this.props.error && <strong>{this.props.error}</strong>}
 							</div>
 							<div className="col-md-12">
@@ -317,16 +316,17 @@ class ConfigurationsForm extends PureComponent {
 										white
 									>
 										{this.props.isAdding || this.props.isCopying
-											? 'Add'
+											? 'Save'
 											: 'Edit'}
 									</AsyncButton>
 									<button
 										type="button"
 										disabled={this.props.submitting}
-										className="btn btn-secondary"
+										className="btn btn-secondary btn--icon"
 										onClick={this.props.reset}
+										title="Undo any changes"
 									>
-										Clear Values
+										Reset
 									</button>
 								</div>
 							</div>
