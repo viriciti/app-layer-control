@@ -70,7 +70,10 @@ class DeviceDetail extends PureComponent {
 			return
 		} else if (!selectedDevice.has('connected')) {
 			return (
-				<div className="card-message">Stale devices cannot be inspected</div>
+				<div className="card-message">
+					Stale devices cannot be inspected<br />
+					<small>This means App Layer knows this device exists, but does not know enough to be able to present it</small>
+				</div>
 			)
 		}
 

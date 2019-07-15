@@ -15,16 +15,21 @@ class ConfigurationInfo extends PureComponent {
 	}
 
 	getDependents () {
-		return this.props.dependents.get(this.props.selectedConfiguration.get('applicationName'), List())
+		return this.props.dependents.get(
+			this.props.selectedConfiguration.get('applicationName'),
+			List()
+		)
 	}
 
-	onEdit = () => {
-		this.props.onEditApplication()
+	onCopy = () => {
+		this
 	}
 
 	onDelete = async () => {
 		if (confirm('Are you sure you want to remove this application?')) {
-			this.props.asyncRemoveApplication(this.props.selectedConfiguration.get('applicationName'))
+			this.props.asyncRemoveApplication(
+				this.props.selectedConfiguration.get('applicationName')
+			)
 		}
 	}
 
@@ -52,28 +57,42 @@ class ConfigurationInfo extends PureComponent {
 						</div>
 					</div>
 
-					<JSONPretty id="json-pretty" className="p-2" json={this.props.selectedConfiguration} />
+					<JSONPretty
+						id="json-pretty"
+						className="p-2"
+						json={this.props.selectedConfiguration}
+					/>
 
 					<div className="row">
 						<div className="col-12">
 							<div className="btn-group float-right">
 								<button
-									onClick={this.onEdit}
-									className="btn btn-primary"
+									onClick={this.props.onCopyApplication}
+									className="btn btn-light"
 									type="button"
 									disabled={this.props.isRemovingApplication}
 								>
-									<span className="fas fa-paste" /> Edit
+									<span className="fas fa-clone" /> Copy
+								</button>
+
+								<button
+									onClick={this.props.onEditApplication}
+									className="btn btn-light"
+									type="button"
+									disabled={this.props.isRemovingApplication}
+								>
+									<span className="fas fa-edit" /> Edit
 								</button>
 
 								<AsyncButton
 									busy={this.props.isRemovingApplication}
-									className="btn btn-secondary"
+									className="btn btn-danger btn--icon"
 									onClick={this.onDelete}
 									type="button"
+									title="Delete application"
 									white
 								>
-									<span className="fas fa-trash" /> Delete
+									<span className="fas fa-trash" />
 								</AsyncButton>
 							</div>
 						</div>
