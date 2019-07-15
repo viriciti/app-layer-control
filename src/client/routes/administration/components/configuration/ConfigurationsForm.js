@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from 'react'
+import React, { PureComponent } from 'react'
 import { Field, FieldArray, reduxForm } from 'redux-form/immutable'
 import { Map, List } from 'immutable'
 import { connect } from 'react-redux'
