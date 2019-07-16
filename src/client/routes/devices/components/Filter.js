@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { noop, partial } from 'lodash'
 
 import { applyFilter, toggleInvert } from '/store/globalReducers/ui'
+import { paginateTo } from '/routes/devices/actions/index'
 
 // Array.splice without mutating source array
 // lodash#without does not support indexes
@@ -31,9 +32,13 @@ function Filter ({ applyFilter, lastQuery, invert, toggleInvert }) {
 
 	const addTag     = tag => (tags.length < 5 ? setTags(tags.concat(tag)) : noop)
 	const deleteTag  = tag => setTags(splice(tags, tag))
-	const previewTag = tag => applyFilter(tags.concat({ name: tag }))
+	const previewTag = tag => {
+		paginateTo(0)
+		applyFilter(tags.concat({ name: tag }))
+	}
 
 	useEffect(() => {
+		paginateTo(0)
 		applyFilter(tags)
 	}, [tags])
 
@@ -77,12 +82,10 @@ function Filter ({ applyFilter, lastQuery, invert, toggleInvert }) {
 }
 
 export default connect(
-	state => {
-		return {
-			lastQuery: state.getIn(['ui', 'filter'], []),
-			invert:    state.getIn(['ui', 'invert'], false),
-		}
-	},
+	state => ({
+		lastQuery: state.getIn(['ui', 'filter'], []),
+		invert:    state.getIn(['ui', 'invert'], false),
+	}),
 	{
 		applyFilter,
 		toggleInvert,

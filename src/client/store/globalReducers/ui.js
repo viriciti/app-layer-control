@@ -80,7 +80,12 @@ export function updateDeviceActivity (name, target, status) {
 	}
 }
 
-export function updateApplicationActivity ({ name, deviceId, status, application }) {
+export function updateApplicationActivity ({
+	name,
+	deviceId,
+	status,
+	application,
+}) {
 	return {
 		type:    UPDATE_APPLICATION_ACTIVITY,
 		payload: status,
@@ -101,7 +106,11 @@ const actionHandlers = {
 		const keyPath       = ['actions', ...key]
 
 		if (state.hasIn(keyPath) && state.getIn(keyPath) === status) {
-			console.warn(`Potentially unwanted behaviour: ${keyPath.join('.')} is being set to same value '${status}'`)
+			console.warn(
+				`Potentially unwanted behaviour: ${keyPath.join(
+					'.'
+				)} is being set to same value '${status}'`
+			)
 		}
 
 		return state.setIn(keyPath, status)
@@ -118,7 +127,10 @@ const actionHandlers = {
 		if (status) {
 			return state.set(name, currentStatuses.concat(target))
 		} else {
-			return state.set(name, currentStatuses.filterNot(device => target.includes(device)))
+			return state.set(
+				name,
+				currentStatuses.filterNot(device => target.includes(device))
+			)
 		}
 	},
 	[UPDATE_APPLICATION_ACTIVITY] (state, { payload, meta }) {
@@ -128,7 +140,10 @@ const actionHandlers = {
 		if (payload) {
 			return state.setIn([name, deviceId], currentStatuses.push(application))
 		} else {
-			return state.setIn([name, deviceId], currentStatuses.filterNot(partial(eq, application)))
+			return state.setIn(
+				[name, deviceId],
+				currentStatuses.filterNot(partial(eq, application))
+			)
 		}
 	},
 	[APPLY_FILTER] (state, { payload }) {

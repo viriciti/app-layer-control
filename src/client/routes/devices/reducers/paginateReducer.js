@@ -1,6 +1,6 @@
 import { Map } from 'immutable'
 
-import { PAGINATE, ITEMS_PER_PAGE, APPLY_FILTERS } from '/routes/devices/actions'
+import { PAGINATE, ITEMS_PER_PAGE } from '/routes/devices/actions'
 
 const ACTION_HANDLERS = {
 	[PAGINATE]: (state, action) => {
@@ -8,9 +8,6 @@ const ACTION_HANDLERS = {
 	},
 	[ITEMS_PER_PAGE]: (state, action) => {
 		return state.set('itemsPerPage', action.payload).set('page', 0)
-	},
-	[APPLY_FILTERS]: state => {
-		return state.set('page', 0)
 	},
 }
 
