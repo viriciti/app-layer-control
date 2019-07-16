@@ -25,7 +25,6 @@ export default function Advice ({
 					)}
 				>
 					<small>{items ? items.size : size} manual action(s)</small>
-					<span className="far fa-hourglass ml-2" />
 				</span>
 			</div>
 		)
