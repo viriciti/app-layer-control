@@ -1,14 +1,10 @@
 import axios from 'axios'
-import { get } from 'lodash'
+import { get, defaultTo } from 'lodash'
 import { toast } from 'react-toastify'
 
 import { DEVICE_SOURCES } from '/routes/sources/modules/actions'
 import { SELECT_DEVICE } from '/store/constants'
-import {
-	updateAsyncState,
-	updateDeviceActivity,
-	setAsyncState,
-} from '/store/globalReducers/ui'
+import { updateAsyncState, setAsyncState } from '/store/globalReducers/ui'
 
 export const MULTISELECT_DEVICE = 'MULTISELECT_DEVICE'
 export const MULTISELECT_DEVICES = 'MULTISELECT_DEVICES'
@@ -42,10 +38,10 @@ export const PAGINATE = 'PAGINATE'
 export const ITEMS_PER_PAGE = 'ITEMS_PER_PAGE'
 export const RESET_PAGINATION = 'RESET_PAGINATION'
 
-export function paginateTo ({ selected }) {
+export function paginateTo (page) {
 	return {
 		type:    PAGINATE,
-		payload: selected,
+		payload: defaultTo(page.selected, page),
 	}
 }
 
@@ -230,7 +226,9 @@ export function asyncRemoveImage (deviceId, image) {
 		dispatch(setAsyncState(['isRemovingImage', deviceId, image], true))
 
 		try {
-			const { data } = await axios.delete(`/api/devices/${deviceId}/image/${image}`)
+			const { data } = await axios.delete(
+				`/api/devices/${deviceId}/image/${image}`
+			)
 
 			toast.success(data.message)
 		} catch ({ response }) {
