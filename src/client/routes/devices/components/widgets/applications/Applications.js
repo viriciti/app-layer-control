@@ -7,6 +7,72 @@ import { partial, defaultTo } from 'lodash'
 
 import Application from './Application'
 
+function ApplicationVersion ({ image }) {
+	return image.substring(image.lastIndexOf(':') + 1)
+}
+
+function ApplicationStatus ({ status }) {
+	switch (status) {
+		case 'running':
+			return <span className="fas fa-play-circle text-success mr-2" />
+
+		case 'restarting':
+			return <span className="fas fa-dot-circle text-warning mr-2" />
+
+		case 'exited':
+			return <span className="fas fa-stop-circle text-danger mr-2" />
+
+		case 'created':
+			return <span className="fas fa-circle-notch text-info mr-2" />
+
+		default:
+			return (
+				<span
+					className="fas fa-question-circle text-secondary mr-2"
+					title={status}
+				/>
+			)
+	}
+}
+
+function ApplicationHeader ({
+	container,
+	selectedContainer,
+	onSelectContainer,
+}) {
+	const isSelected = container.get('name') === selectedContainer
+	const group      = container.getIn(['labels', 'group'], 'manual')
+	const version    = container
+		.get('image')
+		.substring(container.get('image').lastIndexOf(':') + 1)
+
+	const selectButton = (
+		<button
+			onClick={onSelectContainer}
+			className={classNames('btn', 'btn--select', { active: isSelected })}
+		>
+			<ApplicationStatus status={container.getIn(['state', 'status'])} />
+			{container.get('name')}<b>@</b>{version}
+		</button>
+	)
+
+	if (group === 'default') {
+		return <li className="mb-2">{selectButton}</li>
+	} else {
+		return (
+			<li className="mb-2">
+				<div className="btn-group">
+					{selectButton}
+
+					<div className={classNames('btn', 'btn--static', 'btn-light')}>
+						{group}
+					</div>
+				</div>
+			</li>
+		)
+	}
+}
+
 class Applications extends Component {
 	state = {
 		selectedContainer: null,
@@ -117,23 +183,15 @@ class Applications extends Component {
 									)
 
 									return (
-										<li className="mb-2" key={`${container.get('Id')}`}>
-											<button
-												onClick={partial(this.onContainerSelected, container)}
-												className={classNames('btn', 'btn--select', {
-													active: container.get('name') === selectedContainer,
-												})}
-											>
-												{this.renderContainerIcon(
-													container.getIn(['state', 'status'])
-												)}
-												{this.renderContainerHeader(container)}
-											</button>
-
-											{frontEndPort
-												? this.renderFrontEndButton({ frontEndPort, deviceIp })
-												: null}
-										</li>
+										<ApplicationHeader
+											key={container.get('Id')}
+											container={container}
+											selectedContainer={selectedContainer}
+											onSelectContainer={partial(
+												this.onContainerSelected,
+												container
+											)}
+										/>
 									)
 								})}
 						</ul>
