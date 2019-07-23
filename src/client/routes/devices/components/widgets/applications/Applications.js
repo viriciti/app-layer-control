@@ -42,31 +42,25 @@ function ApplicationHeader ({
 		.get('image')
 		.substring(container.get('image').lastIndexOf(':') + 1)
 
-	const selectButton = (
-		<button
-			onClick={onSelectContainer}
-			className={classNames('btn', 'btn--select', { active: isSelected })}
-		>
-			<ApplicationStatus status={container.getIn(['state', 'status'])} />
-			{container.get('name')}<b>@</b>{version}
-		</button>
-	)
+	return (
+		<li className="mb-2">
+			<div className="btn-group">
+				<button
+					onClick={onSelectContainer}
+					className={classNames('btn', 'btn--select', { active: isSelected })}
+				>
+					<ApplicationStatus status={container.getIn(['state', 'status'])} />
+					{container.get('name')}
+					<b>@</b>
+					{version}
+				</button>
 
-	if (group === 'default') {
-		return <li className="mb-2">{selectButton}</li>
-	} else {
-		return (
-			<li className="mb-2">
-				<div className="btn-group">
-					{selectButton}
-
-					<div className={classNames('btn', 'btn--static', 'btn-light')}>
-						{group}
-					</div>
+				<div className={classNames('btn', 'btn--static', 'btn-light')}>
+					{group}
 				</div>
-			</li>
-		)
-	}
+			</div>
+		</li>
+	)
 }
 
 class Applications extends Component {
