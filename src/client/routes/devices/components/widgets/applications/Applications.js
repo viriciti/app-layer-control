@@ -7,10 +7,6 @@ import { partial, defaultTo } from 'lodash'
 
 import Application from './Application'
 
-function ApplicationVersion ({ image }) {
-	return image.substring(image.lastIndexOf(':') + 1)
-}
-
 function ApplicationStatus ({ status }) {
 	switch (status) {
 		case 'running':
