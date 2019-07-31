@@ -4,7 +4,7 @@
 		font-style: $style;
 		font-weight: $weight;
 
-		src: url("#{$file-path}.woff") format("woff");
+		src: url('#{$file-path}.woff') format('woff');
 	}
 }
 
@@ -51,6 +51,20 @@
 
 	&.btn--no-underline:hover::before {
 		background-color: $hover-bg;
+	}
+
+	&.btn--static {
+		&::before {
+			height: 0;
+		}
+
+		&:hover,
+		&:focus,
+		&:active {
+			background-color: $bg !important;
+			border-color: $bg !important;
+			color: $color !important;
+		}
 	}
 }
 

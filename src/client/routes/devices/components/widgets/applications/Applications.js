@@ -7,6 +7,110 @@ import { partial, defaultTo } from 'lodash'
 
 import Application from './Application'
 
+function Navigate ({ navigatePort, address }) {
+	const className = 'btn btn-secondary btn--reset-icon float-right'
+	const child     = (
+		<Fragment>
+			Go to
+			<span className="fas fa-external-link-alt pl-2" />
+		</Fragment>
+	)
+
+	if (address) {
+		return (
+			<a
+				className={className}
+				href={['http://', address, ':', navigatePort].join('')}
+				rel="noopener noreferrer"
+				target="_blank"
+			>
+				{child}
+			</a>
+		)
+	} else {
+		return (
+			<button
+				className={className}
+				title="Apps with a front end can only be served over VPN"
+				disabled
+			>
+				{child}
+			</button>
+		)
+	}
+}
+
+function ApplicationStatus ({ status }) {
+	switch (status) {
+		case 'running':
+			return <span className="fas fa-play-circle text-success mr-2" />
+
+		case 'restarting':
+			return <span className="fas fa-dot-circle text-warning mr-2" />
+
+		case 'exited':
+			return <span className="fas fa-stop-circle text-danger mr-2" />
+
+		case 'created':
+			return <span className="fas fa-circle-notch text-info mr-2" />
+
+		default:
+			return (
+				<span
+					className="fas fa-question-circle text-secondary mr-2"
+					title={status}
+				/>
+			)
+	}
+}
+
+function ApplicationHeader ({
+	container,
+	device,
+	navigatePort,
+	onSelectContainer,
+	selectedContainer,
+}) {
+	const isSelected = container.get('name') === selectedContainer
+	const group      = container.getIn(['labels', 'group'], 'manual')
+	const version    = container
+		.get('image')
+		.substring(container.get('image').lastIndexOf(':') + 1)
+	const address    = device.getIn(
+		['systemInfo', 'tun0'],
+		device.getIn(['systemInfo', 'tun0IP'])
+	)
+
+	return (
+		<li className="mb-2">
+			<div className="btn-group">
+				<button
+					onClick={onSelectContainer}
+					className={classNames('btn', 'btn--select', { active: isSelected })}
+				>
+					<ApplicationStatus status={container.getIn(['state', 'status'])} />
+					{container.get('name')}
+
+					<div className="application-version">
+						<b>@</b>
+						{version}
+					</div>
+				</button>
+
+				<div className={classNames('btn', 'btn--static', 'btn-light')}>
+					{group}
+				</div>
+			</div>
+
+			{navigatePort ? (
+				<div className="float-right">
+					<Navigate navigatePort={navigatePort} address={address} />
+				</div>
+			) : null}
+		</li>
+	)
+}
+
 class Applications extends Component {
 	state = {
 		selectedContainer: null,
@@ -96,7 +200,7 @@ class Applications extends Component {
 				<hr />
 
 				<div className="row">
-					<div className="col-md-6">
+					<div className="col-md-7">
 						<ul className="list-group">
 							{defaultTo(this.props.containers, List())
 								.toList()
@@ -107,38 +211,28 @@ class Applications extends Component {
 									const selectedContainer =
 										this.state.selectedContainer &&
 										this.state.selectedContainer.get('name')
-									const frontEndPort      = this.props.configurations.getIn([
+									const navigatePort      = this.props.configurations.getIn([
 										container.get('name'),
 										'frontEndPort',
 									])
-									const deviceIp          = this.props.selectedDevice.getIn(
-										['systemInfo', 'tun0'],
-										this.props.selectedDevice.getIn(['systemInfo', 'tun0IP'])
-									)
 
 									return (
-										<li className="mb-2" key={`${container.get('Id')}`}>
-											<button
-												onClick={partial(this.onContainerSelected, container)}
-												className={classNames('btn', 'btn--select', {
-													active: container.get('name') === selectedContainer,
-												})}
-											>
-												{this.renderContainerIcon(
-													container.getIn(['state', 'status'])
-												)}
-												{this.renderContainerHeader(container)}
-											</button>
-
-											{frontEndPort
-												? this.renderFrontEndButton({ frontEndPort, deviceIp })
-												: null}
-										</li>
+										<ApplicationHeader
+											key={container.get('Id')}
+											container={container}
+											device={this.props.selectedDevice}
+											navigatePort={navigatePort}
+											selectedContainer={selectedContainer}
+											onSelectContainer={partial(
+												this.onContainerSelected,
+												container
+											)}
+										/>
 									)
 								})}
 						</ul>
 					</div>
-					<div className="col-md-6">
+					<div className="col-md-5">
 						<div className="row">
 							<div className="col-12">
 								{this.state.selectedContainer ? (
