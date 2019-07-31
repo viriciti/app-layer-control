@@ -6,7 +6,11 @@ import { List } from 'immutable'
 import { first } from 'lodash'
 
 import AsyncButton from '/components/common/AsyncButton'
-import { asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs } from '/routes/devices/actions'
+import {
+	asyncRemoveApplication,
+	asyncRestartApplication,
+	fetchApplicationLogs,
+} from '/routes/devices/actions'
 import toReactKey from '/utils/toReactKey'
 import getAsyncState from '/store/selectors/getAsyncState'
 
@@ -21,25 +25,40 @@ class Application extends PureComponent {
 
 	onRestart = () => {
 		if (confirm('Are you sure you want to restart this application?')) {
-			this.props.asyncRestartApplication(this.props.deviceId, this.props.selectedContainer.get('name'))
+			this.props.asyncRestartApplication(
+				this.props.deviceId,
+				this.props.selectedContainer.get('name')
+			)
 		}
 	}
 
 	onRemove = () => {
 		if (confirm('Are you sure you want to remove this application?')) {
-			this.props.asyncRemoveApplication(this.props.deviceId, this.props.selectedContainer.get('name'))
+			this.props.asyncRemoveApplication(
+				this.props.deviceId,
+				this.props.selectedContainer.get('name')
+			)
 		}
 	}
 
 	onRequestContainerLogs = () => {
-		this.props.fetchApplicationLogs(this.props.deviceId, this.props.selectedContainer.get('name'))
+		this.props.fetchApplicationLogs(
+			this.props.deviceId,
+			this.props.selectedContainer.get('name')
+		)
 	}
 
 	renderContainerInfo () {
-		const environmentVariables = this.props.selectedContainer.get('environment').toJS()
-		const informationToShow    = Object.assign({}, this.props.selectedContainer.toJS(), {
-			environment: this.protectEnvironmentVariables(environmentVariables),
-		})
+		const environmentVariables = this.props.selectedContainer
+			.get('environment')
+			.toJS()
+		const informationToShow    = Object.assign(
+			{},
+			this.props.selectedContainer.toJS(),
+			{
+				environment: this.protectEnvironmentVariables(environmentVariables),
+			}
+		)
 
 		return (
 			<JSONPretty
@@ -72,31 +91,8 @@ class Application extends PureComponent {
 		return (
 			<Fragment>
 				<div className="row">
-					<div className="col-6">
+					<div className="col-12">
 						<h5>{this.props.selectedContainer.get('name')}</h5>
-					</div>
-					<div className="col-6">
-						<div className="btn-group float-right">
-							<AsyncButton
-								busy={this.props.isFetchingLogs}
-								className="btn btn-light btn-sm btn--icon"
-								type="button"
-								onClick={this.onRequestContainerLogs}
-								title="Request container logs"
-							>
-								<span className="fas fa-file-alt" /> Logs
-							</AsyncButton>
-
-							<AsyncButton
-								busy={this.props.isRestartingApplication}
-								className="btn btn-warning btn-sm btn--icon"
-								type="button"
-								onClick={this.onRestart}
-								title="Restart this app"
-							>
-								<span className="fas fa-power-off" /> Restart
-							</AsyncButton>
-						</div>
 					</div>
 				</div>
 				<div className="row">
@@ -106,16 +102,38 @@ class Application extends PureComponent {
 					<div className="col-12">{this.renderContainerInfo()}</div>
 				</div>
 				<div className="row">
-					<div className="col-3 offset-9">
-						<AsyncButton
-							busy={this.props.isRemovingApplication}
-							className="btn btn-danger btn--icon btn-sm float-right"
-							type="button"
-							onClick={this.onRemove}
-							title="Delete this application"
-						>
-							<span className="fas fa-trash" /> Delete
-						</AsyncButton>
+					<div className="col-12">
+						<div className="btn-group float-right">
+							<AsyncButton
+								busy={this.props.isFetchingLogs}
+								className="btn btn-light btn-sm btn--icon"
+								type="button"
+								onClick={this.onRequestContainerLogs}
+								title="Request application logs"
+							>
+								<span className="fas fa-file-alt" /> Logs
+							</AsyncButton>
+
+							<AsyncButton
+								busy={this.props.isRestartingApplication}
+								className="btn btn-light btn-sm btn--icon"
+								type="button"
+								onClick={this.onRestart}
+								title="Restart this application"
+							>
+								<span className="fas fa-power-off" /> Restart
+							</AsyncButton>
+
+							<AsyncButton
+								busy={this.props.isRemovingApplication}
+								className="btn btn-danger btn--icon btn-sm float-right"
+								type="button"
+								onClick={this.onRemove}
+								title="Delete this application"
+							>
+								<span className="fas fa-trash" />
+							</AsyncButton>
+						</div>
 					</div>
 				</div>
 			</Fragment>
@@ -129,10 +147,21 @@ export default connect(
 		const name         = ownProps.selectedContainer.get('name')
 
 		return {
-			applicationLogs:         state.getIn(['devicesLogs', deviceId, 'containers', name], List()),
-			isRestartingApplication: getAsyncState(['isRestartingApplication', deviceId, name])(state),
-			isRemovingApplication:   getAsyncState(['isRemovingApplication', deviceId, name])(state),
-			isFetchingLogs:          getAsyncState(['isFetchingLogs', deviceId, name])(state),
+			applicationLogs: state.getIn(
+				['devicesLogs', deviceId, 'containers', name],
+				List()
+			),
+			isRestartingApplication: getAsyncState([
+				'isRestartingApplication',
+				deviceId,
+				name,
+			])(state),
+			isRemovingApplication: getAsyncState([
+				'isRemovingApplication',
+				deviceId,
+				name,
+			])(state),
+			isFetchingLogs: getAsyncState(['isFetchingLogs', deviceId, name])(state),
 		}
 	},
 	{ asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs }

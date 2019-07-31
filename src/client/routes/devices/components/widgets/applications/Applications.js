@@ -152,7 +152,7 @@ class Applications extends Component {
 				<hr />
 
 				<div className="row">
-					<div className="col-md-6">
+					<div className="col-md-7">
 						<ul className="list-group">
 							{defaultTo(this.props.containers, List())
 								.toList()
@@ -186,7 +186,7 @@ class Applications extends Component {
 								})}
 						</ul>
 					</div>
-					<div className="col-md-6">
+					<div className="col-md-5">
 						<div className="row">
 							<div className="col-12">
 								{this.state.selectedContainer ? (
