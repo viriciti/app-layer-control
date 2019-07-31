@@ -4,3 +4,13 @@
 	height: 20em;
 	overflow-y: scroll;
 }
+
+.application-version {
+	@extend .d-none;
+}
+
+@media (min-width: 1201px) {
+	.application-version {
+		display: inline !important;
+	}
+}

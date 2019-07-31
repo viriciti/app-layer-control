@@ -7,6 +7,39 @@ import { partial, defaultTo } from 'lodash'
 
 import Application from './Application'
 
+function Navigate ({ navigatePort, address }) {
+	const className = 'btn btn-secondary btn--reset-icon float-right'
+	const child     = (
+		<Fragment>
+			Go to
+			<span className="fas fa-external-link-alt pl-2" />
+		</Fragment>
+	)
+
+	if (address) {
+		return (
+			<a
+				className={className}
+				href={['http://', address, ':', navigatePort].join('')}
+				rel="noopener noreferrer"
+				target="_blank"
+			>
+				{child}
+			</a>
+		)
+	} else {
+		return (
+			<button
+				className={className}
+				title="Apps with a front end can only be served over VPN"
+				disabled
+			>
+				{child}
+			</button>
+		)
+	}
+}
+
 function ApplicationStatus ({ status }) {
 	switch (status) {
 		case 'running':
@@ -33,14 +66,20 @@ function ApplicationStatus ({ status }) {
 
 function ApplicationHeader ({
 	container,
-	selectedContainer,
+	device,
+	navigatePort,
 	onSelectContainer,
+	selectedContainer,
 }) {
 	const isSelected = container.get('name') === selectedContainer
 	const group      = container.getIn(['labels', 'group'], 'manual')
 	const version    = container
 		.get('image')
 		.substring(container.get('image').lastIndexOf(':') + 1)
+	const address    = device.getIn(
+		['systemInfo', 'tun0'],
+		device.getIn(['systemInfo', 'tun0IP'])
+	)
 
 	return (
 		<li className="mb-2">
@@ -51,14 +90,23 @@ function ApplicationHeader ({
 				>
 					<ApplicationStatus status={container.getIn(['state', 'status'])} />
 					{container.get('name')}
-					<b>@</b>
-					{version}
+
+					<div className="application-version">
+						<b>@</b>
+						{version}
+					</div>
 				</button>
 
 				<div className={classNames('btn', 'btn--static', 'btn-light')}>
 					{group}
 				</div>
 			</div>
+
+			{navigatePort ? (
+				<div className="float-right">
+					<Navigate navigatePort={navigatePort} address={address} />
+				</div>
+			) : null}
 		</li>
 	)
 }
@@ -163,19 +211,17 @@ class Applications extends Component {
 									const selectedContainer =
 										this.state.selectedContainer &&
 										this.state.selectedContainer.get('name')
-									const frontEndPort      = this.props.configurations.getIn([
+									const navigatePort      = this.props.configurations.getIn([
 										container.get('name'),
 										'frontEndPort',
 									])
-									const deviceIp          = this.props.selectedDevice.getIn(
-										['systemInfo', 'tun0'],
-										this.props.selectedDevice.getIn(['systemInfo', 'tun0IP'])
-									)
 
 									return (
 										<ApplicationHeader
 											key={container.get('Id')}
 											container={container}
+											device={this.props.selectedDevice}
+											navigatePort={navigatePort}
 											selectedContainer={selectedContainer}
 											onSelectContainer={partial(
 												this.onContainerSelected,
