@@ -7,13 +7,19 @@ import ws from '/store/middleware/ws'
 import makeRootReducer from '/store/reducers'
 
 export default (initialState = Map({})) => {
-	const middleware = [createDebounce(), thunk, ws(new WebSocket(`ws://${window.location.host}`))]
+	const protocol   = window.location.protocol.startsWith('https') ? 'wss' : 'ws'
+	const middleware = [
+		createDebounce(),
+		thunk,
+		ws(new WebSocket(`${protocol}://${window.location.host}`)),
+	]
 	const enhancers  = []
 
 	let composeEnhancers = compose
 
 	if (process.env.NODE_ENV !== 'production') {
-		const composeWithDevToolsExtension = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
+		const composeWithDevToolsExtension =
+			window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
 
 		if (typeof composeWithDevToolsExtension === 'function') {
 			composeEnhancers = composeWithDevToolsExtension({
