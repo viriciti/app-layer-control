@@ -71,18 +71,14 @@ class DeviceDetail extends PureComponent {
 		} else if (!selectedDevice.has('connected')) {
 			return (
 				<div className="card-message">
-					Stale devices cannot be inspected
-					<br />
-					<small>
-						This means App Layer knows this device exists, but does not know
-						enough to be able to present it
-					</small>
+					<span className="fas fa-stopwatch text-yellow mr-2" />
+					Waiting for App Layer Agent to connect ...
 				</div>
 			)
 		}
 
 		const deviceId    = selectedDevice.get('deviceId')
-		const connected   = selectedDevice.get('connected')
+		const connected   = selectedDevice.get('connected', 'unknown')
 		const statusLabel = classNames(
 			'label',
 			'label--inline',
@@ -211,11 +207,11 @@ class DeviceDetail extends PureComponent {
 			? this.props.selectedDevice.get('connected')
 				? 'online'
 				: 'offline'
-			: 'offline'
+			: undefined
 		const title           = this.props.selectedDevice
 			? `Device: ${this.props.selectedDevice.get('deviceId')}`
 			: ''
-		const headerClassName = `device-${status}`
+		const headerClassName = status ? '' : `device-${status}`
 
 		return (
 			<Modal
