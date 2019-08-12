@@ -211,7 +211,7 @@ class DeviceDetail extends PureComponent {
 		const title           = this.props.selectedDevice
 			? `Device: ${this.props.selectedDevice.get('deviceId')}`
 			: ''
-		const headerClassName = status ? '' : `device-${status}`
+		const headerClassName = status ? `device-${status}` : ''
 
 		return (
 			<Modal
