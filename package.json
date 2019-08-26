@@ -1,6 +1,7 @@
 {
 	"name": "app-layer-control",
-	"version": "4.19.0",
+	"version": "5.0.0",
+	"private": true,
 	"scripts": {
 		"test": "mocha",
 		"test:watch": "NODE_ENV=test mocha --watch-extensions coffee --watch",
@@ -11,7 +12,6 @@
 		"start": "nodemon src/server/main.coffee",
 		"release": "bin/build.sh"
 	},
-	"license": "UNLICENSED",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/viriciti/app-layer-control.git"
