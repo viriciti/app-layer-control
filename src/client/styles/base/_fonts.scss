@@ -1,10 +1,15 @@
-@import "./vendor/fontawesome/fontawesome.scss";
-@import "./vendor/fontawesome/solid.scss";
-@import "./vendor/fontawesome/regular.scss";
+// @import "./vendor/fontawesome/fontawesome.scss";
+// @import "./vendor/fontawesome/solid.scss";
+// @import "./vendor/fontawesome/regular.scss";
 
-@include font-face("Open Sans", "fonts/open-sans/OpenSans-Light-webfont", normal, 300);
-@include font-face("Open Sans", "fonts/open-sans/OpenSans-LightItalic-webfont", italic, 300);
-@include font-face("Open Sans", "fonts/open-sans/OpenSans-Regular-webfont", normal, 400);
-@include font-face("Open Sans", "fonts/open-sans/OpenSans-Italic-webfont", italic, 400);
-@include font-face("Open Sans", "fonts/open-sans/OpenSans-Bold-webfont", normal, 700);
-@include font-face("Open Sans", "fonts/open-sans/OpenSans-BoldItalic-webfont", italic, 700);
+@import '~node_modules/@fortawesome/fontawesome-pro/scss/fontawesome.scss';
+@import '~node_modules/@fortawesome/fontawesome-pro/scss/solid.scss';
+@import '~node_modules/@fortawesome/fontawesome-pro/scss/regular.scss';
+@import '~node_modules/@fortawesome/fontawesome-pro/scss/duotone.scss';
+
+@include font-face('Open Sans', 'fonts/open-sans/OpenSans-Light-webfont', normal, 300);
+@include font-face('Open Sans', 'fonts/open-sans/OpenSans-LightItalic-webfont', italic, 300);
+@include font-face('Open Sans', 'fonts/open-sans/OpenSans-Regular-webfont', normal, 400);
+@include font-face('Open Sans', 'fonts/open-sans/OpenSans-Italic-webfont', italic, 400);
+@include font-face('Open Sans', 'fonts/open-sans/OpenSans-Bold-webfont', normal, 700);
+@include font-face('Open Sans', 'fonts/open-sans/OpenSans-BoldItalic-webfont', italic, 700);
