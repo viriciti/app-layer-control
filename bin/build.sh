@@ -23,8 +23,8 @@ if [[ $CONTINUE =~ ^[y|Y]$ ]]; then
     exit 0
 fi
 
-echo "Building viriciti/app-layer-control:${VERSION} ..."
-docker build -t viriciti/app-layer-control:${VERSION} .
+echo "Building docker.viriciti.com/viriciti/datahub/app-layer-control:${VERSION} ..."
+docker build -t docker.viriciti.com/viriciti/datahub/app-layer-control:${VERSION} .
 
 read -p "Push image to Docker Hub? [y/N] " PUSH
 if [[ ! $PUSH =~ ^[y|Y]$ ]]; then
@@ -32,5 +32,5 @@ if [[ ! $PUSH =~ ^[y|Y]$ ]]; then
     exit 0
 fi
 
-docker push viriciti/app-layer-control:${VERSION}
+docker push docker.viriciti.com/viriciti/datahub/app-layer-control:${VERSION}
 echo -e "\e[32m✓ Pushed ${VERSION} to the Docker Registry\e[0m"

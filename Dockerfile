@@ -1,5 +1,5 @@
 # STAGE 1: build
-FROM node:10 as builder
+FROM docker.viriciti.com/datahub/armhf-alpine-node:build as builder
 
 # Create app directory
 RUN mkdir -p /app
