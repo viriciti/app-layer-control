@@ -23,8 +23,20 @@ class Application extends PureComponent {
 		})
 	}
 
+	onStart = () => {
+		if (confirm('Start this application?')) {
+			alert('To do')
+		}
+	}
+
+	onStop = () => {
+		if (confirm('Stop this application?')) {
+			alert('To do')
+		}
+	}
+
 	onRestart = () => {
-		if (confirm('Are you sure you want to restart this application?')) {
+		if (confirm('Restart this application?')) {
 			this.props.asyncRestartApplication(
 				this.props.deviceId,
 				this.props.selectedContainer.get('name')
@@ -42,23 +54,14 @@ class Application extends PureComponent {
 	}
 
 	onRequestContainerLogs = () => {
-		this.props.fetchApplicationLogs(
-			this.props.deviceId,
-			this.props.selectedContainer.get('name')
-		)
+		this.props.fetchApplicationLogs(this.props.deviceId, this.props.selectedContainer.get('name'))
 	}
 
 	renderContainerInfo () {
-		const environmentVariables = this.props.selectedContainer
-			.get('environment')
-			.toJS()
-		const informationToShow    = Object.assign(
-			{},
-			this.props.selectedContainer.toJS(),
-			{
-				environment: this.protectEnvironmentVariables(environmentVariables),
-			}
-		)
+		const environmentVariables = this.props.selectedContainer.get('environment').toJS()
+		const informationToShow    = Object.assign({}, this.props.selectedContainer.toJS(), {
+			environment: this.protectEnvironmentVariables(environmentVariables),
+		})
 
 		return (
 			<JSONPretty
@@ -147,21 +150,10 @@ export default connect(
 		const name         = ownProps.selectedContainer.get('name')
 
 		return {
-			applicationLogs: state.getIn(
-				['devicesLogs', deviceId, 'containers', name],
-				List()
-			),
-			isRestartingApplication: getAsyncState([
-				'isRestartingApplication',
-				deviceId,
-				name,
-			])(state),
-			isRemovingApplication: getAsyncState([
-				'isRemovingApplication',
-				deviceId,
-				name,
-			])(state),
-			isFetchingLogs: getAsyncState(['isFetchingLogs', deviceId, name])(state),
+			applicationLogs:         state.getIn(['devicesLogs', deviceId, 'containers', name], List()),
+			isRestartingApplication: getAsyncState(['isRestartingApplication', deviceId, name])(state),
+			isRemovingApplication:   getAsyncState(['isRemovingApplication', deviceId, name])(state),
+			isFetchingLogs:          getAsyncState(['isFetchingLogs', deviceId, name])(state),
 		}
 	},
 	{ asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs }
