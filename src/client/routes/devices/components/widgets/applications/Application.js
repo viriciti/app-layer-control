@@ -9,6 +9,7 @@ import AsyncButton from '/components/common/AsyncButton'
 import {
 	asyncRemoveApplication,
 	asyncRestartApplication,
+	asyncStopApplication,
 	fetchApplicationLogs,
 } from '/routes/devices/actions'
 import toReactKey from '/utils/toReactKey'
@@ -25,7 +26,7 @@ class Application extends PureComponent {
 
 	onStop = () => {
 		if (confirm('Stop this application?')) {
-			alert('To do')
+			this.props.asyncStopApplication(this.props.deviceId, this.props.selectedContainer.get('name'))
 		}
 	}
 
@@ -177,9 +178,9 @@ export default connect(
 			applicationLogs:         state.getIn(['devicesLogs', deviceId, 'containers', name], List()),
 			isRestartingApplication: getAsyncState(['isRestartingApplication', deviceId, name])(state),
 			isRemovingApplication:   getAsyncState(['isRemovingApplication', deviceId, name])(state),
-			isRestartingApplication: getAsyncState(['isRestartingApplication', deviceId, name])(state),
+			isStoppingApplication:   getAsyncState(['isStoppingApplication', deviceId, name])(state),
 			isFetchingLogs:          getAsyncState(['isFetchingLogs', deviceId, name])(state),
 		}
 	},
-	{ asyncRemoveApplication, asyncRestartApplication, fetchApplicationLogs }
+	{ asyncRemoveApplication, asyncRestartApplication, asyncStopApplication, fetchApplicationLogs }
 )(Application)

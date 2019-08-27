@@ -59,6 +59,22 @@ module.exports = (getDeviceStates) ->
 		catch error
 			next error
 
+	router.put "/:id/stop/:name", ({ app, params }, res, next) ->
+		{ rpc }      = app.locals
+		{ id, name } = params
+		topic        = "actions/#{id}/stopContainer"
+
+		try
+			await rpc.call topic, id: name
+
+			res
+				.status 200
+				.json
+					status:  "pending"
+					message: "Request to stop container '#{name}'' sent"
+		catch error
+			next error
+
 	router.delete "/:id/container/:name", ({ app, params }, res, next) ->
 		{ rpc }      = app.locals
 		{ id, name } = params
