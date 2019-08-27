@@ -55,12 +55,7 @@ function ApplicationStatus ({ status }) {
 			return <span className="fas fa-circle-notch text-info mr-2" />
 
 		default:
-			return (
-				<span
-					className="fas fa-question-circle text-secondary mr-2"
-					title={status}
-				/>
-			)
+			return <span className="fas fa-question-circle text-secondary mr-2" title={status} />
 	}
 }
 
@@ -73,13 +68,8 @@ function ApplicationHeader ({
 }) {
 	const isSelected = container.get('name') === selectedContainer
 	const group      = container.getIn(['labels', 'group'], 'manual')
-	const version    = container
-		.get('image')
-		.substring(container.get('image').lastIndexOf(':') + 1)
-	const address    = device.getIn(
-		['systemInfo', 'tun0'],
-		device.getIn(['systemInfo', 'tun0IP'])
-	)
+	const version    = container.get('image').substring(container.get('image').lastIndexOf(':') + 1)
+	const address    = device.getIn(['systemInfo', 'tun0'], device.getIn(['systemInfo', 'tun0IP']))
 
 	return (
 		<li className="mb-2">
@@ -97,9 +87,7 @@ function ApplicationHeader ({
 					</div>
 				</button>
 
-				<div className={classNames('btn', 'btn--static', 'btn-light')}>
-					{group}
-				</div>
+				<div className={classNames('btn', 'btn--static', 'btn-light')}>{group}</div>
 			</div>
 
 			{navigatePort ? (
@@ -151,10 +139,7 @@ class Applications extends Component {
 	}
 
 	renderContainerHeader (container) {
-		return `${container.get('name')} - ${container.getIn(
-			['labels', 'group'],
-			'manual'
-		)}`
+		return `${container.get('name')} - ${container.getIn(['labels', 'group'], 'manual')}`
 	}
 
 	renderFrontEndButton ({ frontEndPort, deviceIp }) {
@@ -200,17 +185,14 @@ class Applications extends Component {
 				<hr />
 
 				<div className="row">
-					<div className="col-md-7">
+					<div className="col-md-5">
 						<ul className="list-group">
 							{defaultTo(this.props.containers, List())
 								.toList()
-								.sort((previous, next) =>
-									naturalCompare(previous.get('name'), next.get('name'))
-								)
+								.sort((previous, next) => naturalCompare(previous.get('name'), next.get('name')))
 								.map(container => {
 									const selectedContainer =
-										this.state.selectedContainer &&
-										this.state.selectedContainer.get('name')
+										this.state.selectedContainer && this.state.selectedContainer.get('name')
 									const navigatePort      = this.props.configurations.getIn([
 										container.get('name'),
 										'frontEndPort',
@@ -223,16 +205,13 @@ class Applications extends Component {
 											device={this.props.selectedDevice}
 											navigatePort={navigatePort}
 											selectedContainer={selectedContainer}
-											onSelectContainer={partial(
-												this.onContainerSelected,
-												container
-											)}
+											onSelectContainer={partial(this.onContainerSelected, container)}
 										/>
 									)
 								})}
 						</ul>
 					</div>
-					<div className="col-md-5">
+					<div className="col-md-7">
 						<div className="row">
 							<div className="col-12">
 								{this.state.selectedContainer ? (

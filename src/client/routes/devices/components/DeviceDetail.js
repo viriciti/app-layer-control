@@ -89,13 +89,29 @@ class DeviceDetail extends PureComponent {
 									</div>
 								</div>
 							) : null}
-							<div className="row">
-								<div className="col-lg-5 mb-4">
-									<h5>
-										<span className="fas fa-save pr-1" /> System
-									</h5>
 
-									<hr />
+							<div className="row">
+								<div className="col-lg-4 mb-4">
+									<div className="row">
+										<div className="col-9">
+											<h5>
+												<span className="fas fa-save pr-1" /> System
+											</h5>
+										</div>
+										<div className="col-3 float-right">
+											<AsyncButton
+												className="btn btn-primary d-block mb-1"
+												onClick={this.onRefreshState}
+												busy={this.props.isRefreshingState}
+												busyText="Refreshing ..."
+												white
+											>
+												<span className="fad fa-sync-alt mr-1" /> Refresh
+											</AsyncButton>
+										</div>
+									</div>
+
+									<hr className="mt-1 mb-2" />
 
 									<SystemInfo
 										selectedDevice={this.props.selectedDevice}
@@ -107,38 +123,19 @@ class DeviceDetail extends PureComponent {
 									<DeviceGroups selectedDevice={this.props.selectedDevice} />
 								</div>
 
-								<div className="col-lg-3 mb-4">
-									<h5>
-										<span className="fas fa-sliders-h pr-1" /> Control
-										{connected ? (
-											<span className={classNames(statusLabel, 'label--success')}>
-												<span className="fas fa-wifi" /> Online
-											</span>
-										) : (
-											<span className={classNames(statusLabel, 'label--danger')}>
-												<span className="fas fa-wifi" /> Offline
-											</span>
-										)}
-									</h5>
-
-									<hr />
-
-									<AsyncButton
-										className="btn btn-secondary d-block mb-1"
-										onClick={this.onRefreshState}
-										busy={this.props.isRefreshingState}
-										busyText="Refreshing ..."
-										white
-									>
-										<span className="fas fa-cloud-download-alt" /> Refresh State
-									</AsyncButton>
+								<div className="col-lg-4 mb-4">
+									<div className="row">
+										<div className="col-12">
+											<Logs deviceId={deviceId} />
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 
 					<div className="row">
-						<div className="col-md-8">
+						<div className="col-12">
 							<div className="row">
 								<div className="col-lg-12 mb-4">
 									<Applications
@@ -150,14 +147,6 @@ class DeviceDetail extends PureComponent {
 							<div className="row">
 								<div className="col-lg-12 mb-4">
 									<Queue selectedDevice={this.props.selectedDevice} />
-								</div>
-							</div>
-						</div>
-
-						<div className="col-lg-4 mb-4">
-							<div className="row">
-								<div className="col-12">
-									<Logs deviceId={deviceId} />
 								</div>
 							</div>
 						</div>
