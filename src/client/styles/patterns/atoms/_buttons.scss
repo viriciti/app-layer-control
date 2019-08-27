@@ -18,8 +18,7 @@ button.dropdown-item {
 		left: 50%;
 		position: absolute;
 		right: 50%;
-		transition: left $transition-fastest ease-in-out,
-			right $transition-fastest ease-in-out;
+		transition: left $transition-fastest ease-in-out, right $transition-fastest ease-in-out;
 		z-index: -1;
 	}
 

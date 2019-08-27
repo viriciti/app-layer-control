@@ -3,7 +3,7 @@ import JSONPretty from 'react-json-pretty'
 import { connect } from 'react-redux'
 import Convert from 'ansi-to-html'
 import { List } from 'immutable'
-import { first } from 'lodash'
+import { first, partial } from 'lodash'
 
 import AsyncButton from '/components/common/AsyncButton'
 import {
@@ -23,20 +23,16 @@ class Application extends PureComponent {
 		})
 	}
 
-	onStart = () => {
-		if (confirm('Start this application?')) {
-			alert('To do')
-		}
-	}
-
 	onStop = () => {
 		if (confirm('Stop this application?')) {
 			alert('To do')
 		}
 	}
 
-	onRestart = () => {
-		if (confirm('Restart this application?')) {
+	onRestart = type => {
+		const message = type === 'restart' ? 'Restart this application?' : 'Start this application?'
+
+		if (confirm(message)) {
 			this.props.asyncRestartApplication(
 				this.props.deviceId,
 				this.props.selectedContainer.get('name')
@@ -91,6 +87,10 @@ class Application extends PureComponent {
 	}
 
 	render () {
+		const status      = this.props.selectedContainer.getIn(['state', 'status'])
+		const isStartable = ['exited', 'dead', 'created'].includes(status)
+		const isStoppable = status === 'running'
+
 		return (
 			<Fragment>
 				<div className="row">
@@ -117,15 +117,39 @@ class Application extends PureComponent {
 								<span className="fas fa-file-alt" /> Logs
 							</AsyncButton>
 
-							<AsyncButton
-								busy={this.props.isRestartingApplication}
-								className="btn btn-light btn-sm btn--icon"
-								type="button"
-								onClick={this.onRestart}
-								title="Restart this application"
-							>
-								<span className="fas fa-power-off" /> Restart
-							</AsyncButton>
+							{isStartable ? (
+								<AsyncButton
+									busy={this.props.isRestartingApplication}
+									className="btn btn-light btn-sm btn--icon"
+									type="button"
+									onClick={partial(this.onRestart, 'start')}
+									title="Start this application"
+								>
+									<span className="fas fa-play" /> Start
+								</AsyncButton>
+							) : (
+								<AsyncButton
+									busy={this.props.isRestartingApplication}
+									className="btn btn-light btn-sm btn--icon"
+									type="button"
+									onClick={partial(this.onRestart, 'restart')}
+									title="Restart this application"
+								>
+									<span className="fas fa-power-off" /> Restart
+								</AsyncButton>
+							)}
+
+							{isStoppable ? (
+								<AsyncButton
+									busy={this.props.isStoppingApplication}
+									className="btn btn-warning btn-sm btn--icon"
+									type="button"
+									onClick={this.onStop}
+									title="Stop this application"
+								>
+									<span className="fas fa-stop" /> Stop
+								</AsyncButton>
+							) : null}
 
 							<AsyncButton
 								busy={this.props.isRemovingApplication}
@@ -153,6 +177,7 @@ export default connect(
 			applicationLogs:         state.getIn(['devicesLogs', deviceId, 'containers', name], List()),
 			isRestartingApplication: getAsyncState(['isRestartingApplication', deviceId, name])(state),
 			isRemovingApplication:   getAsyncState(['isRemovingApplication', deviceId, name])(state),
+			isRestartingApplication: getAsyncState(['isRestartingApplication', deviceId, name])(state),
 			isFetchingLogs:          getAsyncState(['isFetchingLogs', deviceId, name])(state),
 		}
 	},
