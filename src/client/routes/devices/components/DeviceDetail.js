@@ -1,5 +1,4 @@
-import React, { PureComponent, Fragment } from 'react'
-import classNames from 'classnames'
+import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
 import { List, Map } from 'immutable'
@@ -24,9 +23,7 @@ import getAsyncState from '/store/selectors/getAsyncState'
 
 class DeviceDetail extends PureComponent {
 	getDeviceSources () {
-		return this.props.deviceSources.filter(source =>
-			source.get('entryInDetail')
-		)
+		return this.props.deviceSources.filter(source => source.get('entryInDetail'))
 	}
 
 	onRefreshState = async () => {
@@ -45,55 +42,33 @@ class DeviceDetail extends PureComponent {
 		return (
 			<div className="btn-group">
 				{prev ? (
-					<Navigation
-						deviceId={prev}
-						onSelect={this.props.selectDevice}
-						side="left"
-					/>
+					<Navigation deviceId={prev} onSelect={this.props.selectDevice} side="left" />
 				) : null}
 
 				{next ? (
-					<Navigation
-						deviceId={next}
-						onSelect={this.props.selectDevice}
-						side="right"
-					/>
+					<Navigation deviceId={next} onSelect={this.props.selectDevice} side="right" />
 				) : null}
 			</div>
 		)
 	}
 
 	renderContent () {
-		const { selectedDevice } = this.props
+		const deviceId = this.props.selectedDevice.get('deviceId')
 
-		if (!selectedDevice) {
-			return
-		} else if (!selectedDevice.has('connected')) {
+		if (!this.props.selectedDevice.has('connected')) {
 			return (
 				<div className="card-message">
 					<span className="fas fa-stopwatch text-yellow mr-2" />
 					Waiting for App Layer Agent to connect ...
 				</div>
 			)
-		}
-
-		const deviceId    = selectedDevice.get('deviceId')
-		const connected   = selectedDevice.get('connected', 'unknown')
-		const statusLabel = classNames(
-			'label',
-			'label--inline',
-			'label--no-hover',
-			'float-right'
-		)
-
-		return (
-			<div className="row">
-				<div className="col">
-					<div className="row">
-						<div className="col-12">
-							{this.props.selectedDevice
-								.getIn(['updateState', 'short'], '')
-								.match(/error/i) ? (
+		} else {
+			return (
+				<div className="row">
+					<div className="col">
+						<div className="row">
+							<div className="col-12">
+								{this.props.selectedDevice.getIn(['updateState', 'short'], '').match(/error/i) ? (
 									<div className="row">
 										<div className="col-12">
 											<div className="alert alert-danger">
@@ -106,100 +81,83 @@ class DeviceDetail extends PureComponent {
 										</div>
 									</div>
 								) : null}
-							<div className="row">
-								<div className="col-lg-5 mb-4">
-									<h5>
-										<span className="fas fa-save pr-1" /> System
-									</h5>
 
-									<hr />
+								<div className="row">
+									<div className="col-lg-4 mb-4">
+										<div className="row">
+											<div className="col-7">
+												<h5>
+													<span className="fad fa-id-badge pr-1" /> Board
+												</h5>
+											</div>
+											<div className="col">
+												<AsyncButton
+													className="btn btn-light d-block mb-1 float-right"
+													onClick={this.onRefreshState}
+													busy={this.props.isRefreshingState}
+												>
+													<span className="fad fa-sync-alt mr-1" /> Refresh
+												</AsyncButton>
+											</div>
+										</div>
 
-									<SystemInfo
-										selectedDevice={this.props.selectedDevice}
-										osVersion={this.props.osVersion}
-										deviceSources={this.getDeviceSources()}
+										<hr className="mt-1 mb-2" />
+
+										<SystemInfo
+											selectedDevice={this.props.selectedDevice}
+											deviceSources={this.getDeviceSources()}
+										/>
+									</div>
+
+									<div className="col-lg-4 mb-4">
+										<DeviceGroups selectedDevice={this.props.selectedDevice} />
+									</div>
+
+									<div className="col-lg-4 mb-4">
+										<div className="row">
+											<div className="col-12">
+												<Logs deviceId={deviceId} />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div className="row">
+							<div className="col-12">
+								<div className="row">
+									<div className="col-lg-12 mb-4">
+										<Applications
+											containers={this.props.selectedDevice.get('containers')}
+											selectedDevice={this.props.selectedDevice}
+										/>
+									</div>
+								</div>
+								<div className="row">
+									<div className="col-lg-12 mb-4">
+										<Queue selectedDevice={this.props.selectedDevice} />
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div className="row">
+							<div className="col-12">
+								{Map.isMap(this.props.selectedDevice.get('images', List()).first()) ? (
+									<DeviceImages
+										images={this.props.selectedDevice.get('images')}
+										selectedDevice={deviceId}
 									/>
-								</div>
-
-								<div className="col-lg-4 mb-4">
-									<DeviceGroups selectedDevice={this.props.selectedDevice} />
-								</div>
-
-								<div className="col-lg-3 mb-4">
-									<h5>
-										<span className="fas fa-sliders-h pr-1" /> Control
-										{connected ? (
-											<span
-												className={classNames(statusLabel, 'label--success')}
-											>
-												<span className="fas fa-wifi" /> Online
-											</span>
-										) : (
-											<span
-												className={classNames(statusLabel, 'label--danger')}
-											>
-												<span className="fas fa-wifi" /> Offline
-											</span>
-										)}
-									</h5>
-
-									<hr />
-
-									<AsyncButton
-										className="btn btn-secondary d-block mb-1"
-										onClick={this.onRefreshState}
-										busy={this.props.isRefreshingState}
-										busyText="Refreshing ..."
-										white
-									>
-										<span className="fas fa-cloud-download-alt" /> Refresh State
-									</AsyncButton>
-								</div>
+								) : (
+									<Images images={this.props.selectedDevice.get('images')} />
+								)}
 							</div>
-						</div>
-					</div>
-
-					<div className="row">
-						<div className="col-md-8">
-							<div className="row">
-								<div className="col-lg-12 mb-4">
-									<Applications
-										containers={selectedDevice.get('containers')}
-										selectedDevice={selectedDevice}
-									/>
-								</div>
-							</div>
-							<div className="row">
-								<div className="col-lg-12 mb-4">
-									<Queue selectedDevice={this.props.selectedDevice} />
-								</div>
-							</div>
-						</div>
-
-						<div className="col-lg-4 mb-4">
-							<div className="row">
-								<div className="col-12">
-									<Logs deviceId={deviceId} />
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div className="row">
-						<div className="col-12">
-							{Map.isMap(selectedDevice.get('images', List()).first()) ? (
-								<DeviceImages
-									images={selectedDevice.get('images')}
-									selectedDevice={deviceId}
-								/>
-							) : (
-								<Images images={selectedDevice.get('images')} />
-							)}
 						</div>
 					</div>
 				</div>
-			</div>
-		)
+			)
+		}
 	}
 
 	render () {
@@ -222,7 +180,7 @@ class DeviceDetail extends PureComponent {
 				onClose={partial(this.props.selectDevice, null)}
 				wide
 			>
-				{this.renderContent()}
+				{this.props.selectedDevice ? this.renderContent() : null}
 			</Modal>
 		)
 	}

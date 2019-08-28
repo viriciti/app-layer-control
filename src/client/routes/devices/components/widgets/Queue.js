@@ -43,7 +43,7 @@ const Queue = ({ selectedDevice }) => {
 		<div className="row">
 			<div className="col-12">
 				<h5>
-					<span className="fas fa-sort-numeric-down pt-1" /> Queue
+					<span className="fad fa-sort-size-down-alt pt-1" /> Queue
 				</h5>
 
 				<hr />
@@ -51,10 +51,10 @@ const Queue = ({ selectedDevice }) => {
 				<ul className="list list--striped">
 					{selectedDevice
 						.get('queue', List())
-						.filter(task => { return Iterable.isIterable(task) })
-						.sortBy(task => {
-							return -task.get('queuedOn')
+						.filter(task => {
+							return Iterable.isIterable(task)
 						})
+						.sortBy(task => -task.get('queuedOn'))
 						.map((task, index) => {
 							if (task.get('finished')) {
 								return (

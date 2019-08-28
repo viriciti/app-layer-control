@@ -3,9 +3,25 @@ import React, { Fragment } from 'react'
 import classNames from 'classnames'
 import { noop } from 'lodash'
 
-function AsyncButton ({ busy, busyText, children, onClick, white, persist, ...buttonProps }) {
+function AsyncButton ({
+	busy,
+	busyText,
+	children,
+	disabled,
+	onClick,
+	persist,
+	white,
+	...buttonProps
+}) {
 	return (
-		<button {...buttonProps} onClick={busy ? noop : onClick} disabled={busy}>
+		<button
+			{...buttonProps}
+			className={classNames(buttonProps.className, {
+				'btn--disabled': disabled,
+			})}
+			onClick={disabled || busy ? noop : onClick}
+			disabled={disabled || busy}
+		>
 			{busy ? (
 				<Fragment>
 					{persist ? null : <div className={classNames('loader', { 'loader--white': white })} />}
@@ -22,7 +38,9 @@ AsyncButton.propTypes = {
 	busy:     PropTypes.bool.isRequired,
 	busyText: PropTypes.string,
 	children: PropTypes.node.isRequired,
+	disabled: PropTypes.bool,
 	onClick:  PropTypes.func,
+	persist:  PropTypes.bool,
 	white:    PropTypes.bool,
 }
 

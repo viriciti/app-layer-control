@@ -61,6 +61,10 @@
 	}
 }
 
+.card-message--small {
+	font-size: $font-size-sm;
+}
+
 .card-controls {
 	background-color: darken(#fff, 5%);
 	text-align: left;

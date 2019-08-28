@@ -17,34 +17,26 @@ class Logs extends PureComponent {
 		}
 	}
 
-	onCleanLogs = () => {
+	onClearLogs = () => {
 		this.props.cleanLogs(this.props.deviceId)
 	}
 
 	renderLogs () {
 		if (this.props.logs.isEmpty()) {
-			return (
-				<span className="card-message">
-					<span className="fas fa-broom" /> No output
-				</span>
-			)
+			return <span className="card-message card-message--small">No recent activity</span>
 		} else {
 			return this.props.logs
 				.reverse()
-				.filter(log => {
-					return log.get('message')
-				})
-				.map((log, index) => {
-					return (
-						<li key={toReactKey('logs', this.props.deviceId, index)} className="p-1">
-							{this.getIconForType(log.get('type'))}
+				.filter(log => log.get('message'))
+				.map((log, index) => (
+					<li key={toReactKey('logs', this.props.deviceId, index)} className="p-1">
+						{this.getIconForType(log.get('type'))}
 
-							<span className="pl-2">
-								{moment(log.get('time')).format('HH:mm:ss')} <b>-</b> {log.get('message')}
-							</span>
-						</li>
-					)
-				})
+						<span className="pl-2">
+							{moment(log.get('time')).format('HH:mm:ss')} <b>-</b> {log.get('message')}
+						</span>
+					</li>
+				))
 		}
 	}
 
@@ -55,15 +47,15 @@ class Logs extends PureComponent {
 			<Fragment>
 				<button
 					className="btn btn-warning btn-sm btn--icon float-right"
-					onClick={this.onCleanLogs}
+					onClick={this.onClearLogs}
 					disabled={isLogsEmpty}
-					title={isLogsEmpty ? 'Nothing to clean' : 'Clean'}
+					title={isLogsEmpty ? 'Nothing to clear' : 'Clear'}
 				>
-					<span className="fas fa-broom" />
+					<span className="fad fa-trash" />
 				</button>
 
 				<h5>
-					<span className="fas fa-book pr-1" /> Logs
+					<span className="fad fa-comment-alt-lines pr-1" /> Logs
 				</h5>
 
 				<hr />
@@ -77,10 +69,8 @@ class Logs extends PureComponent {
 }
 
 export default connect(
-	(state, ownProps) => {
-		return {
-			logs: state.getIn(['devicesLogs', ownProps.deviceId, 'self'], List()),
-		}
-	},
+	(state, ownProps) => ({
+		logs: state.getIn(['devicesLogs', ownProps.deviceId, 'self'], List()),
+	}),
 	{ cleanLogs }
 )(Logs)

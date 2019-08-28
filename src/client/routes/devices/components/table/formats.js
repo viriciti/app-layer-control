@@ -83,31 +83,26 @@ const formats = {
 	},
 
 	status: ({ info }) => {
-		const defaultClassName = classNames('fas', 'ml-3', 'd-block')
-		const isStale          = !info.has('connected')
+		const defaultClassName = classNames('ml-3', 'd-block')
 
-		if (isStale) {
+		if (!info.has('connected')) {
 			return (
 				<span
-					className={classNames(
-						defaultClassName,
-						'fa-hourglass-end',
-						'text-muted'
-					)}
+					className={classNames(defaultClassName, 'fad', 'fa-stopwatch', 'text-muted')}
 					title="Stale"
 				/>
 			)
 		} else if (info.get('connected')) {
 			return (
 				<span
-					className={classNames(defaultClassName, 'fa-circle', 'text-success')}
+					className={classNames(defaultClassName, 'fas', 'fa-circle', 'text-success')}
 					title="Online"
 				/>
 			)
 		} else {
 			return (
 				<span
-					className={classNames(defaultClassName, 'fa-circle', 'text-danger')}
+					className={classNames(defaultClassName, 'fas', 'fa-circle', 'text-danger')}
 					title="Offline"
 				/>
 			)

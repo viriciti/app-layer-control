@@ -7,12 +7,7 @@ import PersistentAsyncButton from '/components/common/PersistentAsyncButton'
 import getIdFromHash from '/routes/devices/modules/getIdFromHash'
 import getAsyncState from '/store/selectors/getAsyncState'
 
-const ImageOverview = ({
-	selectedImage,
-	selectedDevice,
-	asyncRemoveImage,
-	isRemovingImage,
-}) => {
+const ImageOverview = ({ selectedImage, selectedDevice, asyncRemoveImage, isRemovingImage }) => {
 	if (!selectedImage) {
 		return (
 			<p className="py-3 text-warning">
@@ -49,15 +44,13 @@ const ImageOverview = ({
 }
 
 export default connect(
-	(state, ownProps) => {
-		return {
-			devices:         state.get('devices'),
-			isRemovingImage: getAsyncState([
-				'isRemovingImage',
-				ownProps.selectedDevice,
-				ownProps.selectedImage && getIdFromHash(ownProps.selectedImage.get('id')),
-			])(state),
-		}
-	},
+	(state, ownProps) => ({
+		devices:         state.get('devices'),
+		isRemovingImage: getAsyncState([
+			'isRemovingImage',
+			ownProps.selectedDevice,
+			ownProps.selectedImage && getIdFromHash(ownProps.selectedImage.get('id')),
+		])(state),
+	}),
 	{ asyncRemoveImage }
 )(ImageOverview)
