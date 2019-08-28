@@ -8,12 +8,7 @@ import { asyncRemoveGroup } from '/routes/devices/actions'
 import toReactKey from '/utils/toReactKey'
 import { isLastElement, moveElement } from '/utils/position'
 
-function DeviceGroups ({
-	groups,
-	configurations,
-	selectedDevice,
-	asyncRemoveGroup,
-}) {
+function DeviceGroups ({ groups, configurations, selectedDevice, asyncRemoveGroup }) {
 	const btnClass              = 'btn-light btn--icon btn--text d-block'
 	const inGroups              = selectedDevice.get('groups')
 	const [draft, updateDraft]  = useState(inGroups)
@@ -38,7 +33,7 @@ function DeviceGroups ({
 	return (
 		<Fragment>
 			<h5>
-				<span className="fas fa-cubes pr-1" /> Groups
+				<span className="fad fa-users-class pr-1" /> Groups
 			</h5>
 
 			<hr />
@@ -61,34 +56,19 @@ function DeviceGroups ({
 										<td>
 											{inGroups.size > 2 ? (
 												index === 0 ? null : isLastElement(inGroups, index) ? (
-													<button
-														className={btnClass}
-														onClick={partial(onMoveUp, index)}
-													>
+													<button className={btnClass} onClick={partial(onMoveUp, index)}>
 														<span className="fas fa-arrow-up" title="Move up" />
 													</button>
 												) : (
 													<Fragment>
 														{index > 1 ? (
-															<button
-																className={btnClass}
-																onClick={partial(onMoveUp, index)}
-															>
-																<span
-																	className="fas fa-arrow-up"
-																	title="Move up"
-																/>
+															<button className={btnClass} onClick={partial(onMoveUp, index)}>
+																<span className="fas fa-arrow-up" title="Move up" />
 															</button>
 														) : null}
 
-														<button
-															className={btnClass}
-															onClick={partial(onMoveDown, index)}
-														>
-															<span
-																className="fas fa-arrow-down"
-																title="Move down"
-															/>
+														<button className={btnClass} onClick={partial(onMoveDown, index)}>
+															<span className="fas fa-arrow-down" title="Move down" />
 														</button>
 													</Fragment>
 												)
@@ -103,21 +83,12 @@ function DeviceGroups ({
 														.entrySeq()
 														.map(([name, version]) =>
 															version ? (
-																<li
-																	key={toReactKey(group, name, version)}
-																	title="Locked version"
-																>
+																<li key={toReactKey(group, name, version)} title="Locked version">
 																	{[name, version].join('@')}
 																</li>
 															) : (
-																<li
-																	key={toReactKey(group, name)}
-																	title="Semantic versioning"
-																>
-																	{[
-																		name,
-																		configurations.getIn([name, 'version']),
-																	].join('@')}
+																<li key={toReactKey(group, name)} title="Semantic versioning">
+																	{[name, configurations.getIn([name, 'version'])].join('@')}
 																</li>
 															)
 														)
@@ -145,19 +116,13 @@ function DeviceGroups ({
 							</tbody>
 						</table>
 					) : (
-						<span className="d-inline-block text-secondary my-3">
-							No groups on the device
-						</span>
+						<span className="d-inline-block text-secondary my-3">No groups on the device</span>
 					)}
 				</div>
 			</div>
 			<div className="row">
 				<div className="col-12">
-					<GroupsForm
-						onTouch={onTouch}
-						inGroups={draft}
-						touched={touched || draft !== inGroups}
-					/>
+					<GroupsForm onTouch={onTouch} inGroups={draft} touched={touched || draft !== inGroups} />
 				</div>
 			</div>
 		</Fragment>

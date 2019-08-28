@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react'
-import classNames from 'classnames'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
 import { List, Map } from 'immutable'
@@ -54,116 +53,111 @@ class DeviceDetail extends PureComponent {
 	}
 
 	renderContent () {
-		const { selectedDevice } = this.props
+		const deviceId = this.props.selectedDevice.get('deviceId')
 
-		if (!selectedDevice) {
-			return
-		} else if (!selectedDevice.has('connected')) {
+		if (!this.props.selectedDevice.has('connected')) {
 			return (
 				<div className="card-message">
 					<span className="fas fa-stopwatch text-yellow mr-2" />
 					Waiting for App Layer Agent to connect ...
 				</div>
 			)
-		}
-
-		const deviceId    = selectedDevice.get('deviceId')
-		const connected   = selectedDevice.get('connected', 'unknown')
-		const statusLabel = classNames('label', 'label--inline', 'label--no-hover', 'float-right')
-
-		return (
-			<div className="row">
-				<div className="col">
-					<div className="row">
-						<div className="col-12">
-							{this.props.selectedDevice.getIn(['updateState', 'short'], '').match(/error/i) ? (
-								<div className="row">
-									<div className="col-12">
-										<div className="alert alert-danger">
-											<span className="fas fa-exclamation-triangle mr-2" />
-											{this.props.selectedDevice.getIn(
-												['updateState', 'long'],
-												'No description available'
-											)}
-										</div>
-									</div>
-								</div>
-							) : null}
-
-							<div className="row">
-								<div className="col-lg-4 mb-4">
-									<div className="row">
-										<div className="col-9">
-											<h5>
-												<span className="fas fa-save pr-1" /> System
-											</h5>
-										</div>
-										<div className="col-3 float-right">
-											<AsyncButton
-												className="btn btn-primary d-block mb-1"
-												onClick={this.onRefreshState}
-												busy={this.props.isRefreshingState}
-												busyText="Refreshing ..."
-												white
-											>
-												<span className="fad fa-sync-alt mr-1" /> Refresh
-											</AsyncButton>
-										</div>
-									</div>
-
-									<hr className="mt-1 mb-2" />
-
-									<SystemInfo
-										selectedDevice={this.props.selectedDevice}
-										deviceSources={this.getDeviceSources()}
-									/>
-								</div>
-
-								<div className="col-lg-4 mb-4">
-									<DeviceGroups selectedDevice={this.props.selectedDevice} />
-								</div>
-
-								<div className="col-lg-4 mb-4">
+		} else {
+			return (
+				<div className="row">
+					<div className="col">
+						<div className="row">
+							<div className="col-12">
+								{this.props.selectedDevice.getIn(['updateState', 'short'], '').match(/error/i) ? (
 									<div className="row">
 										<div className="col-12">
-											<Logs deviceId={deviceId} />
+											<div className="alert alert-danger">
+												<span className="fas fa-exclamation-triangle mr-2" />
+												{this.props.selectedDevice.getIn(
+													['updateState', 'long'],
+													'No description available'
+												)}
+											</div>
+										</div>
+									</div>
+								) : null}
+
+								<div className="row">
+									<div className="col-lg-4 mb-4">
+										<div className="row">
+											<div className="col-7">
+												<h5>
+													<span className="fad fa-id-badge pr-1" /> Board
+												</h5>
+											</div>
+											<div className="col">
+												<AsyncButton
+													className="btn btn-light d-block mb-1 float-right"
+													onClick={this.onRefreshState}
+													busy={this.props.isRefreshingState}
+												>
+													<span className="fad fa-sync-alt mr-1" /> Refresh
+												</AsyncButton>
+											</div>
+										</div>
+
+										<hr className="mt-1 mb-2" />
+
+										<SystemInfo
+											selectedDevice={this.props.selectedDevice}
+											deviceSources={this.getDeviceSources()}
+										/>
+									</div>
+
+									<div className="col-lg-4 mb-4">
+										<DeviceGroups selectedDevice={this.props.selectedDevice} />
+									</div>
+
+									<div className="col-lg-4 mb-4">
+										<div className="row">
+											<div className="col-12">
+												<Logs deviceId={deviceId} />
+											</div>
 										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-					</div>
 
-					<div className="row">
-						<div className="col-12">
-							<div className="row">
-								<div className="col-lg-12 mb-4">
-									<Applications
-										containers={selectedDevice.get('containers')}
-										selectedDevice={selectedDevice}
-									/>
+						<div className="row">
+							<div className="col-12">
+								<div className="row">
+									<div className="col-lg-12 mb-4">
+										<Applications
+											containers={this.props.selectedDevice.get('containers')}
+											selectedDevice={this.props.selectedDevice}
+										/>
+									</div>
 								</div>
-							</div>
-							<div className="row">
-								<div className="col-lg-12 mb-4">
-									<Queue selectedDevice={this.props.selectedDevice} />
+								<div className="row">
+									<div className="col-lg-12 mb-4">
+										<Queue selectedDevice={this.props.selectedDevice} />
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
 
-					<div className="row">
-						<div className="col-12">
-							{Map.isMap(selectedDevice.get('images', List()).first()) ? (
-								<DeviceImages images={selectedDevice.get('images')} selectedDevice={deviceId} />
-							) : (
-								<Images images={selectedDevice.get('images')} />
-							)}
+						<div className="row">
+							<div className="col-12">
+								{Map.isMap(this.props.selectedDevice.get('images', List()).first()) ? (
+									<DeviceImages
+										images={this.props.selectedDevice.get('images')}
+										selectedDevice={deviceId}
+									/>
+								) : (
+									<Images images={this.props.selectedDevice.get('images')} />
+								)}
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-		)
+			)
+		}
 	}
 
 	render () {
@@ -186,7 +180,7 @@ class DeviceDetail extends PureComponent {
 				onClose={partial(this.props.selectDevice, null)}
 				wide
 			>
-				{this.renderContent()}
+				{this.props.selectedDevice ? this.renderContent() : null}
 			</Modal>
 		)
 	}

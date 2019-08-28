@@ -12,7 +12,7 @@ function Navigate ({ navigatePort, address }) {
 	const child     = (
 		<Fragment>
 			Go to
-			<span className="fas fa-external-link-alt pl-2" />
+			<span className="fad fa-external-link-alt pl-2" />
 		</Fragment>
 	)
 
@@ -147,7 +147,7 @@ class Applications extends Component {
 		const child     = (
 			<Fragment>
 				Go to
-				<span className="fas fa-paper-plane pl-2" />
+				<span className="fad fa-paper-plane pl-2" />
 			</Fragment>
 		)
 
@@ -179,7 +179,7 @@ class Applications extends Component {
 		return (
 			<div>
 				<h5>
-					<span className="fas fa-window-restore pr-1" /> Apps
+					<span className="fad fa-window pr-1" /> Apps
 				</h5>
 
 				<hr />

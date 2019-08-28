@@ -95,8 +95,24 @@ class Application extends PureComponent {
 		return (
 			<Fragment>
 				<div className="row">
-					<div className="col-12">
-						<h5>{this.props.selectedContainer.get('name')}</h5>
+					<div className="col-12 mb-2">
+						<div className="row">
+							<div className="col-8">
+								<h5>{this.props.selectedContainer.get('name')}</h5>
+							</div>
+
+							<div className="col-4">
+								<AsyncButton
+									busy={this.props.isFetchingLogs}
+									className="btn btn-light btn--icon float-right"
+									type="button"
+									onClick={this.onRequestContainerLogs}
+									title="Request application logs"
+								>
+									<span className="fad fa-file-alt mr-1" /> Logs
+								</AsyncButton>
+							</div>
+						</div>
 					</div>
 				</div>
 				<div className="row">
@@ -108,16 +124,6 @@ class Application extends PureComponent {
 				<div className="row">
 					<div className="col-12">
 						<div className="btn-group float-right">
-							<AsyncButton
-								busy={this.props.isFetchingLogs}
-								className="btn btn-light btn-sm btn--icon"
-								type="button"
-								onClick={this.onRequestContainerLogs}
-								title="Request application logs"
-							>
-								<span className="fas fa-file-alt" /> Logs
-							</AsyncButton>
-
 							{isStartable ? (
 								<AsyncButton
 									busy={this.props.isRestartingApplication}
@@ -143,7 +149,7 @@ class Application extends PureComponent {
 							{isStoppable ? (
 								<AsyncButton
 									busy={this.props.isStoppingApplication}
-									className="btn btn-warning btn-sm btn--icon"
+									className="btn btn-light btn-sm btn--icon"
 									type="button"
 									onClick={this.onStop}
 									title="Stop this application"
@@ -159,7 +165,7 @@ class Application extends PureComponent {
 								onClick={this.onRemove}
 								title="Delete this application"
 							>
-								<span className="fas fa-trash" />
+								<span className="fas fa-trash" /> Delete
 							</AsyncButton>
 						</div>
 					</div>

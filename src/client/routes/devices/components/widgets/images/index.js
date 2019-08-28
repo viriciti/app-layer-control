@@ -90,9 +90,9 @@ class DeviceImages extends PureComponent {
 			return this.state.selectedImage
 				.sort((previous, next) => {
 					if (!valid(previous.get('version')) || !valid(next.get('version'))) {
-						// Return -1 to have non-semver versions appear at the far left
+						// Return -1 to have tagged versions appear at the far left
 						// Return 0 to have them stay put
-						// Return 1 to have non-semver versions appear at the far right
+						// Return 1 to have tagged versions appear at the far right
 						return 1
 					} else {
 						if (gt(previous.get('version'), next.get('version'))) {
@@ -156,7 +156,7 @@ class DeviceImages extends PureComponent {
 		return (
 			<Fragment>
 				<h5>
-					<span className="fas fa-archive" /> Images
+					<span className="fab fa-docker" /> Images
 				</h5>
 
 				<hr />
