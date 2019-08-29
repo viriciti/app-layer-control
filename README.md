@@ -11,15 +11,14 @@
 - GitLab (with Docker integration)
 - MQTT
 
-If you have [Docker Compose](https://docs.docker.com/compose/) installed, you can also run `docker-compose up -d`.  
+If you have [Docker Compose](https://docs.docker.com/compose/) installed, you can also run `docker-compose up -d`.
 It is advised to _not_ use this in production (as it is not secure), but to configure the components separately instead.
 
 ### Post installation
 
-Since [version], App Layer Control requires a replica set.  
-This enables App Layer Control to keep (connected) devices up to date with database changes and reduces code clutter.
+App Layer Control requires a replica set to keep (connected) devices up to date with database changes and reduces code clutter.
 
-However, this requires you to initiate the replica set within the MongoDB container. To do this, go to your terminal and enter: `docker exec -it mongodb mongo`.  
+This requires you to initiate the replica set within the MongoDB container. To do this, go to your terminal and enter: `docker exec -it mongodb mongo`.
 You are now in the [mongo](https://docs.mongodb.com/manual/reference/program/mongo/#bin.mongo) shell. Once inside, execute the following command:
 
 ```
@@ -41,9 +40,11 @@ This will initiate the replica set and you're ready to go.
 2. Run `npm install` to install the npm modules
 3. Run `npm start` to start developing. Server will be restarted upon changes
 
+> Your installation may fail when installing the npm modules. To fix this, get a Font Awesome Pro token and read [the Font Awesome installation guide](https://fontawesome.com/how-to-use/on-the-web/setup/using-package-managers#installing-pro).
+
 ### Configuration
 
-Configuring App Layer Control is done through a configuration file (requiring you to mount it manually) and environment variables.  
+Configuring App Layer Control is done through a configuration file (requiring you to mount it manually) and environment variables.
 We recommend using environment variables, since these will cause the least configuration issues over time.
 
 - `MQTT_HOST` (_Optional_): MQTT endpoint. Default: localhost
@@ -61,14 +62,16 @@ We recommend using environment variables, since these will cause the least confi
 
 ### Plugins (previously "External sources")
 
-App Layer Control allows you to add your own plugins. Plugins are powerful extensions that allow you to read data directly from the sources.  
+App Layer Control allows you to add your own plugins. Plugins are powerful extensions that allow you to read data directly from the sources.
 Additionally, plugins allow you to update the state of a device.
 
 #### Installation
-Plugins are installed on-the-fly from NPM and do not require you to install them yourself.  
+
+Plugins are installed on-the-fly from NPM and do not require you to install them yourself.
 For now, there is no support for GitHub. Instead, you can load a plugin from your filesystem by adding a `path` key to your configuration.
 
 #### Creating your plugin
+
 The plugin must export a function and can take up to two arguments:
 
 - source (_Rx.Subject_): The data stream itself. You can do anything you normally can with [Subjects](https://github.com/ReactiveX/rxjs/blob/master/doc/subject.md). Because Subjects are bidirectional, you can call `.next()` in order to update the state information on App Layer Control. The updated state information must consist of a `deviceId` and `data` property. Any update you make is buffered for a second and then merged with the state of the devices.
