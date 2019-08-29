@@ -44,9 +44,9 @@ class ConfigurationsForm extends PureComponent {
 				this.props.initialize({
 					detached:        this.props.configuration.get('detached'),
 					privileged:      this.props.configuration.get('privileged'),
+					containerName:   this.props.configuration.get('containerName'),
 					...this.denormalizeGroupedValues(this.props.configuration).toJS(),
 					applicationName: undefined,
-					containerName:   undefined,
 				})
 			}
 		}
@@ -151,10 +151,9 @@ class ConfigurationsForm extends PureComponent {
 		// normalize mounts
 		if (configuration.mounts) {
 			configuration.mounts = configuration.mounts.map(mount => {
-				return [
-					removeTrailingSlash(mount.HostPath),
-					removeTrailingSlash(mount.ContainerPath),
-				].join(':')
+				return [removeTrailingSlash(mount.HostPath), removeTrailingSlash(mount.ContainerPath)].join(
+					':'
+				)
 			})
 		}
 
@@ -195,14 +194,8 @@ class ConfigurationsForm extends PureComponent {
 	render () {
 		return (
 			<Modal
-				visible={
-					this.props.isAdding || this.props.isEditing || this.props.isCopying
-				}
-				title={
-					this.props.isAdding || this.props.isCopying
-						? 'Add Application'
-						: 'Edit Application'
-				}
+				visible={this.props.isAdding || this.props.isEditing || this.props.isCopying}
+				title={this.props.isAdding || this.props.isCopying ? 'Add Application' : 'Edit Application'}
 				onClose={this.props.onRequestClose}
 			>
 				<form
@@ -217,12 +210,7 @@ class ConfigurationsForm extends PureComponent {
 							readOnly={this.props.isEditing}
 							required
 						/>
-						<Field
-							name="containerName"
-							label="Container name"
-							component={TextInput}
-							required
-						/>
+						<Field name="containerName" label="Container name" component={TextInput} required />
 
 						<Field
 							name="fromImage"
@@ -232,12 +220,7 @@ class ConfigurationsForm extends PureComponent {
 							sortOnValue
 							required
 						/>
-						<Field
-							name="version"
-							label="Version"
-							component={VersionInput}
-							required
-						/>
+						<Field name="version" label="Version" component={VersionInput} required />
 						<Field
 							name="frontEndPort"
 							label="Front end port"
@@ -315,9 +298,7 @@ class ConfigurationsForm extends PureComponent {
 										type="submit"
 										white
 									>
-										{this.props.isAdding || this.props.isCopying
-											? 'Save'
-											: 'Edit'}
+										{this.props.isAdding || this.props.isCopying ? 'Save' : 'Edit'}
 									</AsyncButton>
 									<button
 										type="button"
