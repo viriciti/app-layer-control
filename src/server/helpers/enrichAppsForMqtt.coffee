@@ -3,6 +3,7 @@ map    = require "p-map"
 reduce = require "p-reduce"
 semver = require "semver"
 
+log      = (require "../lib/Logger") "enrichAppsForMqtt"
 Database = require "../db/Database"
 
 db = new Database autoConnect: true
@@ -52,6 +53,10 @@ getLatestInstallableApplications = ({ configurations, group }) ->
 			versionToInstall = applications[applicationName]
 		else
 			versionToInstall = semver.maxSatisfying versions, version
+
+			unless versionToInstall
+				log.error "No effective version found for #{applicationName}, marking unavailable ..."
+				return memo
 
 		debug "(#{label}) Version enriched: #{applicationName}@#{versionToInstall}"
 
