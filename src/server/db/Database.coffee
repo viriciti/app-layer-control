@@ -17,6 +17,7 @@ models =
 	DeviceSource:   require "./models/DeviceSource"
 	Group:          require "./models/Group"
 	RegistryImages: require "./models/RegistryImages"
+	Device:         require "./models/Device"
 
 class Database
 	constructor: (@options) ->
