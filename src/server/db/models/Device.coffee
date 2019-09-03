@@ -25,7 +25,6 @@ schema     = new Schema
 	images:     Array
 	systemInfo: systemInfoSchema
 
-
 schema.plugin addImmutableQuery
 
 module.exports = mongoose.model "Device", schema

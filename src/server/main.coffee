@@ -69,19 +69,21 @@ updateInBulk = (updates) ->
 		throw new Error "Invalid state: no deviceId found on update" unless update.get "deviceId"
 		throw new Error "Invalid state: no data found on update"     unless update.get "data"
 
+		insert    = update
+			.get "data", Map()
+			.set "deviceId", update.get "deviceId"
+			.toJS()
+
 		operation =
 			updateOne:
 				filter: deviceId: update.get "deviceId"
-				update: update.get("data", Map()).toJS()
+				update: insert
 				upsert: true
 
 		[...bulk, operation]
 	, []
 
-	bulkUpdate.forEach (a) ->
-		console.log a.updateOne.filter.deviceId
-
-	{ upsertedCount, modifiedCount } = await db.Device.bulkWrite bulkUpdate
+	{ upsertedCount, modifiedCount } = await db.Device.bulkWrite bulkUpdate, ordered: false
 	{ upsertedCount, modifiedCount }
 
 # required to support await operations
@@ -135,19 +137,35 @@ do ->
 		devicesLogs$.subscribe (message) ->
 			broadcaster.broadcast Broadcaster.LOGS, message
 
-		devicesState$
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
-			.subscribe (updates) ->
-				{ modifiedCount, upsertedCount } = await updateInBulk updates
-				log.info "Updated #{modifiedCount} device(s) and added #{upsertedCount} (state)"
-
-		devicesNsState$
+		Observable
+			.merge(
+				devicesNsState$
+				devicesState$
+				devicesStatus$
+			)
 			.bufferTime config.batchState.nsStateInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				{ modifiedCount, upsertedCount } = await updateInBulk updates
-				log.info "Updated #{modifiedCount} device(s) and added #{upsertedCount} (namespaced state)"
+				bulkUpdate = updates.reduce (bulk, update) ->
+					throw new Error "Invalid state: no deviceId found on update" unless update.get "deviceId"
+					throw new Error "Invalid state: no data found on update"     unless update.get "data"
+
+					device = update
+						.get "data", Map()
+						.set "deviceId", update.get "deviceId"
+						.toJS()
+
+					operation =
+						updateOne:
+							filter: deviceId: update.get "deviceId"
+							update: device
+							upsert: true
+
+					[...bulk, operation]
+				, []
+
+				{ upsertedCount, modifiedCount } = await db.Device.bulkWrite bulkUpdate, ordered: false
+				log.info "Updated #{modifiedCount} device(s) and added #{upsertedCount}"
 
 		# first time online devices
 		devicesStatus$
