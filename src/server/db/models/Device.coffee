@@ -12,6 +12,8 @@ systemInfoSchema = new Schema
 	ppp0:       String
 	tun0:       String
 	version:    String
+,
+	_id: false
 
 schema     = new Schema
 	containers: Object

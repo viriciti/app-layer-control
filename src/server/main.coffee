@@ -1,17 +1,17 @@
-RPC                        = require "mqtt-json-rpc"
-WebSocket                  = require "ws"
-bodyParser                 = require "body-parser"
-compression                = require "compression"
-config                     = require "config"
-cors                       = require "cors"
-express                    = require "express"
-http                       = require "http"
-morgan                     = require "morgan"
-mqtt                       = require "async-mqtt"
-{ Map }                    = require "immutable"
-{ isEmpty, negate, every } = require "lodash"
-{ Subject }                = require "rxjs"
-kleur                      = require "kleur"
+RPC                               = require "mqtt-json-rpc"
+WebSocket                         = require "ws"
+bodyParser                        = require "body-parser"
+compression                       = require "compression"
+config                            = require "config"
+cors                              = require "cors"
+express                           = require "express"
+http                              = require "http"
+morgan                            = require "morgan"
+mqtt                              = require "async-mqtt"
+{ Map }                           = require "immutable"
+{ isEmpty, negate, every, keyBy } = require "lodash"
+{ Observable, Subject }           = require "rxjs"
+kleur                             = require "kleur"
 
 {
 	DevicesLogs
@@ -97,6 +97,19 @@ do ->
 		deviceGroups$   = DeviceGroups.observable   socket
 		registry$       = DockerRegistry            config.versioning, db
 		source$         = new Subject
+
+		Observable
+			.fromEvent db.Device.watch(fullDocument: "updateLookup"), "change"
+			.map ({ fullDocument, updateDescription }) ->
+				{ deviceId }      = fullDocument
+
+				{ updatedFields } = updateDescription if updateDescription
+				updatedFields   or= deviceId
+
+				{ ...updatedFields, deviceId: deviceId }
+			.bufferTime config.batchState.defaultInterval
+			.subscribe (changes) ->
+				broadcaster.broadcast Broadcaster.STATE, keyBy changes, "deviceId"
 
 		# device logs
 		devicesLogs$.subscribe (message) ->
