@@ -12,7 +12,7 @@ module.exports =
 						deviceId: match.id
 						data:     JSON.parse message
 				catch
-					debug "Unprocessable state passed: #{message or '(empty)'}"
+					throw new Error "Unprocessable state passed: #{message or '(empty)'}"
 					Map()
 
 	topic: "devices/+/state"

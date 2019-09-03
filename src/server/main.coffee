@@ -64,6 +64,26 @@ unless process.env.NODE_ENV is "production"
 app.use "/api",         require "./api"
 app.use "/api/devices", (require "./api/devices") getDeviceStates
 
+updateInBulk = (updates) ->
+	bulkUpdate = updates.reduce (bulk, update) ->
+		throw new Error "Invalid state: no deviceId found on update" unless update.get "deviceId"
+		throw new Error "Invalid state: no data found on update"     unless update.get "data"
+
+		operation =
+			updateOne:
+				filter: deviceId: update.get "deviceId"
+				update: update.get("data", Map()).toJS()
+				upsert: true
+
+		[...bulk, operation]
+	, []
+
+	bulkUpdate.forEach (a) ->
+		console.log a.updateOne.filter.deviceId
+
+	{ upsertedCount, modifiedCount } = await db.Device.bulkWrite bulkUpdate
+	{ upsertedCount, modifiedCount }
+
 # required to support await operations
 do ->
 	await bundle app
@@ -119,61 +139,15 @@ do ->
 			.bufferTime config.batchState.defaultInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				bulkUpdate = updates.reduce (bulk, update) ->
-					operation =
-						updateOne:
-							filter: deviceId: update.get "deviceId"
-							update: update.get("data", Map()).toJS()
-							upsert: true
+				{ modifiedCount, upsertedCount } = await updateInBulk updates
+				log.info "Updated #{modifiedCount} device(s) and added #{upsertedCount} (state)"
 
-					[...bulk, operation]
-				, []
-
-				{ upsertedCount, modifiedCount } = await db.Device.bulkWrite bulkUpdate
-				log.info "Updated #{modifiedCount} device(s) and added #{upsertedCount}"
-
-		# state updates
-		devicesState$
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
-			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
-					deviceId = update.get "deviceId"
-					data     = update.get "data"
-					newState = data.merge Map
-						lastSeenTimestamp: Date.now()
-
-					# * App Layer Agent sends out 'groups' as part of the state
-					# * however, this attribute ought to be set by App Layer Control instead
-					keys     = ["groups", "status"]
-					newState = (newState.remove key) for key in keys
-
-					devices.mergeIn [deviceId], newState
-				, Map()
-
-				#
-				# console.log "Device State !"
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
-
-		# specific state updates
-		# these updates are broadcasted more frequently
 		devicesNsState$
-			.merge deviceGroups$
 			.bufferTime config.batchState.nsStateInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
-					key      = update.get "key"
-					deviceId = update.get "deviceId"
-
-					devices
-						.setIn [deviceId, key], update.get "value"
-						.setIn [deviceId, "lastSeenTimestamp"], Date.now()
-				, Map()
-
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
+				{ modifiedCount, upsertedCount } = await updateInBulk updates
+				log.info "Updated #{modifiedCount} device(s) and added #{upsertedCount} (namespaced state)"
 
 		# first time online devices
 		devicesStatus$
@@ -187,23 +161,6 @@ do ->
 				return unless insertedCount
 
 				log.info "Inserted default groups for #{insertedCount} device(s)"
-
-		# status updates
-		devicesStatus$
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
-			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
-					deviceId  = update.get "deviceId"
-					status    = update.get "status"
-
-					devices
-						.setIn [deviceId, "connected"], status is "online"
-						.setIn [deviceId, "status"],    status
-				, Map()
-
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
 
 		# docker registry
 		registry$.subscribe (images) ->

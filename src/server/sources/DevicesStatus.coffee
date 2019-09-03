@@ -1,17 +1,15 @@
-{ Map } = require "immutable"
-
+{ fromJS }          = require "immutable"
 createTopicListener = require "../helpers/createTopicListener"
 
 module.exports =
 	observable: (socket) ->
 		createTopicListener socket, "devices/+id/status"
-			.map ({ match, message, retained }) ->
+			.map ({ match, message }) ->
 				deviceId = match.id
 				status   = message
 
-				Map
+				fromJS
 					deviceId: deviceId
-					status:   status
-					retained: retained
+					data:     status: status
 
 	topic: "devices/+/status"

@@ -10,7 +10,6 @@ module.exports =
 			.map ({ topic, message, match }) ->
 				fromJS
 					deviceId: match.id
-					key:      match.key
-					value:    JSON.parse message
+					data:     [match.key]: JSON.parse message
 
 	topic: "devices/+/nsState/+"
