@@ -86,9 +86,9 @@ do ->
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{config.mqtt.host}:#{config.mqtt.port}"
 
-		log.info "mqtt: Populating ..."
-		await populateMqttWithGroups db, socket
-		await populateMqttWithDeviceGroups db, socket
+		# log.info "mqtt: Populating ..."
+		# await populateMqttWithGroups db, socket
+		# await populateMqttWithDeviceGroups db, socket
 
 		devicesLogs$    = DevicesLogs.observable    socket
 		devicesNsState$ = DevicesNsState.observable socket
@@ -101,6 +101,23 @@ do ->
 		# device logs
 		devicesLogs$.subscribe (message) ->
 			broadcaster.broadcast Broadcaster.LOGS, message
+
+		devicesState$
+			.bufferTime config.batchState.defaultInterval
+			.filter negate isEmpty
+			.subscribe (updates) ->
+				bulkUpdate = updates.reduce (bulk, update) ->
+					operation =
+						updateOne:
+							filter: deviceId: update.get "deviceId"
+							update: update.get("data", Map()).toJS()
+							upsert: true
+
+					[...bulk, operation]
+				, []
+
+				{ upsertedCount, modifiedCount } = await db.Device.bulkWrite bulkUpdate
+				log.info "Updated #{modifiedCount} device(s) and added #{upsertedCount}"
 
 		# state updates
 		devicesState$
@@ -122,6 +139,7 @@ do ->
 				, Map()
 
 				#
+				# console.log "Device State !"
 				deviceStates = deviceStates.mergeDeep stateUpdates
 				broadcaster.broadcast Broadcaster.STATE, stateUpdates
 
