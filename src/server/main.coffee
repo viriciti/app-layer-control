@@ -40,13 +40,11 @@ ws      = new WebSocket.Server server: server
 db      = new Database
 store   = new Store db
 
-rpc             = null
-deviceStates    = Map()
-getDeviceStates = -> deviceStates
+rpc = null
 
 log.info "NPM authentication enabled: #{if every config.server.npm then 'yes' else 'no'}"
-log.info "Docker registry: #{config.versioning.registry.url}"
-log.info "GitLab endpoint: #{config.versioning.registry.host}"
+log.info "Docker registry: #{config.versioning.registry.url or 'not set'}"
+log.info "GitLab endpoint: #{config.versioning.registry.host or 'not set'}"
 
 app.use cors()
 app.use compression()
@@ -62,29 +60,7 @@ unless process.env.NODE_ENV is "production"
 			not url.startsWith "/api"
 
 app.use "/api",         require "./api"
-app.use "/api/devices", (require "./api/devices") getDeviceStates
-
-updateInBulk = (updates) ->
-	bulkUpdate = updates.reduce (bulk, update) ->
-		throw new Error "Invalid state: no deviceId found on update" unless update.get "deviceId"
-		throw new Error "Invalid state: no data found on update"     unless update.get "data"
-
-		insert    = update
-			.get "data", Map()
-			.set "deviceId", update.get "deviceId"
-			.toJS()
-
-		operation =
-			updateOne:
-				filter: deviceId: update.get "deviceId"
-				update: insert
-				upsert: true
-
-		[...bulk, operation]
-	, []
-
-	{ upsertedCount, modifiedCount } = await db.Device.bulkWrite bulkUpdate, ordered: false
-	{ upsertedCount, modifiedCount }
+app.use "/api/devices", (require "./api/devices") db
 
 # required to support await operations
 do ->
@@ -164,8 +140,8 @@ do ->
 					[...bulk, operation]
 				, []
 
-				{ upsertedCount, modifiedCount } = await db.Device.bulkWrite bulkUpdate, ordered: false
-				log.info "Updated #{modifiedCount} device(s) and added #{upsertedCount}"
+				{ upsertedCount, modifiedCount, matchedCount } = await db.Device.bulkWrite bulkUpdate, ordered: false
+				log.info "Updated #{modifiedCount} and added #{upsertedCount} device(s) - matched: #{matchedCount}"
 
 		# first time online devices
 		devicesStatus$
@@ -201,7 +177,7 @@ do ->
 						devices.mergeIn [deviceId], data
 					, Map()
 
-				deviceStates = deviceStates.mergeDeep stateUpdates
+				# deviceStates = deviceStates.mergeDeep stateUpdates
 				broadcaster.broadcast Broadcaster.STATE, stateUpdates
 
 		[

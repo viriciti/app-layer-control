@@ -2,7 +2,7 @@
 
 log = (require "../../lib/Logger") "api:devices"
 
-module.exports = (getDeviceStates) ->
+module.exports = (db) ->
 	router = Router()
 
 	router.get "/", (_, res) ->
@@ -10,7 +10,7 @@ module.exports = (getDeviceStates) ->
 			.status 200
 			.json
 				status: "success"
-				data:    getDeviceStates().toJS()
+				data:    await db.Device.find()
 
 	router.put "/:id/state", ({ app, params }, res, next) ->
 		{ rpc } = app.locals
