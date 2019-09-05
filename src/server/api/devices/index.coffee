@@ -14,7 +14,7 @@ module.exports = (db) ->
 				data:    keyBy (await db
 					.Device
 					.aggregateGroups()
-					.project "-_id"
+					.project "-_id -images -containers"
 				), "deviceId"
 
 	router.put "/:id/state", ({ app, params }, res, next) ->
