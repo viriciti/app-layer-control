@@ -25,6 +25,10 @@ class Database
 			autoConnect: false
 		, @options
 
+		forEach models, (model, name) =>
+			return if @[name]
+			@[name] = model
+
 		@connect() if @options.autoConnect
 
 	expandHosts: (hosts) ->
@@ -38,10 +42,6 @@ class Database
 				port: port
 
 	connect: ->
-		forEach models, (model, name) =>
-			return if @[name]
-			@[name] = model
-
 		if mongoose.connection.readyState is readyStates.DISCONNECTED
 			log.info "Connecting to MongoDB ..."
 

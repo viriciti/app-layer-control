@@ -1,4 +1,5 @@
 { Router } = require "express"
+{ keyBy }  = require "lodash"
 
 log = (require "../../lib/Logger") "api:devices"
 
@@ -10,7 +11,11 @@ module.exports = (db) ->
 			.status 200
 			.json
 				status: "success"
-				data:    await db.Device.find()
+				data:    keyBy (await db
+					.Device
+					.aggregateGroups()
+					.project "-_id"
+				), "deviceId"
 
 	router.put "/:id/state", ({ app, params }, res, next) ->
 		{ rpc } = app.locals

@@ -1,5 +1,6 @@
-mongoose          = require "mongoose"
+DeviceGroup       = require "./DeviceGroup"
 addImmutableQuery = require "../plugins/addImmutableQuery"
+mongoose          = require "mongoose"
 
 { Schema }       = mongoose
 systemInfoSchema = new Schema
@@ -23,7 +24,22 @@ schema     = new Schema
 		unique:   true
 		index:    true
 	images:     Array
+	connected:  Boolean
 	systemInfo: systemInfoSchema
+
+schema.statics.aggregateGroups = ->
+	@aggregate [
+		$lookup:
+			from:         DeviceGroup.collection.name
+			localField:   "deviceId"
+			foreignField: "deviceId"
+			as:           "groups"
+	,
+		$unwind: "$groups"
+	,
+		$addFields:
+			groups: "$groups.groups"
+	]
 
 schema.plugin addImmutableQuery
 

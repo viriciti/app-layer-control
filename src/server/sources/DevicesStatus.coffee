@@ -10,6 +10,6 @@ module.exports =
 
 				fromJS
 					deviceId: deviceId
-					data:     status: status
+					data:     connected: status is "online"
 
 	topic: "devices/+/status"
