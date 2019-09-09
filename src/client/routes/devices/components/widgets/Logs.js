@@ -60,7 +60,10 @@ class Logs extends PureComponent {
 
 				<hr />
 
-				<ul className="scroll-container list list--striped" style={{ height: '51vh' }}>
+				<ul
+					className="scroll-container list list--striped"
+					style={{ height: '51vh', overflowY: 'scroll' }}
+				>
 					{this.renderLogs()}
 				</ul>
 			</Fragment>

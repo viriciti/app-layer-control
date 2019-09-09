@@ -15,14 +15,8 @@ class GroupsForm extends PureComponent {
 	}
 
 	getSupport () {
-		const dmVersion      = this.props.selectedDevice.getIn([
-			'systemInfo',
-			'dmVersion',
-		])
-		const appVersion     = this.props.selectedDevice.getIn([
-			'systemInfo',
-			'appVersion',
-		])
+		const dmVersion      = this.props.selectedDevice.getIn(['systemInfo', 'dmVersion'])
+		const appVersion     = this.props.selectedDevice.getIn(['systemInfo', 'appVersion'])
 		const version        = defaultTo(appVersion, dmVersion)
 		const supportedSince = '1.18.0'
 
@@ -45,7 +39,7 @@ class GroupsForm extends PureComponent {
 		const group          = e.target.value
 		const selectedGroups = this.state.selectedGroups
 
-		if (!selectedGroups.includes(group)) {
+		if (group && !selectedGroups.includes(group)) {
 			this.props.onTouch()
 			this.setState({ selectedGroups: selectedGroups.concat(group) })
 		}
@@ -126,14 +120,12 @@ class GroupsForm extends PureComponent {
 					<div className="col-12">
 						<form>
 							<div className="form-group">
-								<label htmlFor="groups">
-									Insert the groups from low to high priority
-								</label>
+								<label htmlFor="groups">Insert the groups from low to high priority</label>
 								<select
 									disabled={this.props.groups.length === 0}
 									className="form-control"
 									name="groups"
-									onClick={this.onGroupSelected}
+									onChange={this.onGroupSelected}
 								>
 									{this.renderOptions()}
 								</select>
@@ -145,10 +137,11 @@ class GroupsForm extends PureComponent {
 									type="submit"
 									className={classNames('float-right', 'btn', {
 										'btn-light':   !this.props.isStoringGroups && !this.props.touched,
-										'btn-warning': this.props.storingGroups || this.props.touched,
+										'btn-warning': this.props.isStoringGroups || this.props.touched,
 									})}
 									onClick={this.onSubmit}
 									busy={this.props.isStoringGroups}
+									disabled={!this.state.selectedGroups.length}
 								>
 									<span className="fas fa-save" /> Save
 								</AsyncButton>
@@ -158,8 +151,8 @@ class GroupsForm extends PureComponent {
 									title={`Supported since ${supportedSince}, currently running ${current}`}
 								>
 									<span className="fas fa-exclamation-circle pr-2" />
-									Agent does not support updating groups (since:{' '}
-									{supportedSince}, currently: {current})
+									Agent does not support updating groups (since: {supportedSince}, currently:{' '}
+									{current})
 								</p>
 							)}
 						</form>
@@ -177,10 +170,7 @@ export default connect(
 		return {
 			selectedDevice,
 			groups:          state.get('groups'),
-			isStoringGroups: getAsyncState([
-				'isStoringGroups',
-				selectedDevice.get('deviceId'),
-			])(state),
+			isStoringGroups: getAsyncState(['isStoringGroups', selectedDevice.get('deviceId')])(state),
 		}
 	},
 	{ asyncStoreGroups }
