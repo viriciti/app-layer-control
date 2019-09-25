@@ -2,6 +2,7 @@ import { EventEmitter } from 'events'
 
 export default class WebSocket extends EventEmitter {
 	#timeout
+	#listeners = []
 
 	constructor(url, protocols = []) {
 		super()
@@ -12,7 +13,18 @@ export default class WebSocket extends EventEmitter {
 	}
 
 	addEventListener(type, listener) {
+		this.#listeners.push({ type, listener })
 		this.socket.addEventListener(type, listener)
+	}
+
+	removeEventListener(type, listener) {
+		this.socket.removeEventListener(type, listener)
+
+		const index = this.#listeners.findIndex(({ listener: fn }) => fn === listener)
+		if (index !== -1) {
+			this.#listeners.splice(index, 1)
+		}
+
 	}
 
 	send(data) {
@@ -27,6 +39,7 @@ export default class WebSocket extends EventEmitter {
 		this.socket.addEventListener('message', this.#onMessage)
 		this.socket.addEventListener('open', this.#onOpen)
 
+		this.#listeners.forEach(({ type, listener }) => this.socket.addEventListener(type, listener))
 		this.#timeout = undefined
 	}
 
@@ -36,7 +49,7 @@ export default class WebSocket extends EventEmitter {
 		this.socket.removeEventListener('message', this.#onMessage)
 		this.socket.removeEventListener('open', this.#onOpen)
 
-		console.warn('Reconnecting ...')
+		console.warn('Connection closed, reconnecting ...')
 		this.#connect()
 	}
 
