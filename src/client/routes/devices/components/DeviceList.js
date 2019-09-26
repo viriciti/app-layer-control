@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import naturalCompareLite from 'natural-compare-lite'
 import { List } from 'immutable'
 import { connect } from 'react-redux'
@@ -28,13 +28,20 @@ import {
 import { applySort } from '/store/globalReducers/ui'
 import toReactKey from '/utils/toReactKey'
 import getAsyncState from '/store/selectors/getAsyncState'
+import Import from '/routes/devices/components/Import'
 
 class DeviceList extends PureComponent {
 	state = {
-		sortBy: {
+		showImportModal: false,
+		sortBy:          {
 			field: 'deviceId',
 			asc:   true,
 		},
+	}
+
+	onImport = (visible = true) => {
+		// TODO: Find a better way to handle visibility state
+		this.setState({ showImportModal: visible })
 	}
 
 	onSort = field => {
@@ -50,9 +57,7 @@ class DeviceList extends PureComponent {
 
 	onStoreGroup = async label => {
 		const devices = this.props.multiSelectedDevices
-			.filterNot(deviceId =>
-				this.props.devices.getIn([deviceId, 'groups'], List()).includes(label)
-			)
+			.filterNot(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
 			.toArray()
 
 		if (confirm(`Add group '${label}' to ${devices.length} device(s)?`)) {
@@ -63,9 +68,7 @@ class DeviceList extends PureComponent {
 
 	onRemoveGroup = async label => {
 		const devices = this.props.multiSelectedDevices
-			.filter(deviceId =>
-				this.props.devices.getIn([deviceId, 'groups'], List()).includes(label)
-			)
+			.filter(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
 			.toArray()
 
 		if (confirm(`Remove group '${label}' from ${devices.length} device(s)?`)) {
@@ -99,23 +102,17 @@ class DeviceList extends PureComponent {
 											title="Select all devices"
 											type="checkbox"
 											onChange={() =>
-												this.props.multiSelectDevices(
-													this.props.devices.keySeq().toList()
-												)
+												this.props.multiSelectDevices(this.props.devices.keySeq().toList())
 											}
 											checked={
 												!this.props.devices.size
 													? false
-													: this.props.multiSelectedDevices.size ===
-													  this.props.devices.size
+													: this.props.multiSelectedDevices.size === this.props.devices.size
 											}
 											disabled={!this.props.devices.size}
 										/>
 
-										<label
-											className="custom-control-label"
-											htmlFor="selectAll"
-										/>
+										<label className="custom-control-label" htmlFor="selectAll" />
 									</div>
 								</th>
 
@@ -127,9 +124,7 @@ class DeviceList extends PureComponent {
 											onSort={partial(this.onSort, column.get('getIn'))}
 											sortable={column.get('sortable')}
 											ascending={this.props.sort.get('ascending')}
-											sorted={
-												this.props.sort.get('field') === column.get('getIn')
-											}
+											sorted={this.props.sort.get('field') === column.get('getIn')}
 											headerName={column.get('headerName')}
 											columnWidth={column.get('columnWidth')}
 										/>
@@ -145,9 +140,7 @@ class DeviceList extends PureComponent {
 										key={info.get('deviceId')}
 										info={info}
 										onSelectionToggle={this.onSelectionToggle}
-										selected={this.props.multiSelectedDevices.includes(
-											info.get('deviceId')
-										)}
+										selected={this.props.multiSelectedDevices.includes(info.get('deviceId'))}
 										configurations={this.props.configurations}
 										deviceSources={this.props.deviceSources}
 									/>
@@ -161,9 +154,7 @@ class DeviceList extends PureComponent {
 							No devices were found with these search queries
 						</h6>
 					) : !this.props.devices.size ? (
-						<h6 className="text-center text-secondary my-5">
-							No devices were found
-						</h6>
+						<h6 className="text-center text-secondary my-5">No devices were found</h6>
 					) : null}
 				</div>
 			)
@@ -174,124 +165,130 @@ class DeviceList extends PureComponent {
 		const { selectedDevice } = this.props
 
 		return (
-			<div className="mx-3 mb-4">
-				<header className="dashboard-header">
-					<span className="dashboard-header__icon fas fa-hdd" />
-					<div className="dashboard-header__titles-container">
-						<h1 className="dashboard-header__title">Devices</h1>
-						<h2 className="dashboard-header__subtitle">
-							Configure your devices
-						</h2>
-					</div>
-				</header>
+			<Fragment>
+				<div className="mx-3 mb-4">
+					<header className="dashboard-header">
+						<span className="dashboard-header__icon fas fa-hdd" />
+						<div className="dashboard-header__titles-container">
+							<h1 className="dashboard-header__title">Devices</h1>
+							<h2 className="dashboard-header__subtitle">Configure your devices</h2>
+						</div>
+					</header>
 
-				<div className="row">
-					<div className="col">
-						<div className="card">
-							<div className="card-controls">
-								<div className="btn-group">
-									<button
-										className="btn btn-light btn-sm dropdown-toggle mr-2"
-										data-toggle="dropdown"
-										disabled={
-											this.props.multiSelectedDevices.size === 0 ||
-											this.props.isStoringMultiGroups ||
-											this.props.isRemovingMultiGroups
-										}
-										type="button"
-									>
-										<span className="fas fa-plus-circle" /> Add Group (
-										{this.props.multiSelectedDevices.size})
-									</button>
+					<div className="row">
+						<div className="col">
+							<div className="card">
+								<div className="card-controls">
+									<div className="btn-group">
+										<button
+											className="btn btn-light btn-sm dropdown-toggle mr-2"
+											data-toggle="dropdown"
+											disabled={
+												this.props.multiSelectedDevices.size === 0 ||
+												this.props.isStoringMultiGroups ||
+												this.props.isRemovingMultiGroups
+											}
+											type="button"
+										>
+											<span className="fad fa-user-plus" /> Add Group (
+											{this.props.multiSelectedDevices.size})
+										</button>
 
-									<div className="dropdown-menu">
-										{this.multiSelectOptions().map(name => (
-											<button
-												key={toReactKey('addGroup', name)}
-												className="dropdown-item cursor-pointer"
-												onClick={partial(this.onStoreGroup, name)}
-											>
-												<small>{name}</small>
-											</button>
-										))}
+										<div className="dropdown-menu">
+											{this.multiSelectOptions().map(name => (
+												<button
+													key={toReactKey('addGroup', name)}
+													className="dropdown-item cursor-pointer"
+													onClick={partial(this.onStoreGroup, name)}
+												>
+													<small>{name}</small>
+												</button>
+											))}
+										</div>
+									</div>
+
+									<div className="btn-group">
+										<button
+											className="btn btn-light btn-sm dropdown-toggle mr-2"
+											data-toggle="dropdown"
+											disabled={
+												this.props.multiSelectedDevices.size === 0 ||
+												this.props.isStoringMultiGroups ||
+												this.props.isRemovingMultiGroups
+											}
+											type="button"
+										>
+											<span className="fad fa-user-minus fa-fw" /> Remove Group (
+											{this.props.multiSelectedDevices.size})
+										</button>
+
+										<div className="dropdown-menu">
+											{this.multiSelectOptions().map(name => (
+												<button
+													key={toReactKey('removeGroup', name)}
+													className="dropdown-item cursor-pointer"
+													onClick={partial(this.onRemoveGroup, name)}
+												>
+													<small>{name}</small>
+												</button>
+											))}
+										</div>
+									</div>
+
+									<div className="float-right">
+										<button className="btn btn-light btn-sm" onClick={partial(this.onImport, true)}>
+											<span className="fad fa-file-import mr-1" /> Import
+										</button>
 									</div>
 								</div>
 
-								<div className="btn-group">
-									<button
-										className="btn btn-light btn-sm dropdown-toggle mr-2"
-										data-toggle="dropdown"
-										disabled={
-											this.props.multiSelectedDevices.size === 0 ||
-											this.props.isStoringMultiGroups ||
-											this.props.isRemovingMultiGroups
-										}
-										type="button"
-									>
-										<span className="fas fa-minus-circle" /> Remove Group (
-										{this.props.multiSelectedDevices.size})
-									</button>
+								<Filter />
 
-									<div className="dropdown-menu">
-										{this.multiSelectOptions().map(name => (
-											<button
-												key={toReactKey('removeGroup', name)}
-												className="dropdown-item cursor-pointer"
-												onClick={partial(this.onRemoveGroup, name)}
-											>
-												<small>{name}</small>
-											</button>
-										))}
+								<div className="card-body">
+									<div className="row">
+										<div className="col">
+											{this.renderDevicesTable()}
+
+											<DeviceDetail
+												open={!!selectedDevice}
+												selectedDevice={selectedDevice}
+												onModalClose={this.onModalClose}
+												deviceSources={this.props.deviceSources}
+											/>
+										</div>
 									</div>
 								</div>
-							</div>
 
-							<Filter />
-
-							<div className="card-body">
-								<div className="row">
-									<div className="col">
-										{this.renderDevicesTable()}
-
-										<DeviceDetail
-											open={!!selectedDevice}
-											selectedDevice={selectedDevice}
-											onModalClose={this.onModalClose}
-											deviceSources={this.props.deviceSources}
-										/>
-									</div>
+								<div className="card-controls">
+									<PaginationControl pageRange={2} data={this.props.devices} />
 								</div>
-							</div>
-
-							<div className="card-controls">
-								<PaginationControl pageRange={2} data={this.props.devices} />
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+
+				<Import open={this.state.showImportModal} onClose={partial(this.onImport, false)} />
+			</Fragment>
 		)
 	}
 }
 
 export default connect(
-	state => {
-		return {
-			groups:                state.get('groups'),
-			multiSelectedDevices:  state.getIn(['multiSelect', 'selected']),
-			multiSelectedAction:   state.getIn(['multiSelect', 'action']),
-			deviceSources:         state.get('deviceSources'),
-			configurations:        state.get('configurations'),
-			filter:                state.getIn(['ui', 'filter'], []),
-			sort:                  state.getIn(['ui', 'sort']),
-			isStoringMultiGroups:  getAsyncState('isStoringMultiGroups')(state),
-			isRemovingMultiGroups: getAsyncState('isRemovingMultiGroups')(state),
-			isFetchingDevices:     getAsyncState('isFetchingDevices')(state),
+	state => ({
+		groups:                state.get('groups'),
+		multiSelectedDevices:  state.getIn(['multiSelect', 'selected']),
+		multiSelectedAction:   state.getIn(['multiSelect', 'action']),
+		deviceSources:         state.get('deviceSources'),
+		configurations:        state.get('configurations'),
+		filter:                state.getIn(['ui', 'filter'], []),
+		sort:                  state.getIn(['ui', 'sort']),
+		isStoringMultiGroups:  getAsyncState('isStoringMultiGroups')(state),
+		isRemovingMultiGroups: getAsyncState('isRemovingMultiGroups')(state),
+		isFetchingDevices:     getAsyncState('isFetchingDevices')(state),
 
-			selectedDevice: getSelectedDevice(state),
-			devices:        getDevices(state),
-		}
-	},
+		selectedDevice: getSelectedDevice(state),
+		devices:        getDevices(state),
+	}),
 	{
 		applySort,
 		selectDevice,
