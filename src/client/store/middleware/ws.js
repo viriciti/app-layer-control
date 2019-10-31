@@ -1,4 +1,9 @@
-export default ws => ({ dispatch }) => {
+import WebSocket from '/store/WebSocket'
+
+export default ({ dispatch }) => {
+	const protocol = window.location.protocol.startsWith('https') ? 'wss' : 'ws'
+	const ws       = new WebSocket(`${protocol}://${window.location.host}`)
+
 	ws.addEventListener('message', ({ data: message }) => {
 		try {
 			const json             = JSON.parse(message)
