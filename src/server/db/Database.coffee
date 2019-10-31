@@ -42,7 +42,7 @@ class Database
 			@[name] = model
 
 		if mongoose.connection.readyState is readyStates.DISCONNECTED
-			log.info "Connecting to MongoDB ..."
+			log.info "Connecting to MongoDB (pool size: #{config.db.options.poolSize})..."
 
 			mongoose.Promise = global.Promise
 			url              = mongodbURI.format
