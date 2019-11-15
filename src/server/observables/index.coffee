@@ -1,2 +1,3 @@
 module.exports =
-	cacheUpdate: require "./cacheUpdate"
+	cacheUpdate:   require "./cacheUpdate"
+	watchActivity: require "./watchActivity"

@@ -10,7 +10,7 @@ morgan                     = require "morgan"
 mqtt                       = require "async-mqtt"
 { Map }                    = require "immutable"
 { isEmpty, negate, every } = require "lodash"
-{ Subject }                = require "rxjs"
+{ Observable, Subject }    = require "rxjs"
 kleur                      = require "kleur"
 
 {
@@ -31,6 +31,7 @@ Watcher                        = require "./db/Watcher"
 Broadcaster                    = require "./Broadcaster"
 { installPlugins, runPlugins } = require "./plugins"
 log                            = (require "./lib/Logger") "main"
+watchActivity                  = require "./observables/watchActivity"
 
 # Server initialization
 app     = express()
@@ -95,8 +96,23 @@ do ->
 		devicesState$   = DevicesState.observable   socket
 		devicesStatus$  = DevicesStatus.observable  socket
 		deviceGroups$   = DeviceGroups.observable   socket
+		activity$       = watchActivity             socket
 		registry$       = DockerRegistry            config.versioning, db
 		source$         = new Subject
+
+		activity$
+			.bufferTime config.batchState.defaultInterval
+			.filter negate isEmpty
+			.subscribe (updates) ->
+				stateUpdates = updates.reduce (devices, update) ->
+					deviceId     = update.get "deviceId"
+					lastActivity = update.get "lastActivity"
+
+					devices.setIn [deviceId, "lastSeenTimestamp"], lastActivity
+				, Map()
+
+				deviceStates = deviceStates.mergeDeep stateUpdates
+				broadcaster.broadcast Broadcaster.STATE, stateUpdates
 
 		# device logs
 		devicesLogs$.subscribe (message) ->
@@ -110,15 +126,13 @@ do ->
 				stateUpdates = updates.reduce (devices, update) ->
 					deviceId = update.get "deviceId"
 					data     = update.get "data"
-					newState = data.merge Map
-						lastSeenTimestamp: Date.now()
 
 					# * App Layer Agent sends out 'groups' as part of the state
 					# * however, this attribute ought to be set by App Layer Control instead
-					keys     = ["groups", "status"]
-					newState = (newState.remove key) for key in keys
+					keys = ["groups", "status"]
+					data = (data.remove key) for key in keys
 
-					devices.mergeIn [deviceId], newState
+					devices.mergeIn [deviceId], data
 				, Map()
 
 				deviceStates = deviceStates.mergeDeep stateUpdates
@@ -135,9 +149,7 @@ do ->
 					key      = update.get "key"
 					deviceId = update.get "deviceId"
 
-					devices
-						.setIn [deviceId, key], update.get "value"
-						.setIn [deviceId, "lastSeenTimestamp"], Date.now()
+					devices.setIn [deviceId, key], update.get "value"
 				, Map()
 
 				deviceStates = deviceStates.mergeDeep stateUpdates
