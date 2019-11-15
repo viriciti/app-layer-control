@@ -27,6 +27,7 @@ module.exports =
 			appName:    "app-layer-control"
 			replSet:    process.env.DB_REPLICA_SET or "rs0"
 			replicaSet: process.env.DB_REPLICA_SET or "rs0"
+			poolSize:   process.env.DB_POOL_SIZE   or 50
 
 	versioning:
 		maxTokenAttempts: 3
