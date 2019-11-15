@@ -1,8 +1,12 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
+import { connect } from 'react-redux'
 import classNames from 'classnames'
-import { noop, omit, has } from 'lodash'
+import { noop, omit, has, partial } from 'lodash'
 import naturalCompare from 'natural-compare-lite'
 import semver from 'semver'
+import { asyncRefreshRegistry } from '/routes/administration/modules/actions'
+import AsyncButton from '/components/common/AsyncButton'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 const ApplicationVersion = ({ version, onExpandSelectVersion, isCurrentVersion }) => {
 	return (
@@ -63,7 +67,11 @@ const AvailableApplication = ({ label, version, onToggle, onExpand, isSelected, 
 							: 'Lock this application to a specific version'
 					}
 				>
-					{isExpanded ? <span className="fas fa-chevron-left" /> : <span className="fas fa-chevron-right" />}
+					{isExpanded ? (
+						<span className="fas fa-chevron-left" />
+					) : (
+						<span className="fas fa-chevron-right" />
+					)}
 				</button>
 			</div>
 		</li>
@@ -84,7 +92,10 @@ class ApplicationsList extends PureComponent {
 	}
 
 	updateApplicationVersion (newVersion) {
-		this.updateApplications({ ...this.props.input.value, [this.state.expandApplicationName]: newVersion })
+		this.updateApplications({
+			...this.props.input.value,
+			[this.state.expandApplicationName]: newVersion,
+		})
 	}
 
 	updateApplications (updates) {
@@ -158,6 +169,25 @@ class ApplicationsList extends PureComponent {
 						<div className="col-6">
 							{this.state.expandApplicationName ? (
 								<ul className="list-unstyled">
+									<li>
+										<AsyncButton
+											busy={this.props.isRefreshingRegistry}
+											busyText={
+												<Fragment>
+													<span className="fad fa-download mr-1" /> Fetching ...
+												</Fragment>
+											}
+											type="button"
+											onClick={partial(
+												this.props.asyncRefreshRegistry,
+												this.state.expandApplicationName
+											)}
+											className="btn btn-block btn-secondary btn--no-underline my-1"
+										>
+											<span className="fad fa-download mr-1" /> Fetch versions
+										</AsyncButton>
+									</li>
+
 									{this.props.versionsPerApplication
 										.get(this.state.expandApplicationName)
 										.sort((left, right) => {
@@ -175,7 +205,9 @@ class ApplicationsList extends PureComponent {
 													key={`${this.state.expandApplicationName}${version}`}
 													version={version}
 													onExpandSelectVersion={this.onExpandSelectVersion.bind(null, version)}
-													isCurrentVersion={this.props.input.value[this.state.expandApplicationName] === version}
+													isCurrentVersion={
+														this.props.input.value[this.state.expandApplicationName] === version
+													}
 												/>
 											)
 										})}
@@ -212,4 +244,11 @@ class ApplicationsList extends PureComponent {
 	}
 }
 
-export default ApplicationsList
+export default connect(
+	state => ({
+		isRefreshingRegistry: getAsyncState('isRefreshingRegistry')(state),
+	}),
+	{
+		asyncRefreshRegistry,
+	}
+)(ApplicationsList)

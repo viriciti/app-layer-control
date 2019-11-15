@@ -368,13 +368,24 @@ router.get "/registry", ({ app, query }, res, next) ->
 	catch error
 		next error
 
-router.put "/registry", ({ app }, res, next) ->
+router.put "/registry/:name?", ({ app, params }, res, next) ->
 	{ db, broadcaster } = app.locals
+	{ name }            = params
 
 	try
+		if name
+			application = await db.Application.findOne applicationName: params.name
+			url         = application.fromImage.split "/"
+			repository  = url.slice(url.length - 2).join "/"
+
+			query = name: repository
+		else
+			query = {}
+
+
 		images = await db
 			.AllowedImage
-			.find()
+			.find query
 			.select "name"
 			.lean()
 
@@ -389,7 +400,7 @@ router.put "/registry", ({ app }, res, next) ->
 			.status 200
 			.json
 				status:  "success"
-				message: "Registry refreshed"
+				message: if size query then "Registry refreshed for #{name}" else "Registry refreshed"
 	catch error
 		next error
 

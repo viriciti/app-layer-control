@@ -88,11 +88,12 @@ export function asyncRemoveGroup (label) {
 	}
 }
 
-export function asyncRefreshRegistry () {
+export function asyncRefreshRegistry (name) {
 	return async dispatch => {
 		dispatch(setAsyncState('isRefreshingRegistry', true))
 
-		const { data } = await axios.put('/api/v1/administration/registry')
+		const url      = name ? `/api/v1/administration/registry/${name}` : '/api/v1/administration/registry'
+		const { data } = await axios.put(url)
 		toast.success(data.message)
 
 		dispatch(setAsyncState('isRefreshingRegistry', false))
