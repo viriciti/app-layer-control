@@ -115,9 +115,7 @@ class ConfigurationsForm extends PureComponent {
 
 		const configuration       = { ...newConfiguration }
 		const { applicationName } = configuration
-		const removeTrailingSlash = value => {
-			return value.replace(/(.+)\/$/, '$1')
-		}
+		const removeTrailingSlash = value => value.replace(/(.+)\/$/, '$1')
 
 		if (!confirm(confirmMessage)) {
 			return

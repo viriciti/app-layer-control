@@ -174,7 +174,7 @@ class ApplicationsList extends PureComponent {
 											busy={this.props.isRefreshingRegistry}
 											busyText={
 												<Fragment>
-													<span className="fad fa-download mr-1" /> Fetching ...
+													<div className="loader loader--white" /> Fetching ...
 												</Fragment>
 											}
 											type="button"

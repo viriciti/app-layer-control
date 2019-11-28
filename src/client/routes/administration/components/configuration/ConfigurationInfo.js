@@ -21,15 +21,9 @@ class ConfigurationInfo extends PureComponent {
 		)
 	}
 
-	onCopy = () => {
-		this
-	}
-
 	onDelete = async () => {
 		if (confirm('Are you sure you want to remove this application?')) {
-			this.props.asyncRemoveApplication(
-				this.props.selectedConfiguration.get('applicationName')
-			)
+			this.props.asyncRemoveApplication(this.props.selectedConfiguration.get('applicationName'))
 		}
 	}
 
@@ -57,11 +51,7 @@ class ConfigurationInfo extends PureComponent {
 						</div>
 					</div>
 
-					<JSONPretty
-						id="json-pretty"
-						className="p-2"
-						json={this.props.selectedConfiguration}
-					/>
+					<JSONPretty id="json-pretty" className="p-2" json={this.props.selectedConfiguration} />
 
 					<div className="row">
 						<div className="col-12">

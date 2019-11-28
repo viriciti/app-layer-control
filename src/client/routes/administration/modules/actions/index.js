@@ -92,11 +92,15 @@ export function asyncRefreshRegistry (name) {
 	return async dispatch => {
 		dispatch(setAsyncState('isRefreshingRegistry', true))
 
-		const url      = name ? `/api/v1/administration/registry/${name}` : '/api/v1/administration/registry'
-		const { data } = await axios.put(url)
-		toast.success(data.message)
-
-		dispatch(setAsyncState('isRefreshingRegistry', false))
+		try {
+			const url      = name
+				? `/api/v1/administration/registry/${name}`
+				: '/api/v1/administration/registry'
+			const { data } = await axios.put(url)
+			toast.success(data.message)
+		} finally {
+			dispatch(setAsyncState('isRefreshingRegistry', false))
+		}
 	}
 }
 
