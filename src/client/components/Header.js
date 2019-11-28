@@ -16,7 +16,7 @@ class Header extends PureComponent {
 				<Link className="navbar-brand" to="/">
 					{this.state.noLogo ? (
 						<Fragment>
-							<span className="fas fa-broadcast-tower mr-2" />
+							<span className="fad fa-broadcast-tower mr-2" />
 							<span className="navbar-brand--no-logo">App Layer Control</span>
 						</Fragment>
 					) : (
