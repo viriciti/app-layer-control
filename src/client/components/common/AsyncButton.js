@@ -36,7 +36,7 @@ function AsyncButton ({
 
 AsyncButton.propTypes = {
 	busy:     PropTypes.bool.isRequired,
-	busyText: PropTypes.string,
+	busyText: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
 	children: PropTypes.node.isRequired,
 	disabled: PropTypes.bool,
 	onClick:  PropTypes.func,
