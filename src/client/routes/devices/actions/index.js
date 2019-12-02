@@ -239,6 +239,17 @@ export function asyncRemoveImage (deviceId, image) {
 	}
 }
 
+export function asyncFetchDevice (deviceId) {
+	return async dispatch => {
+		const { data } = await axios.get(`/api/devices/${deviceId}`)
+
+		dispatch({
+			type:    DEVICE_STATE,
+			payload: data.data,
+		})
+	}
+}
+
 export function fetchApplicationLogs (deviceId, application) {
 	return async dispatch => {
 		dispatch(setAsyncState(['isFetchingLogs', deviceId, application], true))
