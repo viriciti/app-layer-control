@@ -8,11 +8,11 @@
 	height: 2rem;
 	width: 2rem;
 
-	&.btn {
+	.btn & {
 		background-image: url('/assets/loaders/loader.svg');
 	}
 
-	&--white &.btn {
+	.btn &--white {
 		background-image: url('/assets/loaders/loader-white.svg');
 	}
 
