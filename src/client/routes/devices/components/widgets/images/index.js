@@ -2,10 +2,12 @@ import React, { PureComponent, Fragment } from 'react'
 import classNames from 'classnames'
 import naturalCompare from 'natural-compare-lite'
 import { Map } from 'immutable'
+import { connect } from 'react-redux'
 import { initial, last } from 'lodash'
 import { valid, gt } from 'semver'
 
 import ImageOverview from './ImageOverview'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 class DeviceImages extends PureComponent {
 	state = {
@@ -58,15 +60,12 @@ class DeviceImages extends PureComponent {
 
 		if (!images || images.isEmpty()) {
 			return (
-				<span className="card-message card-message--vertical-only">
-					No images on this device
-				</span>
+				<span className="card-message card-message--vertical-only">No images on this device</span>
 			)
 		} else {
 			return images.entrySeq().map(([name, image]) => {
 				const selectedImage =
-					this.state.selectedImage &&
-					this.state.selectedImage.first().get('name')
+					this.state.selectedImage && this.state.selectedImage.first().get('name')
 				const isActive      = name === selectedImage
 
 				return (
@@ -136,16 +135,9 @@ class DeviceImages extends PureComponent {
 					}
 				}
 				const selectedImage = this.state.selectedImage.find(findByVersion)
-				const image         = this.props.images.find(
-					findByName(selectedImage.get('name'))
-				)
+				const image         = this.props.images.find(findByName(selectedImage.get('name')))
 
-				return (
-					<ImageOverview
-						selectedImage={image}
-						selectedDevice={this.props.selectedDevice}
-					/>
-				)
+				return <ImageOverview selectedImage={image} selectedDevice={this.props.selectedDevice} />
 			} else {
 				return <span className="card-message">No version selected</span>
 			}
@@ -162,18 +154,28 @@ class DeviceImages extends PureComponent {
 				<hr />
 
 				<div className="row">
-					<div className="col-md-4">
-						<ul className="list-group">{this.renderImages()}</ul>
-					</div>
+					{this.props.isFetchingDevice ? (
+						<div className="col-12">
+							<div className="loader" />
+						</div>
+					) : (
+						<Fragment>
+							<div className="col-md-4">
+								<ul className="list-group">{this.renderImages()}</ul>
+							</div>
 
-					<div className="col-md-8">
-						{this.renderImageVersions()}
-						{this.renderImageOverview()}
-					</div>
+							<div className="col-md-8">
+								{this.renderImageVersions()}
+								{this.renderImageOverview()}
+							</div>
+						</Fragment>
+					)}
 				</div>
 			</Fragment>
 		)
 	}
 }
 
-export default DeviceImages
+export default connect((state, ownProps) => ({
+	isFetchingDevice: getAsyncState(['isFetchingDevice', ownProps.selectedDevice])(state),
+}))(DeviceImages)
