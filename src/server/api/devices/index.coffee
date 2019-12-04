@@ -6,11 +6,35 @@ module.exports = (getDeviceStates) ->
 	router = Router()
 
 	router.get "/", (_, res) ->
+		state = getDeviceStates()
+		state = state.map (device) ->
+			device
+				.remove "containers"
+				.remove "images"
+
 		res
 			.status 200
 			.json
 				status: "success"
-				data:    getDeviceStates().toJS()
+				data:    state.toJS()
+
+	router.get "/:id", ({ params }, res) ->
+		state  = getDeviceStates()
+		device = state.find (device) -> params.id is device.get "deviceId"
+
+		unless device
+			return res
+				.status 404
+				.json
+					status: "error"
+					data:   "Device #{params.id} not found"
+
+		res
+			.status 200
+			.json
+				status: "success"
+				data:    device.toJS()
+		
 
 	router.put "/:id/state", ({ app, params }, res, next) ->
 		{ rpc } = app.locals
