@@ -13,6 +13,7 @@ export const MULTISELECT_ACTION_CLEAR = 'MULTISELECT_ACTION_CLEAR'
 
 export const APPLY_FILTER = 'APPLY_FILTER'
 
+export const DEVICE_REDUCE = 'DEVICE_REDUCE'
 export const DEVICE_STATE = 'DEVICE_STATE'
 export const DEVICES_STATE = 'DEVICES_STATE'
 export const DEVICES_BATCH_STATE = 'DEVICES_BATCH_STATE'
@@ -88,6 +89,13 @@ export function clearMultiSelect () {
 export function selectDevice (deviceId) {
 	return {
 		type:    SELECT_DEVICE,
+		payload: deviceId,
+	}
+}
+
+export function reduceDevice (deviceId) {
+	return {
+		type:    DEVICE_REDUCE,
 		payload: deviceId,
 	}
 }
@@ -235,6 +243,23 @@ export function asyncRemoveImage (deviceId, image) {
 			toast.success(data.message)
 		} catch ({ response }) {
 			toast.error(response.data.message)
+		}
+	}
+}
+
+export function asyncFetchDevice (deviceId) {
+	return async dispatch => {
+		dispatch(setAsyncState(['isFetchingDevice', deviceId], true))
+
+		try {
+			const { data } = await axios.get(`/api/devices/${deviceId}`)
+
+			dispatch({
+				type:    DEVICE_STATE,
+				payload: data.data,
+			})
+		} finally {
+			dispatch(setAsyncState(['isFetchingDevice', deviceId], false))
 		}
 	}
 }

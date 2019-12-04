@@ -4,7 +4,12 @@ import { partial } from 'lodash'
 import { List, Map } from 'immutable'
 
 import Modal from '/components/common/Modal'
-import { asyncRefreshState, selectDevice } from '/routes/devices/actions'
+import {
+	asyncRefreshState,
+	asyncFetchDevice,
+	selectDevice,
+	reduceDevice,
+} from '/routes/devices/actions'
 import getSelectedDevice from '/routes/devices/selectors/getSelectedDevice'
 import getNavigatableDevices from '/routes/devices/selectors/getNavigatableDevices'
 import AsyncButton from '/components/common/AsyncButton'
@@ -22,6 +27,23 @@ import {
 import getAsyncState from '/store/selectors/getAsyncState'
 
 class DeviceDetail extends PureComponent {
+	componentDidUpdate (prevProps) {
+		const previousId = prevProps.selectedDevice
+			? prevProps.selectedDevice.get('deviceId')
+			: undefined
+		const currentId  = this.props.selectedDevice
+			? this.props.selectedDevice.get('deviceId')
+			: undefined
+
+		if (previousId !== currentId) {
+			this.props.reduceDevice(previousId)
+
+			if (currentId) {
+				this.props.asyncFetchDevice(currentId)
+			}
+		}
+	}
+
 	getDeviceSources () {
 		return this.props.deviceSources.filter(source => source.get('entryInDetail'))
 	}
@@ -201,6 +223,8 @@ export default connect(
 	},
 	{
 		asyncRefreshState,
+		asyncFetchDevice,
 		selectDevice,
+		reduceDevice,
 	}
 )(DeviceDetail)

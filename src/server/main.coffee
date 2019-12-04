@@ -135,8 +135,13 @@ do ->
 					devices.mergeIn [deviceId], data
 				, Map()
 
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
+				deviceStates   = deviceStates.mergeDeep stateUpdates
+				broadcastState = deviceStates.map (deviceState) ->
+					deviceState
+						.remove "containers"
+						.remove "images"
+
+				broadcaster.broadcast Broadcaster.STATE, broadcastState
 
 		# specific state updates
 		# these updates are broadcasted more frequently

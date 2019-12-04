@@ -6,6 +6,7 @@ import { connect } from 'react-redux'
 import { partial, defaultTo } from 'lodash'
 
 import Application from './Application'
+import getAsyncState from '/store/selectors/getAsyncState'
 
 function Navigate ({ navigatePort, address }) {
 	const className = 'btn btn-secondary btn--reset-icon float-right'
@@ -107,7 +108,8 @@ class Applications extends Component {
 	shouldComponentUpdate (nextProps, nextState) {
 		return (
 			this.state.selectedContainer !== nextState.selectedContainer ||
-			this.props.containers !== nextProps.containers
+			this.props.containers !== nextProps.containers ||
+			this.props.isFetchingDevice !== nextProps.isFetchingDevice
 		)
 	}
 
@@ -185,54 +187,67 @@ class Applications extends Component {
 				<hr />
 
 				<div className="row">
-					<div className="col-md-5">
-						<ul className="list-group">
-							{defaultTo(this.props.containers, List())
-								.toList()
-								.sort((previous, next) => naturalCompare(previous.get('name'), next.get('name')))
-								.map(container => {
-									const selectedContainer =
-										this.state.selectedContainer && this.state.selectedContainer.get('name')
-									const navigatePort      = this.props.configurations.getIn([
-										container.get('name'),
-										'frontEndPort',
-									])
-
-									return (
-										<ApplicationHeader
-											key={container.get('Id')}
-											container={container}
-											device={this.props.selectedDevice}
-											navigatePort={navigatePort}
-											selectedContainer={selectedContainer}
-											onSelectContainer={partial(this.onContainerSelected, container)}
-										/>
-									)
-								})}
-						</ul>
-					</div>
-					<div className="col-md-7">
-						<div className="row">
-							<div className="col-12">
-								{this.state.selectedContainer ? (
-									<Application
-										selectedContainer={this.state.selectedContainer}
-										deviceId={this.props.selectedDevice.get('deviceId')}
-									/>
-								) : (
-									<span className="card-message">No application selected</span>
-								)}
-							</div>
+					{this.props.isFetchingDevice ? (
+						<div className="col-12">
+							<div className="loader" />
 						</div>
-					</div>
+					) : (
+						<Fragment>
+							<div className="col-md-5">
+								<ul className="list-group">
+									{defaultTo(this.props.containers, List())
+										.toList()
+										.sort((previous, next) =>
+											naturalCompare(previous.get('name'), next.get('name'))
+										)
+										.map(container => {
+											const selectedContainer =
+												this.state.selectedContainer && this.state.selectedContainer.get('name')
+											const navigatePort      = this.props.configurations.getIn([
+												container.get('name'),
+												'frontEndPort',
+											])
+
+											return (
+												<ApplicationHeader
+													key={container.get('Id')}
+													container={container}
+													device={this.props.selectedDevice}
+													navigatePort={navigatePort}
+													selectedContainer={selectedContainer}
+													onSelectContainer={partial(this.onContainerSelected, container)}
+												/>
+											)
+										})}
+								</ul>
+							</div>
+							<div className="col-md-7">
+								<div className="row">
+									<div className="col-12">
+										{this.state.selectedContainer ? (
+											<Application
+												selectedContainer={this.state.selectedContainer}
+												deviceId={this.props.selectedDevice.get('deviceId')}
+											/>
+										) : (
+											<span className="card-message">No application selected</span>
+										)}
+									</div>
+								</div>
+							</div>
+						</Fragment>
+					)}
 				</div>
 			</div>
 		)
 	}
 }
 
-export default connect(state => {
+export default connect((state, ownProps) => {
+	const deviceId = ownProps.selectedDevice.get('deviceId')
+
 	return {
-		configurations: state.get('configurations'),
+		configurations:   state.get('configurations'),
+		isFetchingDevice: getAsyncState(['isFetchingDevice', deviceId])(state),
 	}
 })(Applications)
