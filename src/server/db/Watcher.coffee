@@ -1,7 +1,8 @@
-{ EventEmitter } = require "events"
-{ invokeMap }    = require "lodash"
-debug            = (require "debug") "app:Watcher"
-{ Observable }   = require "rxjs"
+{ EventEmitter }       = require "events"
+{ invokeMap, partial } = require "lodash"
+debug                  = (require "debug") "app:Watcher"
+{ Observable }         = require "rxjs"
+log                    = (require "../lib/Logger") "Watcher"
 
 populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
 
@@ -21,23 +22,30 @@ class Watcher extends EventEmitter
 			@db
 				.Application
 				.watch()
-				.on "change", @onCollectionChange
+				.on "change",  @onCollectionChange
+				.once "close", partial @onChangeStreamClose, "Application"
 
 			@db
 				.Group
 				.watch()
-				.on "change", @onCollectionChange
+				.on "change",  @onCollectionChange
+				.once "close", partial @onChangeStreamClose, "Group"
 
 			@db
 				.DeviceGroup
 				.watch [], fullDocument: "updateLookup"
-				.on "change", @onDeviceGroupChange
+				.on "change",  @onDeviceGroupChange
+				.once "close", partial @onChangeStreamClose, "DeviceGroup"
 
 			@db
 				.RegistryImages
 				.watch()
-				.on "change", @onCollectionChange
+				.on "change",  @onCollectionChange
+				.once "close", partial @onChangeStreamClose, "RegistryImages"
 		]
+
+	onChangeStreamClose: (model) =>
+		log.error "ChangeStream for model #{model} closed"
 
 	onCollectionChange: ({ ns }) =>
 		debug "Collection change - #{ns.db}.#{ns.coll} changed"

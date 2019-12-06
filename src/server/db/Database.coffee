@@ -51,9 +51,10 @@ class Database
 				options:  config.db.options or undefined
 
 			await mongoose.connect url,
-				useCreateIndex:   true
-				useFindAndModify: false
-				useNewUrlParser:  true
+				useCreateIndex:     true
+				useFindAndModify:   false
+				useNewUrlParser:    true
+				useUnifiedTopology: true
 
 			log.info "Connected. Following calls will reuse the (open) connection"
 
