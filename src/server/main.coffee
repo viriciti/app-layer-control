@@ -241,8 +241,8 @@ do ->
 	onError = (error) ->
 		log.error error.message
 
-	onClose = ->
-		log.warn "Connection to the MQTT broker closed"
+	onClose = (reason) ->
+		log.warn "Connection to the MQTT broker closed: #{reason}"
 
 	socket
 		.on "connect", onConnect
