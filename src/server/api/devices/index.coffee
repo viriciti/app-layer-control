@@ -5,12 +5,13 @@ log = (require "../../lib/Logger") "api:devices"
 module.exports = (getDeviceStates) ->
 	router = Router()
 
-	router.get "/", (_, res) ->
+	router.get "/", ({ query }, res) ->
 		state = getDeviceStates()
-		state = state.map (device) ->
-			device
-				.remove "containers"
-				.remove "images"
+		unless query.all is "1"
+			state = state.map (device) ->
+				device
+					.remove "containers"
+					.remove "images"
 
 		res
 			.status 200
@@ -34,7 +35,7 @@ module.exports = (getDeviceStates) ->
 			.json
 				status: "success"
 				data:    device.toJS()
-		
+
 
 	router.put "/:id/state", ({ app, params }, res, next) ->
 		{ rpc } = app.locals
