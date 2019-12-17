@@ -11,6 +11,7 @@ const getGroups = state => {
 
 export default createSelector([getDevices, getGroups], (devices, groups) => {
 	return groups.reduce((counts, _, name) => {
+		console.debug('countDevicesPerGroup')
 		return counts.set(
 			name,
 			devices.filter(device => {
