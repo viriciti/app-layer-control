@@ -5,6 +5,7 @@ const devices = state => {
 }
 
 const getDevicesSerial = devices => {
+	console.debug('getDevicesSerial')
 	return devices.keySeq()
 }
 

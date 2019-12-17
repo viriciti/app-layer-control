@@ -229,7 +229,6 @@ do ->
 		# plugins
 		runPlugins config.plugins, source$
 
-		log.info "mqtt: Subscribing ..."
 		await socket.subscribe [
 			DevicesState.topic
 			DevicesLogs.topic
@@ -237,6 +236,7 @@ do ->
 			DevicesStatus.topic
 			DeviceGroups.topic
 		]
+		log.info "mqtt: Subscribed"
 
 	onError = (error) ->
 		log.error error.message
