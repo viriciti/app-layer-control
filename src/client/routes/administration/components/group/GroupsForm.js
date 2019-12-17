@@ -7,7 +7,6 @@ import { toast } from 'react-toastify'
 import ApplicationsList from '/routes/administration/commons/ApplicationsList'
 import ApplicationsTextInput from '/routes/administration/commons/ApplicationsTextInput'
 import Modal from '/components/common/Modal'
-import countDevicesPerGroup from '/routes/administration/modules/selectors/countDevicesPerGroup'
 import extractImageFromUrl from '/routes/administration/modules/extractImageFromUrl'
 import getGroupsNames from '/routes/administration/modules/selectors/getGroupsNames'
 import getRegistryImagesNames from '/routes/administration/modules/selectors/getRegistryImagesNames'
@@ -22,10 +21,7 @@ const initialFormValues = {
 
 class GroupsForm extends PureComponent {
 	componentWillReceiveProps (nextProps) {
-		if (
-			(this.props.isAdding || this.props.isEditing) &&
-			!this.props.hasDefaultGroup
-		) {
+		if ((this.props.isAdding || this.props.isEditing) && !this.props.hasDefaultGroup) {
 			this.props.change('label', 'default')
 		}
 
@@ -59,25 +55,17 @@ class GroupsForm extends PureComponent {
 	}
 
 	onSubmit = async ({ label, applications }) => {
-		if (this.props.isEditing) {
-			const affectingCount = this.props.devicesCountPerGroup.get(
-				this.props.editing.get('label')
-			)
-
-			if (
-				affectingCount &&
-				!confirm(
-					`Editing this group will affect ${affectingCount} devices, are you sure?`
-				)
-			) {
-				return
-			}
+		if (
+			this.props.isEditing &&
+			!confirm(`Updating this group will update existing devices, continue?`)
+		) {
+			return
 		}
 
-		const { status, data } = await axios.put(
-			`/api/v1/administration/group/${label}`,
-			{ label, applications }
-		)
+		const { status, data } = await axios.put(`/api/v1/administration/group/${label}`, {
+			label,
+			applications,
+		})
 		if (status !== 200) {
 			toast.error(data.message)
 		} else {
@@ -100,9 +88,7 @@ class GroupsForm extends PureComponent {
 						component={ApplicationsTextInput}
 						type="text"
 						disabled={!this.props.hasDefaultGroup || this.props.isEditing}
-						helpText={
-							!this.props.hasDefaultGroup ? 'This group is mandatory.' : ''
-						}
+						helpText={!this.props.hasDefaultGroup ? 'This group is mandatory.' : ''}
 					/>
 					<Field
 						groupName={this.props.editing && this.props.editing.get('label')}
@@ -120,11 +106,7 @@ class GroupsForm extends PureComponent {
 						<button className="btn btn-primary">
 							{this.props.isAdding ? 'Add Group' : 'Edit Group'}
 						</button>
-						<button
-							className="btn btn-secondary"
-							type="button"
-							onClick={this.onRequestClose}
-						>
+						<button className="btn btn-secondary" type="button" onClick={this.onRequestClose}>
 							Cancel
 						</button>
 					</div>
@@ -141,7 +123,6 @@ export default connect(
 			versionsPerApplication:     getVersionsPerApplication(state),
 			configurations:             state.get('configurations'),
 			groupsLabels:               getGroupsNames(state),
-			devicesCountPerGroup:       countDevicesPerGroup(state),
 		}
 	},
 	{ createGroup }
