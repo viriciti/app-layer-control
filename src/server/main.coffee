@@ -123,7 +123,10 @@ do ->
 			.bufferTime config.batchState.defaultInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
+				# bulk = db.DeviceState.collection.initializeUnorderedBulkOp
+				# console.log db.DeviceState.bulkWrite
+				
+				ops = updates.reduce (ops, update) ->
 					deviceId = update.get "deviceId"
 					data     = update.get "data"
 
@@ -132,17 +135,16 @@ do ->
 					keys = ["groups", "status"]
 					data = (data.remove key) for key in keys
 
-					devices.mergeIn [deviceId], data
-				, Map()
+					ops.concat
+						updateOne:
+							filter: deviceId: deviceId
+							update: $set: data.toJS()
+							upsert: true
+				, []
 
-				deviceStates   = deviceStates.mergeDeep stateUpdates
-				broadcastState = deviceStates.map (deviceState) ->
-					deviceState
-						.remove "containers"
-						.remove "images"
-
-				broadcaster.broadcast Broadcaster.STATE, broadcastState
-
+				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
+				log.info "Updated #{modifiedCount} and added #{upsertedCount} device(s)"
+				
 		# specific state updates
 		# these updates are broadcasted more frequently
 		devicesNsState$
@@ -150,15 +152,22 @@ do ->
 			.bufferTime config.batchState.nsStateInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
+				ops = updates.reduce (ops, update) ->
 					key      = update.get "key"
 					deviceId = update.get "deviceId"
 
-					devices.setIn [deviceId, key], update.get "value"
-				, Map()
+					ops.concat
+						updateOne:
+							filter: deviceId: deviceId
+							update:
+								$set:
+									deviceId: deviceId
+									[key]:    update.get "value"
+							upsert: true
+				, []
 
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
+				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
+				log.info "Updated namespaced state for #{modifiedCount + upsertedCount} device(s)"
 
 		# first time online devices
 		devicesStatus$
@@ -178,17 +187,22 @@ do ->
 			.bufferTime config.batchState.defaultInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
+				ops = updates.reduce (ops, update) ->
 					deviceId  = update.get "deviceId"
 					status    = update.get "status"
 
-					devices
-						.setIn [deviceId, "connected"], status is "online"
-						.setIn [deviceId, "status"],    status
-				, Map()
+					ops.concat
+						updateOne:
+							filter: deviceId: deviceId
+							update:
+								$set:
+									deviceId:  deviceId
+									connected: status is "online"
+							upsert: true
+				, []
 
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
+				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
+				log.info "Updated status for #{modifiedCount + upsertedCount} device(s)"
 
 		# docker registry
 		registry$.subscribe (images) ->
@@ -207,12 +221,19 @@ do ->
 						return log.warn "No device ID found in state payload. Ignoring update ..." unless deviceId?
 						return log.warn "No data found in state payload. Ignoring update ..."      unless data?
 						true
-					.reduce (devices, { deviceId, data }) ->
-						devices.mergeIn [deviceId], data
-					, Map()
+					.reduce (ops, { deviceId, data }) ->
+						ops.concat
+							updateOne:
+								filter: deviceId: deviceId
+								update:
+									$set:
+										deviceId: deviceId
+										external: data.toJS()
+								upsert: true
+					, []
 
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
+				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
+				log.info "Updated #{modifiedCount + upsertedCount} device(s) from external sources"
 
 		[
 			[Broadcaster.NS_STATE, devicesNsState$]
