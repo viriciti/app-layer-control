@@ -295,7 +295,7 @@ export function fetchDevices () {
 
 		dispatch({
 			type:    DEVICES_STATE,
-			payload: get(await axios.get('/api/devices'), 'data.data'),
+			payload: get(await axios.get('/api/v1/devices'), 'data.data'),
 		})
 
 		dispatch(setAsyncState('isFetchingDevices', false))

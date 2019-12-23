@@ -1,4 +1,5 @@
 { Router } = require "express"
+{ pick }   = require "lodash"
 
 router = Router()
 
@@ -14,7 +15,6 @@ router.get "/", ({ app }, res, next) ->
 					.DeviceState
 					.find()
 					.populate "groups"
-					.immutable()
 	catch error
 		next error
 
