@@ -52,7 +52,7 @@ function DeviceGroups ({ groups, configurations, selectedDevice, asyncRemoveGrou
 							</thead>
 							<tbody>
 								{draft.map((group, index) => (
-									<tr key={group}>
+									<tr key={group.get('label')}>
 										<td>
 											{inGroups.size > 2 ? (
 												index === 0 ? null : isLastElement(inGroups, index) ? (
@@ -74,31 +74,21 @@ function DeviceGroups ({ groups, configurations, selectedDevice, asyncRemoveGrou
 												)
 											) : null}
 										</td>
-										<td>{group}</td>
+										<td>{group.get('label')}</td>
 										<td>
 											<ul className="list-unstyled">
-												{groups.has(group) ? (
-													groups
-														.get(group)
-														.entrySeq()
-														.map(([name, version]) =>
-															version ? (
-																<li key={toReactKey(group, name, version)} title="Locked version">
-																	{[name, version].join('@')}
-																</li>
-															) : (
-																<li key={toReactKey(group, name)} title="Semantic versioning">
-																	{[name, configurations.getIn([name, 'version'])].join('@')}
-																</li>
-															)
-														)
-												) : (
-													<i>Not available</i>
-												)}
+												{group
+													.get('applications')
+													.entrySeq()
+													.map(([application, version]) => (
+														<li key={toReactKey(group, name, application)} title="Locked version">
+															{[application, version].join('@')}
+														</li>
+													))}
 											</ul>
 										</td>
 										<td className="text-right">
-											{group === 'default' ? (
+											{group.get('label') === 'default' ? (
 												''
 											) : (
 												<button

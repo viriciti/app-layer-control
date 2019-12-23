@@ -38,9 +38,7 @@ export default createImmutableSelector(
 						//
 						// Currently supports Lists with string values
 						// List[Map], List[List] and such are not suppported
-						return value.some(item =>
-							isString(item) ? valueIncludes(item, query) : false
-						)
+						return value.some(item => (isString(item) ? valueIncludes(item, query) : false))
 					} else {
 						return false
 					}
@@ -49,11 +47,7 @@ export default createImmutableSelector(
 
 		devices = devices
 			.filter(device =>
-				isEmpty(filter)
-					? true
-					: invert
-						? !containsEveryFilter(device)
-						: containsEveryFilter(device)
+				isEmpty(filter) ? true : invert ? !containsEveryFilter(device) : containsEveryFilter(device)
 			)
 			.sortBy(device => device.getIn(sort.get('field').split('.'), ''))
 			.sortBy(device => !device.has('connected'))
