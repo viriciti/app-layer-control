@@ -4,6 +4,10 @@ addImmutableQuery = require "../plugins/addImmutableQuery"
 { Schema } = mongoose
 schema     = new Schema
 	connected: Boolean
+	groups:    [
+		type: Schema.Types.ObjectId
+		ref:  "Group"
+	]
 	deviceId:
 		type:     String
 		required: true

@@ -12,6 +12,7 @@ mqtt                       = require "async-mqtt"
 { isEmpty, negate, every } = require "lodash"
 { Observable, Subject }    = require "rxjs"
 kleur                      = require "kleur"
+reduce                     = require "p-reduce"
 
 {
 	DevicesLogs
@@ -32,6 +33,7 @@ Broadcaster                    = require "./Broadcaster"
 { installPlugins, runPlugins } = require "./plugins"
 log                            = (require "./lib/Logger") "main"
 watchActivity                  = require "./observables/watchActivity"
+convertGroupNames              = require "./updates/convertGroupNames"
 
 # Server initialization
 app     = express()
@@ -123,9 +125,6 @@ do ->
 			.bufferTime config.batchState.defaultInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				# bulk = db.DeviceState.collection.initializeUnorderedBulkOp
-				# console.log db.DeviceState.bulkWrite
-				
 				ops = updates.reduce (ops, update) ->
 					deviceId = update.get "deviceId"
 					data     = update.get "data"
@@ -152,8 +151,10 @@ do ->
 			.bufferTime config.batchState.nsStateInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				ops = updates.reduce (ops, update) ->
+				ops = await reduce updates, (ops, update) ->
 					key      = update.get "key"
+					value    = update.get "value"
+					value    = await convertGroupNames db, value if key is "groups"
 					deviceId = update.get "deviceId"
 
 					ops.concat
@@ -162,14 +163,14 @@ do ->
 							update:
 								$set:
 									deviceId: deviceId
-									[key]:    update.get "value"
+									[key]:    value
 							upsert: true
 				, []
 
 				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
 				log.info "Updated namespaced state for #{modifiedCount + upsertedCount} device(s)"
 
-		# first time online devices
+		# # first time online devices
 		devicesStatus$
 			.bufferTime config.batchState.nsStateInterval
 			.filter negate isEmpty

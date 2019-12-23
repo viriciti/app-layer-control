@@ -13,6 +13,7 @@ router.get "/", ({ app }, res, next) ->
 				data:   await db
 					.DeviceState
 					.find()
+					.populate "groups"
 					.immutable()
 	catch error
 		next error
