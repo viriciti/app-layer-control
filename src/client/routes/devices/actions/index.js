@@ -252,7 +252,7 @@ export function asyncFetchDevice (deviceId) {
 		dispatch(setAsyncState(['isFetchingDevice', deviceId], true))
 
 		try {
-			const { data } = await axios.get(`/api/devices/${deviceId}`)
+			const { data } = await axios.get(`/api/v1/devices/${deviceId}`)
 
 			dispatch({
 				type:    DEVICE_STATE,

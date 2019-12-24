@@ -271,7 +271,7 @@ export default connect(
 			isFetchingDevices:     getAsyncState('isFetchingDevices')(state),
 
 			selectedDevice: getSelectedDevice(state),
-			devices:        getDevices(state).take(1),
+			devices:        getDevices(state),
 		}
 	},
 	{

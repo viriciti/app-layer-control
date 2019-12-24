@@ -19,6 +19,10 @@ const formats = {
 	},
 
 	groups: ({ value }) => {
+		if (!value) {
+			return
+		}
+
 		return value
 			.map(group => group.get('label'))
 			.toArray()
