@@ -155,6 +155,7 @@ do ->
 					key      = update.get "key"
 					value    = update.get "value"
 					value    = await convertGroupNames db, value if key is "groups"
+					value    = value.toJS()                      if value.toJS?
 					deviceId = update.get "deviceId"
 
 					ops.concat
