@@ -88,12 +88,10 @@ function DeviceGroups ({ groups, configurations, selectedDevice, asyncRemoveGrou
 											</ul>
 										</td>
 										<td className="text-right">
-											{group.get('label') === 'default' ? (
-												''
-											) : (
+											{group.get('label') === 'default' ? null : (
 												<button
 													className="btn btn--text btn--icon float-right"
-													onClick={partial(onRemoveGroup, group)}
+													onClick={partial(onRemoveGroup, group.get('label'))}
 													data-toggle="tooltip"
 													title="Delete group"
 												>

@@ -1,4 +1,4 @@
-{ size }          = require "lodash"
+{ size, map }     = require "lodash"
 debug             = (require "debug") "app:Broadcaster"
 constantCase      = require "constant-case"
 { Map, Iterable } = require "immutable"
@@ -48,10 +48,11 @@ class Broadcaster
 		@broadcast Broadcaster.SOURCES, await @db.DeviceSource.find()
 
 	broadcastDeviceGroups: (deviceIds) ->
-		deviceGroups = await @db.DeviceGroup.findByDevices deviceIds
-		deviceGroups = deviceGroups.reduce (devices, device) ->
-			devices.setIn [device.get("deviceId"), "groups"], device.get "groups"
-		, Map()
+		deviceGroups = await @db.DeviceState.find(deviceId: $in: deviceIds).populate "groups"
+		deviceGroups = deviceGroups.reduce (devices, { deviceId, groups }) ->
+			devices[deviceId] = groups: groups
+			devices
+		, {}
 
 		@broadcast Broadcaster.STATE, deviceGroups
 

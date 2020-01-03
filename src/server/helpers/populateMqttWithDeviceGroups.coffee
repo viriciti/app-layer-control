@@ -1,11 +1,14 @@
+{ map } = require "lodash"
+
 module.exports = (db, socket) ->
-	devices = await db.DeviceGroup
+	devices = await db.DeviceState
 		.find()
-		.lean()
+		.populate "groups"
+		.select "groups deviceId"
 
 	await Promise.all devices.map ({ deviceId, groups }) ->
 		topic   = "devices/#{deviceId}/groups"
-		groups  = JSON.stringify groups
+		groups  = JSON.stringify map groups, "label"
 		options = retain: true
 
 		socket.publish topic, groups, options

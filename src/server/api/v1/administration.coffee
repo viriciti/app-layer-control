@@ -1,9 +1,9 @@
-debug                                  = (require "debug") "app:api"
-filter                                 = require "p-filter"
-{ Router }                             = require "express"
-{ isArray, first, map, size, without } = require "lodash"
-config                                 = require "config"
-log                                    = (require "../../lib/Logger") "api:administration"
+debug                                                   = (require "debug") "app:api"
+filter                                                  = require "p-filter"
+{ Router }                                              = require "express"
+{ isArray, first, map, size, without, invokeMap, uniq } = require "lodash"
+config                                                  = require "config"
+log                                                     = (require "../../lib/Logger") "api:administration"
 
 Store                  = require "../../Store"
 getRegistryImages      = require "../../lib/getRegistryImages"
@@ -242,6 +242,10 @@ router.post "/group/devices", ({ app, body }, res) ->
 	{ db, broadcaster }                  = app.locals
 	{ operation, groups, target, multi } = body
 	target                               = [target] unless isArray target
+	groups                               = await db
+		.Group
+		.find label: $in: groups
+		.distinct "_id"
 
 	log.info "Update groups for #{target.join ', '} - #{operation} #{groups.join ', '}"
 
@@ -249,7 +253,7 @@ router.post "/group/devices", ({ app, body }, res) ->
 		query   = deviceId: $in: target
 		update  = $pullAll: groups: groups
 
-		{ nModified } = await db.DeviceGroup.updateMany query, update
+		{ nModified } = await db.DeviceState.updateMany query, update
 		message       = "Removed groups #{groups.join ', '} for #{nModified} device(s)"
 
 		broadcaster.broadcastDeviceGroups target
@@ -268,12 +272,15 @@ router.post "/group/devices", ({ app, body }, res) ->
 		if multi
 			update = $addToSet: groups: $each: groups
 		else
-			groups = without groups, "default"
-			groups = ["default", ...groups]
+			defaultGroup = await db.Group.findOne(label: "default").distinct "_id"
+			prevGroups   = [].concat groups
+			groups       = invokeMap defaultGroup.concat(groups), "toString"
+			groups       = uniq groups
+
+
 			update = groups: groups
 
-
-		{ nModified } = await db.DeviceGroup.updateMany query, update, options
+		{ nModified } = await db.DeviceState.updateMany query, update, options
 		message       = "Added groups #{groups.join ', '} to #{nModified} device(s)"
 
 		broadcaster.broadcastDeviceGroups target
