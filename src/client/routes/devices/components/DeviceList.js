@@ -50,7 +50,12 @@ class DeviceList extends PureComponent {
 
 	onStoreGroup = async label => {
 		const devices = this.props.multiSelectedDevices
-			.filterNot(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
+			.filterNot(deviceId =>
+				this.props.devices
+					.getIn([deviceId, 'groups'], List())
+					.map(group => group.get('label'))
+					.includes(label)
+			)
 			.toArray()
 
 		if (confirm(`Add group '${label}' to ${devices.length} device(s)?`)) {
@@ -61,7 +66,12 @@ class DeviceList extends PureComponent {
 
 	onRemoveGroup = async label => {
 		const devices = this.props.multiSelectedDevices
-			.filter(deviceId => this.props.devices.getIn([deviceId, 'groups'], List()).includes(label))
+			.filter(deviceId =>
+				this.props.devices
+					.getIn([deviceId, 'groups'], List())
+					.map(group => group.get('label'))
+					.includes(label)
+			)
 			.toArray()
 
 		if (confirm(`Remove group '${label}' from ${devices.length} device(s)?`)) {

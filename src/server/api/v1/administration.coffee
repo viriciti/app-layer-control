@@ -277,7 +277,6 @@ router.post "/group/devices", ({ app, body }, res) ->
 			groups       = invokeMap defaultGroup.concat(groups), "toString"
 			groups       = uniq groups
 
-
 			update = groups: groups
 
 		{ nModified } = await db.DeviceState.updateMany query, update, options
