@@ -1,18 +1,19 @@
-RPC                        = require "mqtt-json-rpc"
-WebSocket                  = require "ws"
-bodyParser                 = require "body-parser"
-compression                = require "compression"
-config                     = require "config"
-cors                       = require "cors"
-express                    = require "express"
-http                       = require "http"
-morgan                     = require "morgan"
-mqtt                       = require "async-mqtt"
-{ Map }                    = require "immutable"
-{ isEmpty, negate, every } = require "lodash"
-{ Observable, Subject }    = require "rxjs"
-kleur                      = require "kleur"
-reduce                     = require "p-reduce"
+RPC                              = require "mqtt-json-rpc"
+WebSocket                        = require "ws"
+bodyParser                       = require "body-parser"
+compression                      = require "compression"
+config                           = require "config"
+cors                             = require "cors"
+dotize                           = require "dotize"
+express                          = require "express"
+http                             = require "http"
+kleur                            = require "kleur"
+morgan                           = require "morgan"
+mqtt                             = require "async-mqtt"
+reduce                           = require "p-reduce"
+{ Map }                          = require "immutable"
+{ Observable, Subject }          = require "rxjs"
+{ isEmpty, negate, every, omit } = require "lodash"
 
 {
 	DevicesLogs
@@ -218,19 +219,22 @@ do ->
 			.bufferTime config.batchState.defaultInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				stateUpdates = updates
+				ops = updates
 					.filter ({ deviceId, data }) ->
 						return log.warn "No device ID found in state payload. Ignoring update ..." unless deviceId?
 						return log.warn "No data found in state payload. Ignoring update ..."      unless data?
 						true
 					.reduce (ops, { deviceId, data }) ->
+						json = data
+						json = json.toJS() if json.toJS?
+
 						ops.concat
 							updateOne:
 								filter: deviceId: deviceId
 								update:
-									$set:
+									$set: Object.assign
 										deviceId: deviceId
-										external: data.toJS()
+										dotize.convert external: omit json, "deviceId"
 								upsert: true
 					, []
 
