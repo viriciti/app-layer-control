@@ -2,6 +2,7 @@ import React, { Fragment, useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
 import { List } from 'immutable'
+import semver from 'semver'
 
 import GroupsForm from './GroupsForm'
 import { asyncRemoveGroup } from '/routes/devices/actions'
@@ -9,6 +10,8 @@ import toReactKey from '/utils/toReactKey'
 import { isLastElement, moveElement } from '/utils/position'
 
 function DeviceGroups ({ groups, configurations, selectedDevice, asyncRemoveGroup }) {
+	// console.log(configurations, semver.maxSatisfying())
+
 	const btnClass              = 'btn-light btn--icon btn--text d-block'
 	const inGroups              = selectedDevice.get('groups')
 	const [draft, updateDraft]  = useState(inGroups)
@@ -81,8 +84,8 @@ function DeviceGroups ({ groups, configurations, selectedDevice, asyncRemoveGrou
 													.get('applications')
 													.entrySeq()
 													.map(([application, version]) => (
-														<li key={toReactKey(group, name, application)} title="Locked version">
-															{[application, version].join('@')}
+														<li key={toReactKey(group, name, application)}>
+															{version ? [application, version].join('@') : application}
 														</li>
 													))}
 											</ul>
