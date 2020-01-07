@@ -6,9 +6,14 @@ module.exports = (db, socket) ->
 		.populate "groups"
 		.select "groups deviceId"
 
-	await Promise.all devices.map ({ deviceId, groups }) ->
-		topic   = "devices/#{deviceId}/groups"
-		groups  = JSON.stringify map groups, "label"
-		options = retain: true
+	await Promise.all(
+		devices
+			.filter ({ groups }) ->
+				groups.length isnt 0
+			.map ({ deviceId, groups }) ->
+				topic   = "devices/#{deviceId}/groups"
+				groups  = JSON.stringify map groups, "label"
+				options = retain: true
 
-		socket.publish topic, groups, options
+				socket.publish topic, groups, options
+	)

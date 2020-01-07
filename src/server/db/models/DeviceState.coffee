@@ -31,9 +31,6 @@ schema.pre "updateOne", ->
 	update = @getUpdate()
 	return unless update.groups
 
-
-	console.log update.groups
-
 	@setUpdate Object.assign {},
 		update
 		groups: (await Group

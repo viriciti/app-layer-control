@@ -32,9 +32,9 @@ class Watcher extends EventEmitter
 				.once "close", partial @onChangeStreamClose, "Group"
 
 			@db
-				.DeviceGroup
-				.watch [], fullDocument: "updateLookup"
-				.on "change",  @onDeviceGroupChange
+				.DeviceState
+				.watch()
+				.on "change",  @onDeviceChange
 				.once "close", partial @onChangeStreamClose, "DeviceGroup"
 
 			@db
@@ -52,16 +52,19 @@ class Watcher extends EventEmitter
 
 		populateMqttWithGroups @db, @mqtt
 
-	onDeviceGroupChange: ({ fullDocument, operationType }) =>
-		# todo: we currently don't know how to handle "delete" operations
+	onDeviceChange: ({ updateDescription, operationType, documentKey }) =>
 		return if operationType is "delete"
 
-		{ deviceId, groups } = fullDocument
-		debug "Groups for #{deviceId} updated: #{groups.join ', '}"
+		{ updatedFields } = updateDescription
+		return unless updatedFields?.groups
 
-		topic                = "devices/#{deviceId}/groups"
-		groups               = JSON.stringify groups
-		options              = retain: true
+		# Since we're only interested in the full document once,
+		# the groups have changed, we do the lookup manually
+		{ deviceId } = await @db.DeviceState.findOne(documentKey).select "deviceId"
+		
+		topic   = "devices/#{deviceId}/groups"
+		groups  = JSON.stringify await @db.Group.find(_id: $in: updatedFields.groups).distinct "label"
+		options = retain: true
 
 		@mqtt.publish topic, groups, options
 
