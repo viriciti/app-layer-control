@@ -186,7 +186,7 @@ do ->
 			observable$
 				.map (data) ->
 					name:      name
-					data:      fromJS data
+					data:      data
 					_internal: true
 				.subscribe source$
 
