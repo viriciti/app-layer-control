@@ -1,5 +1,6 @@
 mongoose          = require "mongoose"
 addImmutableQuery = require "../plugins/addImmutableQuery"
+Group             = require "./Group"
 
 { Schema } = mongoose
 schema     = new Schema
@@ -26,5 +27,16 @@ schema     = new Schema
 	external:   Schema.Types.Mixed
 
 schema.plugin addImmutableQuery
+schema.pre "updateOne", ->
+	update = @getUpdate()
+	return unless update.groups
+
+	@setUpdate Object.assign {},
+		update
+		groups: (await Group
+			.find label: $in: update.groups
+			.select "_id"
+			.lean()
+		)
 
 module.exports = mongoose.model "DeviceState", schema

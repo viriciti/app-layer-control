@@ -105,38 +105,30 @@ do ->
 
 		# state updates
 		devicesState$
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
-			.subscribe (updates) ->
-				ops = updates.map ({ deviceId, data }) ->
-					updateOne:
-						filter: deviceId: deviceId
-						update: $set: omit data, ["groups", "status"]
-						upsert: true
+			.mergeMap ({ deviceId, data }) ->
+				filter          = deviceId: deviceId
+				update          = omit data, ["groups", "status"]
+				update.deviceId = deviceId
 
-				{ upsertedCount, modifiedCount } = await db.DeviceState.bulkWrite ops
-				log.info "Updated #{modifiedCount} and added #{upsertedCount} device(s)"
-				
+				Observable.from db.DeviceState.updateOne filter, update, upsert: true
+			.bufferTime 5000
+			.subscribe (updates) ->
+				log.info "Updated #{updates.length} device(s)" if updates.length
+
 		# specific state updates
 		# these updates are broadcasted more frequently
 		devicesNsState$
 			.merge deviceGroups$
-			.bufferTime config.batchState.nsStateInterval
-			.filter negate isEmpty
+			.mergeMap ({ deviceId, key, value }) ->
+				filter = deviceId: deviceId
+				update =
+					deviceId: deviceId
+					[key]:    value
+
+				Observable.from db.DeviceState.updateOne filter, update, upsert: true
+			.bufferTime 5000
 			.subscribe (updates) ->
-				ops = await map updates, ({ key, value, deviceId }) ->
-					value = await convertGroupNames db, value if key is "groups"
-
-					updateOne:
-						filter: deviceId: deviceId
-						update:
-							$set:
-								deviceId: deviceId
-								[key]:    value
-						upsert: true
-
-				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
-				log.info "Updated namespaced state for #{modifiedCount + upsertedCount} device(s)"
+				log.info "Updated namespaced state for #{updates.length} device(s)" if updates.length
 
 		# # first time online devices
 		devicesStatus$
@@ -152,21 +144,16 @@ do ->
 
 		# status updates
 		devicesStatus$
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
+			.mergeMap ({ deviceId, status }) ->
+				filter = deviceId: deviceId
+				update =
+					deviceId:  deviceId
+					connected: status is "online"
+				
+				Observable.from db.DeviceState.updateOne filter, update, upsert: true
+			.bufferTime 5000
 			.subscribe (updates) ->
-				ops = updates.map ({ deviceId, status }) ->
-					updateOne:
-						filter: deviceId: deviceId
-						update:
-							$set:
-								deviceId:  deviceId
-								connected: status is "online"
-						upsert: true
-				, []
-
-				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
-				log.info "Updated status for #{modifiedCount + upsertedCount} device(s)"
+				log.info "Updated status for #{updates.length} device(s)" if updates.length
 
 		# docker registry
 		registry$.subscribe (images) ->
@@ -175,29 +162,21 @@ do ->
 
 		# plugin sources
 		source$
-			.filter ({ _internal }) ->
-				not _internal
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
+			.filter ({ _internal, deviceId, data }) ->
+				return false if _internal
+
+				return log.warn "No device ID found in state payload, ignoring update ..." unless deviceId?
+				return log.warn "No data found in state payload, ignoring update ..."      unless data?
+				true
+			.mergeMap ({ deviceId, data }) ->
+				data   = omit data, "deviceId"
+				filter = deviceId: deviceId
+				update = Object.assign deviceId: deviceId, dotize.convert external: data
+
+				Observable.from db.DeviceState.updateOne filter, update, upsert: true
+			.bufferTime 5000
 			.subscribe (updates) ->
-				ops = updates
-					.filter ({ deviceId, data }) ->
-						return log.warn "No device ID found in state payload. Ignoring update ..." unless deviceId?
-						return log.warn "No data found in state payload. Ignoring update ..."      unless data?
-						true
-					.map ({ deviceId, data }) ->
-						data = omit data, "deviceId"
-
-						updateOne:
-							filter: deviceId: deviceId
-							update:
-								$set: Object.assign
-									deviceId: deviceId
-									dotize.convert external: data
-							upsert: true
-
-				{ upsertedCount, modifiedCount } = await db.DeviceState.bulkWrite ops
-				log.info "Updated #{modifiedCount + upsertedCount} device(s) from external sources"
+				log.info "Updated #{updates.length} device(s) from external sources" if updates.length
 
 		[
 			[Broadcaster.NS_STATE, devicesNsState$]
