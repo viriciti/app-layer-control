@@ -24,8 +24,6 @@ schema     = new Schema
 	containers: Schema.Types.Mixed
 	images:     Schema.Types.Mixed
 	external:   Schema.Types.Mixed
-,
-	timestamps: true
 
 schema.plugin addImmutableQuery
 

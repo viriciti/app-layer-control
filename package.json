@@ -1,6 +1,6 @@
 {
 	"name": "app-layer-control",
-	"version": "5.7.0-rc2",
+	"version": "5.7.0-rc3",
 	"private": true,
 	"scripts": {
 		"test": "mocha",

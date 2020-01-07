@@ -10,8 +10,8 @@ http                             = require "http"
 kleur                            = require "kleur"
 morgan                           = require "morgan"
 mqtt                             = require "async-mqtt"
-reduce                           = require "p-reduce"
-{ Map }                          = require "immutable"
+map                              = require "p-map"
+{ Map, fromJS }                  = require "immutable"
 { Observable, Subject }          = require "rxjs"
 { isEmpty, negate, every, omit } = require "lodash"
 
@@ -33,7 +33,6 @@ Watcher                        = require "./db/Watcher"
 Broadcaster                    = require "./Broadcaster"
 { installPlugins, runPlugins } = require "./plugins"
 log                            = (require "./lib/Logger") "main"
-watchActivity                  = require "./observables/watchActivity"
 convertGroupNames              = require "./updates/convertGroupNames"
 
 # Server initialization
@@ -44,9 +43,7 @@ ws      = new WebSocket.Server server: server
 db      = new Database
 store   = new Store db
 
-rpc             = null
-deviceStates    = Map()
-getDeviceStates = -> deviceStates
+rpc = null
 
 log.info "NPM authentication enabled: #{if every config.server.npm then 'yes' else 'no'}"
 log.info "Docker registry: #{config.versioning.registry.url}"
@@ -66,7 +63,7 @@ unless process.env.NODE_ENV is "production"
 			not url.startsWith "/api"
 
 app.use "/api",         require "./api"
-app.use "/api/devices", (require "./api/devices") getDeviceStates
+app.use "/api/devices", require "./api/devices"
 
 # required to support await operations
 do ->
@@ -99,23 +96,8 @@ do ->
 		devicesState$   = DevicesState.observable   socket
 		devicesStatus$  = DevicesStatus.observable  socket
 		deviceGroups$   = DeviceGroups.observable   socket
-		activity$       = watchActivity             socket
 		registry$       = DockerRegistry            config.versioning, db
 		source$         = new Subject
-
-		activity$
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
-			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
-					deviceId     = update.get "deviceId"
-					lastActivity = update.get "lastActivity"
-
-					devices.setIn [deviceId, "lastSeenTimestamp"], lastActivity
-				, Map()
-
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
 
 		# device logs
 		devicesLogs$.subscribe (message) ->
@@ -126,23 +108,13 @@ do ->
 			.bufferTime config.batchState.defaultInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				ops = updates.reduce (ops, update) ->
-					deviceId = update.get "deviceId"
-					data     = update.get "data"
+				ops = updates.map ({ deviceId, data }) ->
+					updateOne:
+						filter: deviceId: deviceId
+						update: $set: omit data, ["groups", "status"]
+						upsert: true
 
-					# * App Layer Agent sends out 'groups' as part of the state
-					# * however, this attribute ought to be set by App Layer Control instead
-					keys = ["groups", "status"]
-					data = (data.remove key) for key in keys
-
-					ops.concat
-						updateOne:
-							filter: deviceId: deviceId
-							update: $set: data.toJS()
-							upsert: true
-				, []
-
-				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
+				{ upsertedCount, modifiedCount } = await db.DeviceState.bulkWrite ops
 				log.info "Updated #{modifiedCount} and added #{upsertedCount} device(s)"
 				
 		# specific state updates
@@ -152,22 +124,16 @@ do ->
 			.bufferTime config.batchState.nsStateInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				ops = await reduce updates, (ops, update) ->
-					key      = update.get "key"
-					value    = update.get "value"
-					value    = await convertGroupNames db, value if key is "groups"
-					value    = value.toJS()                      if value.toJS?
-					deviceId = update.get "deviceId"
+				ops = await map updates, ({ key, value, deviceId }) ->
+					value = await convertGroupNames db, value if key is "groups"
 
-					ops.concat
-						updateOne:
-							filter: deviceId: deviceId
-							update:
-								$set:
-									deviceId: deviceId
-									[key]:    value
-							upsert: true
-				, []
+					updateOne:
+						filter: deviceId: deviceId
+						update:
+							$set:
+								deviceId: deviceId
+								[key]:    value
+						upsert: true
 
 				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
 				log.info "Updated namespaced state for #{modifiedCount + upsertedCount} device(s)"
@@ -177,8 +143,7 @@ do ->
 			.bufferTime config.batchState.nsStateInterval
 			.filter negate isEmpty
 			.flatMap (updates) ->
-				store.ensureDefaultGroups updates.map (update) ->
-					update.get "deviceId"
+				store.ensureDefaultGroups updates.map ({ deviceId }) -> deviceId
 			.subscribe (updates) ->
 				{ insertedCount } = updates
 				return unless insertedCount
@@ -190,18 +155,14 @@ do ->
 			.bufferTime config.batchState.defaultInterval
 			.filter negate isEmpty
 			.subscribe (updates) ->
-				ops = updates.reduce (ops, update) ->
-					deviceId  = update.get "deviceId"
-					status    = update.get "status"
-
-					ops.concat
-						updateOne:
-							filter: deviceId: deviceId
-							update:
-								$set:
-									deviceId:  deviceId
-									connected: status is "online"
-							upsert: true
+				ops = updates.map ({ deviceId, status }) ->
+					updateOne:
+						filter: deviceId: deviceId
+						update:
+							$set:
+								deviceId:  deviceId
+								connected: status is "online"
+						upsert: true
 				, []
 
 				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
@@ -224,21 +185,18 @@ do ->
 						return log.warn "No device ID found in state payload. Ignoring update ..." unless deviceId?
 						return log.warn "No data found in state payload. Ignoring update ..."      unless data?
 						true
-					.reduce (ops, { deviceId, data }) ->
-						json = data
-						json = json.toJS() if json.toJS?
+					.map ({ deviceId, data }) ->
+						data = omit data, "deviceId"
 
-						ops.concat
-							updateOne:
-								filter: deviceId: deviceId
-								update:
-									$set: Object.assign
-										deviceId: deviceId
-										dotize.convert external: omit json, "deviceId"
-								upsert: true
-					, []
+						updateOne:
+							filter: deviceId: deviceId
+							update:
+								$set: Object.assign
+									deviceId: deviceId
+									dotize.convert external: data
+							upsert: true
 
-				{ upsertedCount, modifiedCount, } = await db.DeviceState.bulkWrite ops
+				{ upsertedCount, modifiedCount } = await db.DeviceState.bulkWrite ops
 				log.info "Updated #{modifiedCount + upsertedCount} device(s) from external sources"
 
 		[
@@ -249,7 +207,7 @@ do ->
 			observable$
 				.map (data) ->
 					name:      name
-					data:      data
+					data:      fromJS data
 					_internal: true
 				.subscribe source$
 
