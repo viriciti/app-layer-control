@@ -55,15 +55,15 @@ class Watcher extends EventEmitter
 	onDeviceChange: ({ updateDescription, operationType, documentKey }) =>
 		return if operationType is "delete"
 
-		{ updatedFields } = updateDescription
-		return unless updatedFields?.groups
+		updatedFields = updateDescription?.updatedFields or {}
+		return unless updatedFields.groups
 
 		# Since we're only interested in the full document once,
 		# the groups have changed, we do the lookup manually
 		{ deviceId } = await @db.DeviceState.findOne(documentKey).select "deviceId"
 		
 		topic   = "devices/#{deviceId}/groups"
-		groups  = JSON.stringify await @db.Group.find(_id: $in: updatedFields.groups).distinct "label"
+		groups  = JSON.stringify updatedFields.groups
 		options = retain: true
 
 		@mqtt.publish topic, groups, options

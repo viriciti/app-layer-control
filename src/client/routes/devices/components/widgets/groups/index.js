@@ -1,8 +1,7 @@
 import React, { Fragment, useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
-import { List } from 'immutable'
-import semver from 'semver'
+import { List, Map } from 'immutable'
 
 import GroupsForm from './GroupsForm'
 import { asyncRemoveGroup } from '/routes/devices/actions'
@@ -10,8 +9,6 @@ import toReactKey from '/utils/toReactKey'
 import { isLastElement, moveElement } from '/utils/position'
 
 function DeviceGroups ({ groups, configurations, selectedDevice, asyncRemoveGroup }) {
-	// console.log(configurations, semver.maxSatisfying())
-
 	const btnClass              = 'btn-light btn--icon btn--text d-block'
 	const inGroups              = selectedDevice.get('groups')
 	const [draft, updateDraft]  = useState(inGroups)
@@ -54,56 +51,58 @@ function DeviceGroups ({ groups, configurations, selectedDevice, asyncRemoveGrou
 								</tr>
 							</thead>
 							<tbody>
-								{draft.map((group, index) => (
-									<tr key={group.get('label')}>
-										<td>
-											{inGroups.size > 2 ? (
-												index === 0 ? null : isLastElement(inGroups, index) ? (
-													<button className={btnClass} onClick={partial(onMoveUp, index)}>
-														<span className="fas fa-arrow-up" title="Move up" />
-													</button>
-												) : (
-													<Fragment>
-														{index > 1 ? (
-															<button className={btnClass} onClick={partial(onMoveUp, index)}>
-																<span className="fas fa-arrow-up" title="Move up" />
-															</button>
-														) : null}
-
-														<button className={btnClass} onClick={partial(onMoveDown, index)}>
-															<span className="fas fa-arrow-down" title="Move down" />
+								{draft.map((group, index) => {
+									return (
+										<tr key={group}>
+											<td>
+												{inGroups.size > 2 ? (
+													index === 0 ? null : isLastElement(inGroups, index) ? (
+														<button className={btnClass} onClick={partial(onMoveUp, index)}>
+															<span className="fas fa-arrow-up" title="Move up" />
 														</button>
-													</Fragment>
-												)
-											) : null}
-										</td>
-										<td>{group.get('label')}</td>
-										<td>
-											<ul className="list-unstyled">
-												{group
-													.get('applications')
-													.entrySeq()
-													.map(([application, version]) => (
-														<li key={toReactKey(group, name, application)}>
-															{version ? [application, version].join('@') : application}
-														</li>
-													))}
-											</ul>
-										</td>
-										<td className="text-right">
-											{group.get('label') === 'default' ? null : (
-												<button
-													className="btn btn--text btn--icon float-right"
-													onClick={partial(onRemoveGroup, group.get('label'))}
-													data-toggle="tooltip"
-													title="Delete group"
-												>
-													<span className="fas fa-times-circle text-danger" />
-												</button>
-											)}
-										</td>
-									</tr>
-								))}
+													) : (
+														<Fragment>
+															{index > 1 ? (
+																<button className={btnClass} onClick={partial(onMoveUp, index)}>
+																	<span className="fas fa-arrow-up" title="Move up" />
+																</button>
+															) : null}
+
+															<button className={btnClass} onClick={partial(onMoveDown, index)}>
+																<span className="fas fa-arrow-down" title="Move down" />
+															</button>
+														</Fragment>
+													)
+												) : null}
+											</td>
+											<td>{group}</td>
+											<td>
+												<ul className="list-unstyled">
+													{groups
+														.get(group, Map())
+														.entrySeq()
+														.map(([application, version]) => (
+															<li key={toReactKey(group, name, application)}>
+																{version ? [application, version].join('@') : application}
+															</li>
+														))}
+												</ul>
+											</td>
+											<td className="text-right">
+												{group === 'default' ? null : (
+													<button
+														className="btn btn--text btn--icon float-right"
+														onClick={partial(onRemoveGroup, group)}
+														data-toggle="tooltip"
+														title="Delete group"
+													>
+														<span className="fas fa-times-circle text-danger" />
+													</button>
+												)}
+											</td>
+										</tr>
+									)
+								})}
 							</tbody>
 						</table>
 					) : (

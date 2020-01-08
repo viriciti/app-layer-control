@@ -48,7 +48,7 @@ class Broadcaster
 		@broadcast Broadcaster.SOURCES, await @db.DeviceSource.find()
 
 	broadcastDeviceGroups: (deviceIds) ->
-		deviceGroups = await @db.DeviceState.find(deviceId: $in: deviceIds).populate "groups"
+		deviceGroups = await @db.DeviceState.find deviceId: $in: deviceIds
 		deviceGroups = deviceGroups.reduce (devices, { deviceId, groups }) ->
 			devices[deviceId] = groups: groups
 			devices

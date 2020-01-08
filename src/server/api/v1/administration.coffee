@@ -242,10 +242,6 @@ router.post "/group/devices", ({ app, body }, res) ->
 	{ db, broadcaster }                  = app.locals
 	{ operation, groups, target, multi } = body
 	target                               = [target] unless isArray target
-	groups                               = await db
-		.Group
-		.find label: $in: groups
-		.distinct "_id"
 
 	log.info "Update groups for #{target.join ', '} - #{operation} #{groups.join ', '}"
 
@@ -272,11 +268,8 @@ router.post "/group/devices", ({ app, body }, res) ->
 		if multi
 			update = $addToSet: groups: $each: groups
 		else
-			defaultGroup = await db.Group.findOne(label: "default").distinct "_id"
-			prevGroups   = [].concat groups
-			groups       = invokeMap defaultGroup.concat(groups), "toString"
-			groups       = uniq groups
-
+			groups = ["default", ...groups]
+			groups = uniq groups
 			update = groups: groups
 
 		{ nModified } = await db.DeviceState.updateMany query, update, options

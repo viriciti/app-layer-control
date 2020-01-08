@@ -9,7 +9,6 @@ router.get "/", ({ app, query }, res, next) ->
 		.DeviceState
 		.find()
 		.select unless query.all is "1" then "-containers -images" 
-		.populate "groups"
 	data = data.reduce (devices, device) ->
 		devices[device.deviceId] = device
 		devices
@@ -28,10 +27,7 @@ router.get "/:id", ({ app, params }, res, next) ->
 	{ db } = app.locals
 
 	try
-		device = await db
-			.DeviceState
-			.findOne deviceId: params.id
-			.populate "groups"
+		device = await db.DeviceState.findOne deviceId: params.id
 
 		unless device
 			return res

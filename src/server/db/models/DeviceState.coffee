@@ -5,10 +5,9 @@ Group             = require "./Group"
 { Schema } = mongoose
 schema     = new Schema
 	connected: Boolean
-	groups:    [
-		type: Schema.Types.ObjectId
-		ref:  "Group"
-	]
+	groups:
+		type:    [String]
+		default: ["default"]
 	deviceId:
 		type:     String
 		required: true
@@ -27,16 +26,5 @@ schema     = new Schema
 	external:   Schema.Types.Mixed
 
 schema.plugin addImmutableQuery
-schema.pre "updateOne", ->
-	update = @getUpdate()
-	return unless update.groups
-
-	@setUpdate Object.assign {},
-		update
-		groups: (await Group
-			.find label: $in: update.groups
-			.select "_id"
-			.lean()
-		)
 
 module.exports = mongoose.model "DeviceState", schema

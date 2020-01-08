@@ -45,7 +45,7 @@
 	},
 	"dependencies": {
 		"@viriciti/app-layer-logic": "^1.2.3",
-		"@viriciti/app-layer-plugin-sync": "^1.1.4",
+		"@viriciti/app-layer-plugin-sync": "^1.1.5",
 		"ansi-to-html": "^0.6.4",
 		"assemble": "^0.3.83",
 		"async": "^2.6.0",
