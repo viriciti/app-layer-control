@@ -33,7 +33,6 @@ Watcher                        = require "./db/Watcher"
 Broadcaster                    = require "./Broadcaster"
 { installPlugins, runPlugins } = require "./plugins"
 log                            = (require "./lib/Logger") "main"
-convertGroupNames              = require "./updates/convertGroupNames"
 
 # Server initialization
 app     = express()
