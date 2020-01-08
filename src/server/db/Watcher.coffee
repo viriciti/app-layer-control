@@ -1,8 +1,8 @@
-{ EventEmitter }       = require "events"
-{ invokeMap, partial } = require "lodash"
-debug                  = (require "debug") "app:Watcher"
-{ Observable }         = require "rxjs"
-log                    = (require "../lib/Logger") "Watcher"
+{ EventEmitter }                   = require "events"
+{ each, partial, negate, isEmpty } = require "lodash"
+debug                              = (require "debug") "app:Watcher"
+{ Observable }                     = require "rxjs"
+log                                = (require "../lib/Logger") "Watcher"
 
 populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
 Broadcaster            = require "../Broadcaster"
@@ -11,66 +11,61 @@ class Watcher extends EventEmitter
 	constructor: ({ @db, @store, @mqtt, @broadcaster }) ->
 		super()
 
-		@observables = []
+		@observables   = []
 
 	unwatch: ->
-		invokeMap @changeStreams, "close"
+		@observables.forEach (observable) ->
+			observable.unsubscribe()
 
 	watch: ->
-		@unwatch()
+		state$          = Observable.fromEvent @db.DeviceState.watch(), "change"
+		application$    = Observable.fromEvent @db.Application.watch(), "change"
+		group$          = Observable.fromEvent @db.Group.watch(), "change"
+		registryImages$ = Observable.fromEvent @db.RegistryImages.watch(), "change"
 
-		@changeStreams = [
-			@db
-				.Application
-				.watch()
-				.on "change",  @onCollectionChange
-				.once "close", partial @onChangeStreamClose, "Application"
+		@observables.push @watchAdministration application$, group$, registryImages$
+		@observables.push @watchState state$
 
-			@db
-				.Group
-				.watch()
-				.on "change",  @onCollectionChange
-				.once "close", partial @onChangeStreamClose, "Group"
+	watchAdministration: (...observables$) ->
+		Observable
+			.merge observables$...
+			.subscribe =>
+				populateMqttWithGroups @db, @mqtt
 
-			@db
-				.DeviceState
-				.watch()
-				.on "change",  @onDeviceChange
-				.once "close", partial @onChangeStreamClose, "DeviceGroup"
+	watchState: (observable$) ->
+		observable$
+			.filter ({ operationType, updateDescription }) ->
+				operationType isnt "delete" and updateDescription?.updatedFields?
+			.mergeMap ({ documentKey, updateDescription }) =>
+				Observable
+					.from @db.DeviceState.findOne(documentKey).select "deviceId"
+					.map ({ deviceId }) ->
+						deviceId:      deviceId
+						updatedFields: updateDescription.updatedFields
+			.mergeMap ({ deviceId, updatedFields  }) =>
+				value =
+					deviceId: deviceId
+					data:     updatedFields
 
-			@db
-				.RegistryImages
-				.watch()
-				.on "change",  @onCollectionChange
-				.once "close", partial @onChangeStreamClose, "RegistryImages"
-		]
+				# We only want to publish the updated groups on MQTT
+				return Observable.of value unless updatedFields.groups
 
-	onChangeStreamClose: (model) =>
-		log.error "ChangeStream for model #{model} closed"
+				topic   = "devices/#{deviceId}/groups"
+				groups  = JSON.stringify updatedFields.groups
+				options = retain: true
 
-	onCollectionChange: ({ ns }) =>
-		debug "Collection change - #{ns.db}.#{ns.coll} changed"
+				Observable
+					.from @mqtt.publish topic, groups, options
+					.mapTo value
+			.bufferTime 500
+			.filter negate isEmpty
+			.subscribe (updates) =>
+				updates = updates.reduce (updates, { deviceId, data }) ->
+					updates[deviceId] = data
+					updates
+				, {}
 
-		populateMqttWithGroups @db, @mqtt
-
-	onDeviceChange: ({ updateDescription, operationType, documentKey }) =>
-		return if operationType is "delete"
-
-		updatedFields = updateDescription?.updatedFields or {}
-		{ deviceId }  = await @db.DeviceState.findOne(documentKey).select "deviceId"
-
-		@broadcaster.broadcast Broadcaster.STATE, Object.assign {}, [deviceId]: updatedFields
-
-		# Additionally, publish groups on MQTT
-		return unless updatedFields.groups
-
-		# Since we're only interested in the full document once,
-		# the groups have changed, we do the lookup manually
+				@broadcaster.broadcast Broadcaster.STATE, updates
 		
-		topic   = "devices/#{deviceId}/groups"
-		groups  = JSON.stringify updatedFields.groups
-		options = retain: true
-
-		@mqtt.publish topic, groups, options
 
 module.exports = Watcher
