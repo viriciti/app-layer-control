@@ -66,6 +66,5 @@ class Watcher extends EventEmitter
 				, {}
 
 				@broadcaster.broadcast Broadcaster.STATE, updates
-		
 
 module.exports = Watcher
