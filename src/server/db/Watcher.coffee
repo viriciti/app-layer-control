@@ -5,9 +5,10 @@ debug                  = (require "debug") "app:Watcher"
 log                    = (require "../lib/Logger") "Watcher"
 
 populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
+Broadcaster            = require "../Broadcaster"
 
 class Watcher extends EventEmitter
-	constructor: ({ @db, @store, @mqtt }) ->
+	constructor: ({ @db, @store, @mqtt, @broadcaster }) ->
 		super()
 
 		@observables = []
@@ -56,11 +57,15 @@ class Watcher extends EventEmitter
 		return if operationType is "delete"
 
 		updatedFields = updateDescription?.updatedFields or {}
+		{ deviceId }  = await @db.DeviceState.findOne(documentKey).select "deviceId"
+
+		@broadcaster.broadcast Broadcaster.STATE, Object.assign {}, [deviceId]: updatedFields
+
+		# Additionally, publish groups on MQTT
 		return unless updatedFields.groups
 
 		# Since we're only interested in the full document once,
 		# the groups have changed, we do the lookup manually
-		{ deviceId } = await @db.DeviceState.findOne(documentKey).select "deviceId"
 		
 		topic   = "devices/#{deviceId}/groups"
 		groups  = JSON.stringify updatedFields.groups

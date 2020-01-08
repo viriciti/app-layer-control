@@ -79,9 +79,10 @@ do ->
 	rpc            = new RPC socket, timeout: config.mqtt.responseTimeout
 	broadcaster    = new Broadcaster ws
 	watcher        = new Watcher
-		db:    db
-		store: store
-		mqtt:  socket
+		db:          db
+		store:       store
+		mqtt:        socket
+		broadcaster: broadcaster
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{config.mqtt.host}:#{config.mqtt.port}"

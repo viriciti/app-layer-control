@@ -53,7 +53,6 @@ class DeviceList extends PureComponent {
 			.filterNot(deviceId =>
 				this.props.devices
 					.getIn([deviceId, 'groups'], List())
-					.map(group => group.get('label'))
 					.includes(label)
 			)
 			.toArray()
@@ -69,7 +68,6 @@ class DeviceList extends PureComponent {
 			.filter(deviceId =>
 				this.props.devices
 					.getIn([deviceId, 'groups'], List())
-					.map(group => group.get('label'))
 					.includes(label)
 			)
 			.toArray()
