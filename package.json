@@ -1,6 +1,6 @@
 {
 	"name": "app-layer-control",
-	"version": "5.6.0",
+	"version": "5.7.0",
 	"private": true,
 	"scripts": {
 		"test": "mocha",
@@ -60,6 +60,7 @@
 		"config": "^1.30.0",
 		"constant-case": "^2.0.0",
 		"cors": "^2.8.4",
+		"dotize": "^0.3.0",
 		"express": "^4.16.1",
 		"immutable": "^3.8.2",
 		"jquery": "^3.3.1",

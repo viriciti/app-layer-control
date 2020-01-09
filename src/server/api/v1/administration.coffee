@@ -1,9 +1,9 @@
-debug                                  = (require "debug") "app:api"
-filter                                 = require "p-filter"
-{ Router }                             = require "express"
-{ isArray, first, map, size, without } = require "lodash"
-config                                 = require "config"
-log                                    = (require "../../lib/Logger") "api:administration"
+debug                                                   = (require "debug") "app:api"
+filter                                                  = require "p-filter"
+{ Router }                                              = require "express"
+{ isArray, first, map, size, without, invokeMap, uniq } = require "lodash"
+config                                                  = require "config"
+log                                                     = (require "../../lib/Logger") "api:administration"
 
 Store                  = require "../../Store"
 getRegistryImages      = require "../../lib/getRegistryImages"
@@ -249,10 +249,8 @@ router.post "/group/devices", ({ app, body }, res) ->
 		query   = deviceId: $in: target
 		update  = $pullAll: groups: groups
 
-		{ nModified } = await db.DeviceGroup.updateMany query, update
+		{ nModified } = await db.DeviceState.updateMany query, update
 		message       = "Removed groups #{groups.join ', '} for #{nModified} device(s)"
-
-		broadcaster.broadcastDeviceGroups target
 
 		res
 			.status 200
@@ -268,15 +266,12 @@ router.post "/group/devices", ({ app, body }, res) ->
 		if multi
 			update = $addToSet: groups: $each: groups
 		else
-			groups = without groups, "default"
 			groups = ["default", ...groups]
+			groups = uniq groups
 			update = groups: groups
 
-
-		{ nModified } = await db.DeviceGroup.updateMany query, update, options
+		{ nModified } = await db.DeviceState.updateMany query, update, options
 		message       = "Added groups #{groups.join ', '} to #{nModified} device(s)"
-
-		broadcaster.broadcastDeviceGroups target
 
 		res
 			.status 200

@@ -252,7 +252,7 @@ export function asyncFetchDevice (deviceId) {
 		dispatch(setAsyncState(['isFetchingDevice', deviceId], true))
 
 		try {
-			const { data } = await axios.get(`/api/devices/${deviceId}`)
+			const { data } = await axios.get(`/api/v1/devices/${deviceId}`)
 
 			dispatch({
 				type:    DEVICE_STATE,
@@ -295,7 +295,7 @@ export function fetchDevices () {
 
 		dispatch({
 			type:    DEVICES_STATE,
-			payload: get(await axios.get('/api/devices'), 'data.data'),
+			payload: get(await axios.get('/api/v1/devices'), 'data.data'),
 		})
 
 		dispatch(setAsyncState('isFetchingDevices', false))

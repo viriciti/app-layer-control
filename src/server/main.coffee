@@ -1,17 +1,19 @@
-RPC                        = require "mqtt-json-rpc"
-WebSocket                  = require "ws"
-bodyParser                 = require "body-parser"
-compression                = require "compression"
-config                     = require "config"
-cors                       = require "cors"
-express                    = require "express"
-http                       = require "http"
-morgan                     = require "morgan"
-mqtt                       = require "async-mqtt"
-{ Map }                    = require "immutable"
-{ isEmpty, negate, every } = require "lodash"
-{ Observable, Subject }    = require "rxjs"
-kleur                      = require "kleur"
+RPC                              = require "mqtt-json-rpc"
+WebSocket                        = require "ws"
+bodyParser                       = require "body-parser"
+compression                      = require "compression"
+config                           = require "config"
+cors                             = require "cors"
+dotize                           = require "dotize"
+express                          = require "express"
+http                             = require "http"
+kleur                            = require "kleur"
+morgan                           = require "morgan"
+mqtt                             = require "async-mqtt"
+map                              = require "p-map"
+{ Map, fromJS }                  = require "immutable"
+{ Observable, Subject }          = require "rxjs"
+{ isEmpty, negate, every, omit } = require "lodash"
 
 {
 	DevicesLogs
@@ -31,7 +33,6 @@ Watcher                        = require "./db/Watcher"
 Broadcaster                    = require "./Broadcaster"
 { installPlugins, runPlugins } = require "./plugins"
 log                            = (require "./lib/Logger") "main"
-watchActivity                  = require "./observables/watchActivity"
 
 # Server initialization
 app     = express()
@@ -41,9 +42,7 @@ ws      = new WebSocket.Server server: server
 db      = new Database
 store   = new Store db
 
-rpc             = null
-deviceStates    = Map()
-getDeviceStates = -> deviceStates
+rpc = null
 
 log.info "NPM authentication enabled: #{if every config.server.npm then 'yes' else 'no'}"
 log.info "Docker registry: #{config.versioning.registry.url}"
@@ -63,7 +62,7 @@ unless process.env.NODE_ENV is "production"
 			not url.startsWith "/api"
 
 app.use "/api",         require "./api"
-app.use "/api/devices", (require "./api/devices") getDeviceStates
+app.use "/api/devices", require "./api/devices"
 
 # required to support await operations
 do ->
@@ -80,9 +79,10 @@ do ->
 	rpc            = new RPC socket, timeout: config.mqtt.responseTimeout
 	broadcaster    = new Broadcaster ws
 	watcher        = new Watcher
-		db:    db
-		store: store
-		mqtt:  socket
+		db:          db
+		store:       store
+		mqtt:        socket
+		broadcaster: broadcaster
 
 	onConnect = ->
 		log.info "Connected to MQTT Broker at #{config.mqtt.host}:#{config.mqtt.port}"
@@ -96,23 +96,8 @@ do ->
 		devicesState$   = DevicesState.observable   socket
 		devicesStatus$  = DevicesStatus.observable  socket
 		deviceGroups$   = DeviceGroups.observable   socket
-		activity$       = watchActivity             socket
 		registry$       = DockerRegistry            config.versioning, db
 		source$         = new Subject
-
-		activity$
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
-			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
-					deviceId     = update.get "deviceId"
-					lastActivity = update.get "lastActivity"
-
-					devices.setIn [deviceId, "lastSeenTimestamp"], lastActivity
-				, Map()
-
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
 
 		# device logs
 		devicesLogs$.subscribe (message) ->
@@ -120,99 +105,68 @@ do ->
 
 		# state updates
 		devicesState$
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
+			.mergeMap ({ deviceId, data }) ->
+				filter          = deviceId: deviceId
+				update          = omit data, ["groups", "status"]
+				update.deviceId = deviceId
+
+				Observable.from db.DeviceState.updateOne filter, update, upsert: true
+			.bufferTime 5000
 			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
-					deviceId = update.get "deviceId"
-					data     = update.get "data"
-
-					# * App Layer Agent sends out 'groups' as part of the state
-					# * however, this attribute ought to be set by App Layer Control instead
-					keys = ["groups", "status"]
-					data = (data.remove key) for key in keys
-
-					devices.mergeIn [deviceId], data
-				, Map()
-
-				deviceStates   = deviceStates.mergeDeep stateUpdates
-				broadcastState = deviceStates.map (deviceState) ->
-					deviceState
-						.remove "containers"
-						.remove "images"
-
-				broadcaster.broadcast Broadcaster.STATE, broadcastState
+				log.info "Updated #{updates.length} device(s)" if updates.length
 
 		# specific state updates
 		# these updates are broadcasted more frequently
 		devicesNsState$
 			.merge deviceGroups$
-			.bufferTime config.batchState.nsStateInterval
-			.filter negate isEmpty
+			.mergeMap ({ deviceId, key, value }) ->
+				filter = deviceId: deviceId
+				update =
+					deviceId: deviceId
+					[key]:    value
+
+				Observable.from db.DeviceState.updateOne filter, update, upsert: true
+			.bufferTime 5000
 			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
-					key      = update.get "key"
-					deviceId = update.get "deviceId"
-
-					devices.setIn [deviceId, key], update.get "value"
-				, Map()
-
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
-
-		# first time online devices
-		devicesStatus$
-			.bufferTime config.batchState.nsStateInterval
-			.filter negate isEmpty
-			.flatMap (updates) ->
-				store.ensureDefaultGroups updates.map (update) ->
-					update.get "deviceId"
-			.subscribe (updates) ->
-				{ insertedCount } = updates
-				return unless insertedCount
-
-				log.info "Inserted default groups for #{insertedCount} device(s)"
+				log.info "Updated namespaced state for #{updates.length} device(s)" if updates.length
 
 		# status updates
 		devicesStatus$
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
+			.mergeMap ({ deviceId, status }) ->
+				filter = deviceId: deviceId
+				update =
+					deviceId:  deviceId
+					connected: status is "online"
+
+				Observable.from db.DeviceState.updateOne filter, update, upsert: true
+			.bufferTime 5000
 			.subscribe (updates) ->
-				stateUpdates = updates.reduce (devices, update) ->
-					deviceId  = update.get "deviceId"
-					status    = update.get "status"
-
-					devices
-						.setIn [deviceId, "connected"], status is "online"
-						.setIn [deviceId, "status"],    status
-				, Map()
-
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
+				log.info "Updated status for #{updates.length} device(s)" if updates.length
 
 		# docker registry
-		registry$.subscribe (images) ->
-			await store.storeRegistryImages images
-			broadcaster.broadcastRegistry()
+		registry$
+			.mergeMap (images) ->
+				Observable.from store.storeRegistryImages images
+			.subscribe ->
+				broadcaster.broadcastRegistry()
 
 		# plugin sources
 		source$
-			.filter ({ _internal }) ->
-				not _internal
-			.bufferTime config.batchState.defaultInterval
-			.filter negate isEmpty
-			.subscribe (updates) ->
-				stateUpdates = updates
-					.filter ({ deviceId, data }) ->
-						return log.warn "No device ID found in state payload. Ignoring update ..." unless deviceId?
-						return log.warn "No data found in state payload. Ignoring update ..."      unless data?
-						true
-					.reduce (devices, { deviceId, data }) ->
-						devices.mergeIn [deviceId], data
-					, Map()
+			.filter ({ _internal, deviceId, data }) ->
+				return false if _internal
 
-				deviceStates = deviceStates.mergeDeep stateUpdates
-				broadcaster.broadcast Broadcaster.STATE, stateUpdates
+				return log.warn "No device ID found in state payload, ignoring update ..." unless deviceId?
+				return log.warn "No data found in state payload, ignoring update ..."      unless data?
+				true
+			.mergeMap ({ deviceId, data }) ->
+				data   = omit data, "deviceId"
+				filter = deviceId: deviceId
+				update = Object.assign deviceId: deviceId, dotize.convert external: data
+
+				Observable.from db.DeviceState.updateOne filter, update, upsert: true
+			.bufferTime 5000
+			.subscribe (updates) ->
+				log.info "Updated #{updates.length} device(s) from external sources" if updates.length
 
 		[
 			[Broadcaster.NS_STATE, devicesNsState$]
