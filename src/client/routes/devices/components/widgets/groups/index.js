@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
-import { List } from 'immutable'
+import { List, Map } from 'immutable'
 
 import GroupsForm from './GroupsForm'
 import { asyncRemoveGroup } from '/routes/devices/actions'
@@ -51,68 +51,58 @@ function DeviceGroups ({ groups, configurations, selectedDevice, asyncRemoveGrou
 								</tr>
 							</thead>
 							<tbody>
-								{draft.map((group, index) => (
-									<tr key={group}>
-										<td>
-											{inGroups.size > 2 ? (
-												index === 0 ? null : isLastElement(inGroups, index) ? (
-													<button className={btnClass} onClick={partial(onMoveUp, index)}>
-														<span className="fas fa-arrow-up" title="Move up" />
-													</button>
-												) : (
-													<Fragment>
-														{index > 1 ? (
-															<button className={btnClass} onClick={partial(onMoveUp, index)}>
-																<span className="fas fa-arrow-up" title="Move up" />
-															</button>
-														) : null}
-
-														<button className={btnClass} onClick={partial(onMoveDown, index)}>
-															<span className="fas fa-arrow-down" title="Move down" />
+								{draft.map((group, index) => {
+									return (
+										<tr key={group}>
+											<td>
+												{inGroups.size > 2 ? (
+													index === 0 ? null : isLastElement(inGroups, index) ? (
+														<button className={btnClass} onClick={partial(onMoveUp, index)}>
+															<span className="fas fa-arrow-up" title="Move up" />
 														</button>
-													</Fragment>
-												)
-											) : null}
-										</td>
-										<td>{group}</td>
-										<td>
-											<ul className="list-unstyled">
-												{groups.has(group) ? (
-													groups
-														.get(group)
+													) : (
+														<Fragment>
+															{index > 1 ? (
+																<button className={btnClass} onClick={partial(onMoveUp, index)}>
+																	<span className="fas fa-arrow-up" title="Move up" />
+																</button>
+															) : null}
+
+															<button className={btnClass} onClick={partial(onMoveDown, index)}>
+																<span className="fas fa-arrow-down" title="Move down" />
+															</button>
+														</Fragment>
+													)
+												) : null}
+											</td>
+											<td>{group}</td>
+											<td>
+												<ul className="list-unstyled">
+													{groups
+														.get(group, Map())
 														.entrySeq()
-														.map(([name, version]) =>
-															version ? (
-																<li key={toReactKey(group, name, version)} title="Locked version">
-																	{[name, version].join('@')}
-																</li>
-															) : (
-																<li key={toReactKey(group, name)} title="Semantic versioning">
-																	{[name, configurations.getIn([name, 'version'])].join('@')}
-																</li>
-															)
-														)
-												) : (
-													<i>Not available</i>
+														.map(([application, version]) => (
+															<li key={toReactKey(group, name, application)}>
+																{version ? [application, version].join('@') : application}
+															</li>
+														))}
+												</ul>
+											</td>
+											<td className="text-right">
+												{group === 'default' ? null : (
+													<button
+														className="btn btn--text btn--icon float-right"
+														onClick={partial(onRemoveGroup, group)}
+														data-toggle="tooltip"
+														title="Delete group"
+													>
+														<span className="fas fa-times-circle text-danger" />
+													</button>
 												)}
-											</ul>
-										</td>
-										<td className="text-right">
-											{group === 'default' ? (
-												''
-											) : (
-												<button
-													className="btn btn--text btn--icon float-right"
-													onClick={partial(onRemoveGroup, group)}
-													data-toggle="tooltip"
-													title="Delete group"
-												>
-													<span className="fas fa-times-circle text-danger" />
-												</button>
-											)}
-										</td>
-									</tr>
-								))}
+											</td>
+										</tr>
+									)
+								})}
 							</tbody>
 						</table>
 					) : (

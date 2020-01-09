@@ -15,6 +15,7 @@ models =
 	Application:    require "./models/Application"
 	DeviceGroup:    require "./models/DeviceGroup"
 	DeviceSource:   require "./models/DeviceSource"
+	DeviceState:    require "./models/DeviceState"
 	Group:          require "./models/Group"
 	RegistryImages: require "./models/RegistryImages"
 

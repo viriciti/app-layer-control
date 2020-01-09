@@ -61,7 +61,7 @@ class GroupsForm extends PureComponent {
 
 		this.props.asyncStoreGroups(
 			this.props.selectedDevice.get('deviceId'),
-			this.props.inGroups.toArray().concat(this.state.selectedGroups)
+			this.props.inGroups.concat(this.state.selectedGroups)
 		)
 		this.setState({ selectedGroups: [] })
 	}

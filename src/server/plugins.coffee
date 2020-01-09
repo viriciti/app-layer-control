@@ -1,7 +1,7 @@
-config            = require "config"
-debug             = (require "debug") "app:plugins"
-{ PluginManager } = require "live-plugin-manager"
-{ every, omit }   = require "lodash"
+config               = require "config"
+debug                = (require "debug") "app:plugins"
+{ PluginManager }    = require "live-plugin-manager"
+{ every, omit, map } = require "lodash"
 
 log = (require "./lib/Logger") "plugins"
 
@@ -35,7 +35,7 @@ installPlugins = (plugins) ->
 			else
 				throw error
 
-	log.info "Installed #{plugins.length} plugin(s)"
+	log.info "Installed #{plugins.length} plugin(s): #{map(plugins, "name").join ", "}"
 
 runPlugins = (plugins, source$) ->
 	debug "Running #{plugins.length} plugin(s) ..."

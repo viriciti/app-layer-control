@@ -51,7 +51,9 @@ class DeviceList extends PureComponent {
 	onStoreGroup = async label => {
 		const devices = this.props.multiSelectedDevices
 			.filterNot(deviceId =>
-				this.props.devices.getIn([deviceId, 'groups'], List()).includes(label)
+				this.props.devices
+					.getIn([deviceId, 'groups'], List())
+					.includes(label)
 			)
 			.toArray()
 
@@ -64,7 +66,9 @@ class DeviceList extends PureComponent {
 	onRemoveGroup = async label => {
 		const devices = this.props.multiSelectedDevices
 			.filter(deviceId =>
-				this.props.devices.getIn([deviceId, 'groups'], List()).includes(label)
+				this.props.devices
+					.getIn([deviceId, 'groups'], List())
+					.includes(label)
 			)
 			.toArray()
 
@@ -99,23 +103,17 @@ class DeviceList extends PureComponent {
 											title="Select all devices"
 											type="checkbox"
 											onChange={() =>
-												this.props.multiSelectDevices(
-													this.props.devices.keySeq().toList()
-												)
+												this.props.multiSelectDevices(this.props.devices.keySeq().toList())
 											}
 											checked={
 												!this.props.devices.size
 													? false
-													: this.props.multiSelectedDevices.size ===
-													  this.props.devices.size
+													: this.props.multiSelectedDevices.size === this.props.devices.size
 											}
 											disabled={!this.props.devices.size}
 										/>
 
-										<label
-											className="custom-control-label"
-											htmlFor="selectAll"
-										/>
+										<label className="custom-control-label" htmlFor="selectAll" />
 									</div>
 								</th>
 
@@ -127,9 +125,7 @@ class DeviceList extends PureComponent {
 											onSort={partial(this.onSort, column.get('getIn'))}
 											sortable={column.get('sortable')}
 											ascending={this.props.sort.get('ascending')}
-											sorted={
-												this.props.sort.get('field') === column.get('getIn')
-											}
+											sorted={this.props.sort.get('field') === column.get('getIn')}
 											headerName={column.get('headerName')}
 											columnWidth={column.get('columnWidth')}
 										/>
@@ -145,9 +141,7 @@ class DeviceList extends PureComponent {
 										key={info.get('deviceId')}
 										info={info}
 										onSelectionToggle={this.onSelectionToggle}
-										selected={this.props.multiSelectedDevices.includes(
-											info.get('deviceId')
-										)}
+										selected={this.props.multiSelectedDevices.includes(info.get('deviceId'))}
 										configurations={this.props.configurations}
 										deviceSources={this.props.deviceSources}
 									/>
@@ -161,9 +155,7 @@ class DeviceList extends PureComponent {
 							No devices were found with these search queries
 						</h6>
 					) : !this.props.devices.size ? (
-						<h6 className="text-center text-secondary my-5">
-							No devices were found
-						</h6>
+						<h6 className="text-center text-secondary my-5">No devices were found</h6>
 					) : null}
 				</div>
 			)
@@ -179,9 +171,7 @@ class DeviceList extends PureComponent {
 					<span className="dashboard-header__icon fas fa-hdd" />
 					<div className="dashboard-header__titles-container">
 						<h1 className="dashboard-header__title">Devices</h1>
-						<h2 className="dashboard-header__subtitle">
-							Configure your devices
-						</h2>
+						<h2 className="dashboard-header__subtitle">Configure your devices</h2>
 					</div>
 				</header>
 
