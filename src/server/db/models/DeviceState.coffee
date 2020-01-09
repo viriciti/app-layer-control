@@ -13,6 +13,9 @@ schema     = new Schema
 		required: true
 		unique:   true
 		index:    true
+	updateState:
+		short: String
+		long:  String
 	systemInfo:
 		apiVersion: String
 		appVersion: String

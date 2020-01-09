@@ -130,18 +130,6 @@ do ->
 			.subscribe (updates) ->
 				log.info "Updated namespaced state for #{updates.length} device(s)" if updates.length
 
-		# # first time online devices
-		devicesStatus$
-			.bufferTime config.batchState.nsStateInterval
-			.filter negate isEmpty
-			.flatMap (updates) ->
-				store.ensureDefaultGroups updates.map ({ deviceId }) -> deviceId
-			.subscribe (updates) ->
-				{ insertedCount } = updates
-				return unless insertedCount
-
-				log.info "Inserted default groups for #{insertedCount} device(s)"
-
 		# status updates
 		devicesStatus$
 			.mergeMap ({ deviceId, status }) ->
@@ -149,16 +137,18 @@ do ->
 				update =
 					deviceId:  deviceId
 					connected: status is "online"
-				
+
 				Observable.from db.DeviceState.updateOne filter, update, upsert: true
 			.bufferTime 5000
 			.subscribe (updates) ->
 				log.info "Updated status for #{updates.length} device(s)" if updates.length
 
 		# docker registry
-		registry$.subscribe (images) ->
-			await store.storeRegistryImages images
-			broadcaster.broadcastRegistry()
+		registry$
+			.mergeMap (images) ->
+				Observable.from store.storeRegistryImages images
+			.subscribe ->
+				broadcaster.broadcastRegistry()
 
 		# plugin sources
 		source$
