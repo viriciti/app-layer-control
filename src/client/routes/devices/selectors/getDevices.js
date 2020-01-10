@@ -28,6 +28,16 @@ export default createImmutableSelector(
 				sources.some(field => {
 					const value = device.getIn(field.split('.'), '')
 
+					// Patch: status is not saved as a string, but as a boolean
+					// All paths are exhausted, we do not have to add a final return
+					if (['online', 'offline'].includes(query)) {
+						if (query === 'online') {
+							return device.get('connected') === true
+						} else if (query === 'offline') {
+							return device.get('connected') === false
+						}
+					}
+
 					if (isString(value)) {
 						// Handle fields whose value is a string
 						return valueIncludes(value, query)
