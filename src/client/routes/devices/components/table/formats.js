@@ -18,17 +18,6 @@ const formats = {
 		)
 	},
 
-	groups: ({ value }) => {
-		if (!value) {
-			return
-		}
-
-		return value
-			.map(group => group.get('label'))
-			.toArray()
-			.join(', ')
-	},
-
 	updateState: ({ value, title }) => {
 		if (value.match(/error/i)) {
 			return (
