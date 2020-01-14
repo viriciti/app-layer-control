@@ -24,6 +24,7 @@ schema     = new Schema
 		osVersion:  String
 		tun0:       String
 		version:    String
+		wwan0:      String
 	containers: Schema.Types.Mixed
 	images:     Schema.Types.Mixed
 	external:   Schema.Types.Mixed
