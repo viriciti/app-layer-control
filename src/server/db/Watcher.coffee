@@ -61,7 +61,7 @@ class Watcher extends EventEmitter
 			.filter negate isEmpty
 			.subscribe (updates) =>
 				updates = updates.reduce (updates, { deviceId, data }) ->
-					updates[deviceId] = data
+					updates[deviceId] = merge {}, updates[deviceId], data
 					updates
 				, {}
 
