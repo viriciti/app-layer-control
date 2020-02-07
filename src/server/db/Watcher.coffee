@@ -1,8 +1,8 @@
-{ EventEmitter }                   = require "events"
-{ each, partial, negate, isEmpty } = require "lodash"
-debug                              = (require "debug") "app:Watcher"
-{ Observable }                     = require "rxjs"
-log                                = (require "../lib/Logger") "Watcher"
+{ EventEmitter }                          = require "events"
+{ each, partial, negate, isEmpty, merge } = require "lodash"
+debug                                     = (require "debug") "app:Watcher"
+{ Observable }                            = require "rxjs"
+log                                       = (require "../lib/Logger") "Watcher"
 
 populateMqttWithGroups = require "../helpers/populateMqttWithGroups"
 Broadcaster            = require "../Broadcaster"
