@@ -220,9 +220,8 @@ router.delete "/group/:label", ({ app, params, body }, res, next) ->
 	{ label }           = params
 
 	try
-		query         = groups: label
-		update        = $pull:  groups: label
-		{ nModified } = await db.DeviceGroup.updateMany query, update
+		update        = $pull: groups: label
+		{ nModified } = await db.DeviceState.updateMany {}, update
 		debug "Deleted group #{label} for #{nModified} device(s)"
 
 		await db.Group.findOneAndDelete { label }

@@ -8,7 +8,7 @@ module.exports =
 	server:
 		port:        3000
 		skipUpdates: false
-		skipBundler: true
+		skipBundler: false
 		npm:
 			username: process.env.NPM_USERNAME
 			password: process.env.NPM_PASSWORD
