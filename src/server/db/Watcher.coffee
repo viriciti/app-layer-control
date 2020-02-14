@@ -36,13 +36,13 @@ class Watcher extends EventEmitter
 		observable$
 			.filter ({ operationType, updateDescription }) ->
 				operationType isnt "delete" and updateDescription?.updatedFields?
-			.mergeMap ({ documentKey, updateDescription }) =>
+			.concatMap ({ documentKey, updateDescription }) =>
 				Observable
 					.from @db.DeviceState.findOne(documentKey).select "deviceId"
 					.map ({ deviceId }) ->
 						deviceId:      deviceId
 						updatedFields: updateDescription.updatedFields
-			.mergeMap ({ deviceId, updatedFields  }) =>
+			.concatMap ({ deviceId, updatedFields  }) =>
 				value =
 					deviceId: deviceId
 					data:     updatedFields
