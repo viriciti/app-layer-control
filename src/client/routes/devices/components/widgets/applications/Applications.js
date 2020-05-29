@@ -4,11 +4,12 @@ import naturalCompare from 'natural-compare-lite'
 import { List } from 'immutable'
 import { connect } from 'react-redux'
 import { partial, defaultTo } from 'lodash'
+import Mustache from 'mustache'
 
 import Application from './Application'
 import getAsyncState from '/store/selectors/getAsyncState'
 
-function Navigate ({ navigatePort, address }) {
+function Navigate ({ navigatePort, host, urlTemplate, device }) {
 	const className = 'btn btn-secondary btn--reset-icon float-right'
 	const child     = (
 		<Fragment>
@@ -17,11 +18,25 @@ function Navigate ({ navigatePort, address }) {
 		</Fragment>
 	)
 
-	if (address) {
+	if (urlTemplate) {
+		const url = Mustache.render(urlTemplate, device.toJS())
 		return (
 			<a
 				className={className}
-				href={['http://', address, ':', navigatePort].join('')}
+				href={url}
+				rel="noopener noreferrer"
+				target="_blank"
+			>
+				{child}
+			</a>
+		)
+	}
+
+	if (host) {
+		return (
+			<a
+				className={className}
+				href={['http://', host, ':', navigatePort].join('')}
 				rel="noopener noreferrer"
 				target="_blank"
 			>
@@ -64,13 +79,14 @@ function ApplicationHeader ({
 	container,
 	device,
 	navigatePort,
+	urlTemplate,
 	onSelectContainer,
 	selectedContainer,
 }) {
 	const isSelected = container.get('name') === selectedContainer
 	const group      = container.getIn(['labels', 'group'], 'manual')
 	const version    = container.get('image').substring(container.get('image').lastIndexOf(':') + 1)
-	const address    = device.getIn(['systemInfo', 'tun0'], device.getIn(['systemInfo', 'tun0IP']))
+	const host       = device.getIn(['systemInfo', 'tun0'], device.getIn(['systemInfo', 'tun0IP']))
 
 	return (
 		<li className="mb-2">
@@ -91,9 +107,9 @@ function ApplicationHeader ({
 				<div className={classNames('btn', 'btn--static', 'btn-light')}>{group}</div>
 			</div>
 
-			{navigatePort ? (
+			{navigatePort || urlTemplate ? (
 				<div className="float-right">
-					<Navigate navigatePort={navigatePort} address={address} />
+					<Navigate navigatePort={navigatePort} host={host} urlTemplate={urlTemplate} device={device} />
 				</div>
 			) : null}
 		</li>
@@ -144,39 +160,6 @@ class Applications extends Component {
 		return `${container.get('name')} - ${container.getIn(['labels', 'group'], 'manual')}`
 	}
 
-	renderFrontEndButton ({ frontEndPort, deviceIp }) {
-		const className = 'btn btn-secondary btn--reset-icon float-right'
-		const child     = (
-			<Fragment>
-				Go to
-				<span className="fad fa-paper-plane pl-2" />
-			</Fragment>
-		)
-
-		if (deviceIp) {
-			return (
-				<a
-					className={className}
-					href={`http://${deviceIp}:${frontEndPort}`}
-					rel="noopener noreferrer"
-					target="_blank"
-				>
-					{child}
-				</a>
-			)
-		} else {
-			return (
-				<button
-					className={className}
-					title="Apps with a front end can only be served over VPN"
-					disabled
-				>
-					{child}
-				</button>
-			)
-		}
-	}
-
 	render () {
 		return (
 			<div>
@@ -208,11 +191,17 @@ class Applications extends Component {
 												'frontEndPort',
 											])
 
+											const urlTemplate      = this.props.configurations.getIn([
+												container.get('name'),
+												'urlTemplate',
+											])
+
 											return (
 												<ApplicationHeader
 													key={container.get('Id')}
 													container={container}
 													device={this.props.selectedDevice}
+													urlTemplate={urlTemplate}
 													navigatePort={navigatePort}
 													selectedContainer={selectedContainer}
 													onSelectContainer={partial(this.onContainerSelected, container)}

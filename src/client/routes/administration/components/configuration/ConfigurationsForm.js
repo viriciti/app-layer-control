@@ -222,6 +222,13 @@ class ConfigurationsForm extends PureComponent {
 						/>
 						<Field name="version" label="Version" component={VersionInput} required />
 						<Field
+							name="urlTemplate"
+							label="URL template"
+							component={TextInput}
+							type="string"
+							helpText="URL template for links (mustache template)"
+						/>
+						<Field
 							name="frontEndPort"
 							label="Front end port"
 							component={TextInput}
