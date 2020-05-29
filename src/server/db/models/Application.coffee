@@ -13,6 +13,7 @@ schema     = new Schema
 	mounts:          [String]
 	networkMode:     String
 	ports:           Schema.Types.Mixed
+	urlTemplate:     String
 	privileged:      Boolean
 	restartPolicy:   String
 	version:         String
