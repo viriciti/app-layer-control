@@ -184,14 +184,27 @@ class Applications extends Component {
 											naturalCompare(previous.get('name'), next.get('name'))
 										)
 										.map(container => {
+											const groupName = container.getIn(['labels', 'group'], 'manual')
+
+											let groupApps = this.props.groups.get(groupName)
+
+											let config
+
+											if(groupApps) {
+												config = this.props.configurations
+													.filter((v, k) => groupApps.get(k))
+													.find((value) => value.get("containerName") === container.get("name"))
+											}
+
 											const selectedContainer =
 												this.state.selectedContainer && this.state.selectedContainer.get('name')
-											const navigatePort      = this.props.configurations.getIn([
+
+											const navigatePort      = config ? config.get("frontEndPort") : this.props.configurations.getIn([
 												container.get('name'),
 												'frontEndPort',
 											])
 
-											const urlTemplate      = this.props.configurations.getIn([
+											const urlTemplate      = config ? config.get("urlTemplate") : this.props.configurations.getIn([
 												container.get('name'),
 												'urlTemplate',
 											])
@@ -236,6 +249,7 @@ export default connect((state, ownProps) => {
 	const deviceId = ownProps.selectedDevice.get('deviceId')
 
 	return {
+		groups:           state.get('groups'),
 		configurations:   state.get('configurations'),
 		isFetchingDevice: getAsyncState(['isFetchingDevice', deviceId])(state),
 	}
