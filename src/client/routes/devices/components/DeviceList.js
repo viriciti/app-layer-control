@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import naturalCompareLite from 'natural-compare-lite'
 import { List } from 'immutable'
 import { connect } from 'react-redux'
-import { partial } from 'lodash'
+import { partial, shuffle } from 'lodash'
 
 import DeviceDetail from './DeviceDetail'
 import DeviceListItem from './DeviceListItem'
@@ -31,6 +31,7 @@ import getAsyncState from '/store/selectors/getAsyncState'
 
 class DeviceList extends PureComponent {
 	state = {
+		showSelectedOnly: false,
 		sortBy: {
 			field: 'deviceId',
 			asc:   true,
@@ -78,6 +79,17 @@ class DeviceList extends PureComponent {
 		}
 	}
 
+	onRandomSelect = async () => {
+		let arr = this.props.devices.filter(device => device.has('connected')).keySeq().toArray()
+		this.props.multiSelectDevices(List(shuffle(arr).slice(0,50)))
+		this.setState({showSelectedOnly: true})
+	}
+
+	onUnselect = async () => {
+		this.props.multiSelectDevices(this.props.devices.filter(device => device.get('selected')).keySeq().toList())
+		this.setState({showSelectedOnly: false})
+	}
+
 	multiSelectOptions () {
 		return this.props.groups
 			.keySeq()
@@ -102,9 +114,11 @@ class DeviceList extends PureComponent {
 											id="selectAll"
 											title="Select all devices"
 											type="checkbox"
-											onChange={() =>
+											onChange={() => {
+												// TODO: Remove or refactor the setState call from within a render function
+												this.setState({showSelectedOnly: false})
 												this.props.multiSelectDevices(this.props.devices.keySeq().toList())
-											}
+											}}
 											checked={
 												!this.props.devices.size
 													? false
@@ -135,7 +149,7 @@ class DeviceList extends PureComponent {
 						</thead>
 						<tbody>
 							<PaginationTableBody
-								renderData={this.props.devices.valueSeq()}
+								renderData={this.state.showSelectedOnly ? this.props.devices.filter(device => this.props.multiSelectedDevices.includes(device.get('deviceId'))).valueSeq() : this.props.devices.valueSeq()}
 								component={info => (
 									<DeviceListItem
 										key={info.get('deviceId')}
@@ -234,6 +248,32 @@ class DeviceList extends PureComponent {
 										))}
 									</div>
 								</div>
+
+								<div className="btn-group float-right">
+									<button
+										className="btn btn-light btn-sm dropdown-toggle mr-2"
+										data-toggle="dropdown"
+										type="button"
+									>
+										<span className="fas fa-hammer" /> Utils
+									</button>
+
+									<div className="dropdown-menu">
+										<button
+											className="dropdown-item cursor-pointer"
+											onClick={this.onRandomSelect}
+										>
+											<small>Random select 50</small>
+										</button>
+
+										<button
+											className="dropdown-item cursor-pointer"
+											onClick={this.onUnselect}
+										>
+											<small>Unselect all</small>
+										</button>
+									</div>
+								</div>
 							</div>
 
 							<Filter />
@@ -254,7 +294,7 @@ class DeviceList extends PureComponent {
 							</div>
 
 							<div className="card-controls">
-								<PaginationControl pageRange={2} data={this.props.devices} />
+								<PaginationControl pageRange={2} data={this.state.showSelectedOnly ? this.props.devices.filter(device => this.props.multiSelectedDevices.includes(device.get('deviceId'))) : this.props.devices} />
 							</div>
 						</div>
 					</div>
