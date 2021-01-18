@@ -8,6 +8,7 @@ schema     = new Schema
 	detached:        Boolean
 	environment:     [String]
 	fromImage:       String
+	dependencies:    [String]
 	frontEndPort:    Number
 	lastInstallStep: String
 	mounts:          [String]
