@@ -3,6 +3,7 @@ import { Field, FieldArray, reduxForm } from 'redux-form/immutable'
 import { Map, List } from 'immutable'
 import { connect } from 'react-redux'
 import { reduce } from 'lodash'
+import { map } from 'lodash'
 import { toast } from 'react-toastify'
 import axios from 'axios'
 
@@ -16,6 +17,7 @@ import {
 	SelectInput,
 	DoubleTextInput,
 	SliderInput,
+	SelectMulti
 } from '/routes/administration/commons'
 
 const initialFormValues = {
@@ -91,6 +93,9 @@ class ConfigurationsForm extends PureComponent {
 						return 'If not explicitly stopped'
 				}
 			},
+			dependencies: (value) => {
+				return map(value.toArray(), label => ({ value: label, label: label }))
+			}
 		}
 
 		return values
@@ -167,6 +172,10 @@ class ConfigurationsForm extends PureComponent {
 			configuration.restartPolicy = 'unless-stopped'
 		}
 
+		if (configuration.dependencies) {
+			configuration.dependencies = map(configuration.dependencies, 'label')
+		}
+
 		const { data } = await axios.put(
 			`/api/v1/administration/application/${applicationName}`,
 			configuration
@@ -180,6 +189,13 @@ class ConfigurationsForm extends PureComponent {
 
 	getAvailableImages () {
 		return this.props.registryImages.keySeq().toArray()
+	}
+
+	getAvailableConfigurations () {
+		return map(this.props.configurations.keySeq().toArray(), label => ({
+			label: label,
+			value: label
+		}))
 	}
 
 	getInstallationSteps () {
@@ -221,6 +237,14 @@ class ConfigurationsForm extends PureComponent {
 							required
 						/>
 						<Field name="version" label="Version" component={VersionInput} required />
+
+						<Field
+							name="dependencies"
+							label="Dependencies"
+							component={SelectMulti}
+							options={this.getAvailableConfigurations()}
+						/>
+
 						<Field
 							name="urlTemplate"
 							label="URL template"
@@ -328,6 +352,7 @@ class ConfigurationsForm extends PureComponent {
 
 const mapStateToProps = state => ({
 	registryImages: state.get('registryImages'),
+	configurations: state.get('configurations'),
 })
 
 export default connect(mapStateToProps)(
