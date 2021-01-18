@@ -16,7 +16,7 @@ COPY .babelrc /app/
 RUN npm run build
 
 # STAGE 2: run
-FROM node:10-slim as run
+FROM node:14-slim as run
 
 # Configure environment
 ENV NODE_CONFIG_DIR=/app/dist/config
