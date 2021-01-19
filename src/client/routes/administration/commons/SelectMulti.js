@@ -11,6 +11,9 @@ const SelectMulti = ({
 	options,
 	meta: { touched, error, disabled },
 }) => {
+	if (!Array.isArray(input.value)) {
+		input.value = []
+	}
 	return (
 		<div className="form-group row">
 			<label className="col-sm-2 col-form-label" htmlFor={input.name}>

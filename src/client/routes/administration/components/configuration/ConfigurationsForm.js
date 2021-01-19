@@ -26,6 +26,7 @@ const initialFormValues = {
 	networkMode:   'host',
 	restartPolicy: 'Always restart',
 	version:       '^1.0.0',
+	dependencies:  []
 }
 
 class ConfigurationsForm extends PureComponent {
