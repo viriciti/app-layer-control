@@ -40,6 +40,8 @@ module.exports =
 
 	plugins: []
 
+	ttyPort: 7168
+
 	defaultColumns: [
 		columnIndex:  0
 		columnWidth:  35

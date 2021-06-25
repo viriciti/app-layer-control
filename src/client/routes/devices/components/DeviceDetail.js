@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import { connect } from 'react-redux'
 import { partial } from 'lodash'
 import { List, Map } from 'immutable'
@@ -25,6 +25,7 @@ import {
 	Images,
 } from './widgets'
 import getAsyncState from '/store/selectors/getAsyncState'
+import semver from 'semver'
 
 class DeviceDetail extends PureComponent {
 	componentDidUpdate (prevProps) {
@@ -50,6 +51,55 @@ class DeviceDetail extends PureComponent {
 
 	onRefreshState = async () => {
 		this.props.asyncRefreshState(this.props.selectedDevice.get('deviceId'))
+	}
+
+	getTerminalButton () {
+		const host      = this.props.selectedDevice.getIn(['systemInfo', 'tun0'], this.props.selectedDevice.getIn(['systemInfo', 'tun0IP']))
+		const osVersion = this.props.selectedDevice.getIn(['systemInfo', 'osVersion'])
+		const className = 'btn btn-light d-block mb-1 float-right'
+
+		const child = (
+			<Fragment>
+				<span className="fad fa-terminal pl-2" />
+				Login
+			</Fragment>
+		)
+
+		if (semver.lt(osVersion, '2.5.0')) {
+			return (
+				<button
+					className={className}
+					title="OS verison should at least be v2.5.0"
+					disabled
+				>
+					{child}
+				</button>
+			)
+		}
+
+		if (!host) {
+			return (
+				<button
+					className={className}
+					title="Remote login can only be served over VPN"
+					disabled
+				>
+					{child}
+				</button>
+			)
+		}
+
+		return (
+			<a
+				className={className}
+				href={['http://', host, ':7681'].join('')}
+				rel="noopener noreferrer"
+				title="Go to terminal"
+				target="_blank"
+			>
+				{child}
+			</a>
+		)
 	}
 
 	renderCursor () {
@@ -111,6 +161,9 @@ class DeviceDetail extends PureComponent {
 												<h5>
 													<span className="fad fa-id-badge pr-1" /> Board
 												</h5>
+											</div>
+											<div className="col">
+												{this.getTerminalButton()}
 											</div>
 											<div className="col">
 												<AsyncButton
