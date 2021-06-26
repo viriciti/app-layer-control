@@ -65,6 +65,18 @@ class DeviceDetail extends PureComponent {
 			</Fragment>
 		)
 
+		if (!osVersion) {
+			return (
+				<button
+					className={className}
+					title="Can not determine OS version (yet)"
+					disabled
+				>
+					{child}
+				</button>
+			)
+		}
+
 		if (semver.lt(osVersion, '2.5.0')) {
 			return (
 				<button
