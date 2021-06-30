@@ -56,16 +56,15 @@ class DeviceDetail extends PureComponent {
 	getTerminalButton () {
 		const host      = this.props.selectedDevice.getIn(['systemInfo', 'tun0'], this.props.selectedDevice.getIn(['systemInfo', 'tun0IP']))
 		const osVersion = this.props.selectedDevice.getIn(['systemInfo', 'osVersion'])
-		const className = 'btn btn-light d-block mb-1 float-right'
+		const className = 'btn btn-light mr-1'
 
 		const child = (
 			<Fragment>
-				<span className="fad fa-terminal pl-2" />
-				Login
+				<span className="fad fa-terminal mr-2" /> Login
 			</Fragment>
 		)
 
-		if (!osVersion) {
+		if (!semver.valid(osVersion)) {
 			return (
 				<button
 					className={className}
@@ -81,7 +80,7 @@ class DeviceDetail extends PureComponent {
 			return (
 				<button
 					className={className}
-					title="OS verison should at least be v2.5.0"
+					title="OS version should at least be v2.5.0"
 					disabled
 				>
 					{child}
@@ -169,26 +168,26 @@ class DeviceDetail extends PureComponent {
 								<div className="row">
 									<div className="col-lg-4 mb-4">
 										<div className="row">
-											<div className="col-7">
+											<div className="col">
 												<h5>
 													<span className="fad fa-id-badge pr-1" /> Board
 												</h5>
 											</div>
 											<div className="col">
-												{this.getTerminalButton()}
-											</div>
-											<div className="col">
-												<AsyncButton
-													className="btn btn-light d-block mb-1 float-right"
-													onClick={this.onRefreshState}
-													busy={this.props.isRefreshingState}
-												>
-													<span className="fad fa-sync-alt mr-1" /> Refresh
-												</AsyncButton>
+												<div className="btn-group float-right">
+													{this.getTerminalButton()}
+													<AsyncButton
+														className="btn btn-light mr-1"
+														onClick={this.onRefreshState}
+														busy={this.props.isRefreshingState}
+													>
+														<span className="fad fa-sync-alt mr-2" /> Refresh
+													</AsyncButton>
+												</div>
 											</div>
 										</div>
 
-										<hr className="mt-1 mb-2" />
+										<hr className="mt-2" />
 
 										<SystemInfo
 											selectedDevice={this.props.selectedDevice}
