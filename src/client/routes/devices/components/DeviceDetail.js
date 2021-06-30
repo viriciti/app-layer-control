@@ -65,7 +65,7 @@ class DeviceDetail extends PureComponent {
 			</Fragment>
 		)
 
-		if (!osVersion) {
+		if (!semver.valid(osVersion)) {
 			return (
 				<button
 					className={className}
@@ -81,7 +81,7 @@ class DeviceDetail extends PureComponent {
 			return (
 				<button
 					className={className}
-					title="OS verison should at least be v2.5.0"
+					title="OS version should at least be v2.5.0"
 					disabled
 				>
 					{child}
