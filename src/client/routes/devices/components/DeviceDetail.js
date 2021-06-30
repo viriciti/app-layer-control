@@ -60,8 +60,7 @@ class DeviceDetail extends PureComponent {
 
 		const child = (
 			<Fragment>
-				<span className="fad fa-terminal mr-2" />
-				 Login
+				<span className="fad fa-terminal mr-2" /> Login
 			</Fragment>
 		)
 
@@ -188,7 +187,7 @@ class DeviceDetail extends PureComponent {
 											</div>
 										</div>
 
-										<hr className="mt-2"/>
+										<hr className="mt-2" />
 
 										<SystemInfo
 											selectedDevice={this.props.selectedDevice}
