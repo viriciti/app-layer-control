@@ -143,6 +143,22 @@ do ->
 			.subscribe (updates) ->
 				log.info "Updated status for #{updates.length} device(s)" if updates.length
 
+		# check for empty devicegroup
+		devicesStatus$
+			.mergeMap ({ deviceId, status }) ->
+				deviceState = await db.DeviceState.findOne { deviceId }
+
+				return if deviceState.groups?.length
+
+				deviceState.groups = [ "default" ]
+				await deviceState.save()
+
+				deviceId
+
+			.subscribe (deviceId) ->
+				if deviceId
+					log.info "Did not find groups for #{deviceId}, added default group"
+
 		# docker registry
 		registry$
 			.mergeMap (images) ->
