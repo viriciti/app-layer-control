@@ -111,6 +111,8 @@ do ->
 				update          = omit data, ["groups", "status"]
 				update.deviceId = deviceId
 
+				debug "Updated state for device %s", deviceId
+
 				Observable.from db.DeviceState.updateOne filter, update, upsert: true
 			.bufferTime 5000
 			.subscribe (updates) ->
@@ -139,6 +141,8 @@ do ->
 					deviceId:  deviceId
 					connected: status is "online"
 
+				debug "Updated status for device %s", deviceId
+
 				Observable.from db.DeviceState.updateOne filter, update, upsert: true
 			.bufferTime 5000
 			.subscribe (updates) ->
@@ -148,14 +152,22 @@ do ->
 		devicesStatus$
 			.mergeMap ({ deviceId, status }) ->
 				deviceState = await db.DeviceState.findOne { deviceId }
+				debug "[check for empty devicegroup] Got from DB: device %s, status %s, deviceState from db %o", deviceId, status, deviceState
 
-				return if deviceState.groups?.length
+				if deviceState
+					debug "[check for empty devicegroup] device %s is in DB", deviceId
+					if deviceState.groups?.length
+						debug "[check for empty devicegroup] device %s is in DB and has groups %o", deviceId, deviceState.groups
+						return
+				else
+					deviceState = new DeviceState
+						deviceId:  deviceId
+						connected: status is "online"
+					debug "[check for empty devicegroup] device %s is NOT in DB: creating %o", deviceState.toJSON()
 
-				deviceState.groups = [ "default" ]
-
-				debug "[check for empty devicegroup] Saving default group for device %s", deviceId
+				debug "[check for empty devicegroup] Saving device %s", deviceId
 				await deviceState.save()
-				debug "[check for empty devicegroup] Saved default group for device %s", deviceId
+				debug "[check for empty devicegroup] Saved device %s", deviceId
 
 				deviceId
 
