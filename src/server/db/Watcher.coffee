@@ -48,11 +48,15 @@ class Watcher extends EventEmitter
 					data:     updatedFields
 
 				# We only want to publish the updated groups on MQTT
-				return Observable.of value unless updatedFields.groups
+				unless updatedFields.groups
+					debug "No groups in updated fields for device %s", deviceId
+					return Observable.of value
 
 				topic   = "devices/#{deviceId}/groups"
 				groups  = JSON.stringify updatedFields.groups
 				options = retain: true
+
+				debug "Publishing updated groups %s for device %s", groups, deviceId
 
 				Observable
 					.from @mqtt.publish topic, groups, options

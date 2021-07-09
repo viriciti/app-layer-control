@@ -5,6 +5,7 @@ compression                      = require "compression"
 config                           = require "config"
 cors                             = require "cors"
 dotize                           = require "dotize"
+debug                            = (require "debug") "app:main"
 express                          = require "express"
 http                             = require "http"
 kleur                            = require "kleur"
@@ -151,7 +152,10 @@ do ->
 				return if deviceState.groups?.length
 
 				deviceState.groups = [ "default" ]
+
+				debug "[check for empty devicegroup] Saving default group for device %s", deviceId
 				await deviceState.save()
+				debug "[check for empty devicegroup] Saved default group for device %s", deviceId
 
 				deviceId
 
