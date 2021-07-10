@@ -110,57 +110,66 @@ do ->
 				filter          = deviceId: deviceId
 				update          = omit data, ["groups", "status"]
 				update.deviceId = deviceId
-
-				debug "Updated state for device %s", deviceId
-
+				debug "[devicesState$] Received state for device %s from topic %s on MQTT", deviceId, DevicesState.topic
 				Observable.from db.DeviceState.updateOne filter, update, upsert: true
 			.bufferTime 5000
 			.subscribe (updates) ->
-				log.info "Updated #{updates.length} device(s)" if updates.length
+				if updates.length
+					debug "[devicesState$] Updated in DB %O", updates
+					log.info "[devicesState$] Updated #{updates.length} device(s)"
 
-		# specific state updates
-		# these updates are broadcasted more frequently
 		devicesNsState$
-			.merge deviceGroups$
 			.mergeMap ({ deviceId, key, value }) ->
 				filter = deviceId: deviceId
 				update =
 					deviceId: deviceId
 					[key]:    value
-
+				debug "[devicesNsState$] Received state ns state for device %s from topic %s on MQTT", deviceId, DevicesNsState.topic
 				Observable.from db.DeviceState.updateOne filter, update, upsert: true
 			.bufferTime 5000
 			.subscribe (updates) ->
-				log.info "Updated namespaced state for #{updates.length} device(s)" if updates.length
+				if updates.length
+					debug "[devicesNsState$] Updated in DB %O", updates
+					log.info "[devicesNsState$] Updated namespaced state for #{updates.length} device(s)"
 
-		# status updates
+		deviceGroups$
+			.mergeMap ({ deviceId, key, value }) ->
+				filter = deviceId: deviceId
+				update =
+					deviceId: deviceId
+					[key]:    value
+				debug "[deviceGroups$] Received groups for device %s from topic %s on MQTT", deviceId, DeviceGroups.topic
+				Observable.from db.DeviceState.updateOne filter, update, upsert: true
+			.bufferTime 5000
+			.subscribe (updates) ->
+				if updates.length
+					debug "[deviceGroups$] Updated in DB %O", updates
+					log.info "[deviceGroups$] Updated groups state for #{updates.length} device(s)"
+
 		devicesStatus$
 			.mergeMap ({ deviceId, status }) ->
 				filter = deviceId: deviceId
-
-				debug "Got device status (devices/+/status) from MQTT for device %s, status %s", deviceId, status
-
+				debug "[devicesStatus$] Received status for device %s from topic %s on MQTT", deviceId, DevicesStatus.topic
 				deviceState = await db.DeviceState.findOne({ deviceId }).lean()
 
 				if deviceState
 					update =
 						deviceId:  deviceId
 						connected: status is "online"
-					debug "Device state for %s there, updating connected to %o", deviceId, update
+					debug "[devicesStatus$] Device state for %s is there, updating connected to %s", deviceId, update.connected
 
 				else
 					update =
 						deviceId:  deviceId
 						connected: status is "online"
 						groups:    [ "default" ]
-					debug "Device state for %s NOT there, updating connected to %o", deviceId, update
+					debug "[devicesStatus$] Device state for %s is NOT there, updating with %o", deviceId, update
 
 				await db.DeviceState.updateOne filter, update, upsert: true
 			# .bufferTime 5000
 			.subscribe (updates) ->
-				debug "[WITH AWAIT] Updates for device state online status: %O", updates if updates.length
-				log.info "Updated online status for #{updates.length} device(s)" if updates.length
-
+				debug "[devicesStatus$] Updates for device state online status: %O", updates if updates.length
+				log.info "[devicesStatus$] Updated online status for #{updates.length} device(s)" if updates.length
 
 		# docker registry
 		registry$
