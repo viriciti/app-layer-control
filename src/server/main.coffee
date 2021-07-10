@@ -137,43 +137,30 @@ do ->
 		devicesStatus$
 			.mergeMap ({ deviceId, status }) ->
 				filter = deviceId: deviceId
-				update =
-					deviceId:  deviceId
-					connected: status is "online"
 
-				debug "Updated status for device %s", deviceId
+				debug "Got device status (devices/+/status) from MQTT for device %s, status %s", deviceId, status
 
-				Observable.from db.DeviceState.updateOne filter, update, upsert: true
-			.bufferTime 5000
-			.subscribe (updates) ->
-				log.info "Updated status for #{updates.length} device(s)" if updates.length
-
-		# check for empty devicegroup
-		devicesStatus$
-			.mergeMap ({ deviceId, status }) ->
-				deviceState = await db.DeviceState.findOne { deviceId }
-				debug "[check for empty devicegroup] Got from DB: device %s, status %s, deviceState from db %o", deviceId, status, deviceState
+				deviceState = await db.DeviceState.findOne({ deviceId }).lean()
 
 				if deviceState
-					debug "[check for empty devicegroup] device %s is in DB", deviceId
-					if deviceState.groups?.length
-						debug "[check for empty devicegroup] device %s is in DB and has groups %o", deviceId, deviceState.groups
-						return
-				else
-					deviceState = new DeviceState
+					update =
 						deviceId:  deviceId
 						connected: status is "online"
-					debug "[check for empty devicegroup] device %s is NOT in DB: creating %o", deviceState.toJSON()
+					debug "Device state for %s there, updating connected to %o", deviceId, update
 
-				debug "[check for empty devicegroup] Saving device %s", deviceId
-				await deviceState.save()
-				debug "[check for empty devicegroup] Saved device %s", deviceId
+				else
+					update =
+						deviceId:  deviceId
+						connected: status is "online"
+						groups:    [ "default" ]
+					debug "Device state for %s NOT there, updating connected to %o", deviceId, update
 
-				deviceId
+				await db.DeviceState.updateOne filter, update, upsert: true
+			# .bufferTime 5000
+			.subscribe (updates) ->
+				debug "[WITH AWAIT] Updates for device state online status: %O", updates if updates.length
+				log.info "Updated online status for #{updates.length} device(s)" if updates.length
 
-			.subscribe (deviceId) ->
-				if deviceId
-					log.info "Did not find groups for #{deviceId}, added default group"
 
 		# docker registry
 		registry$

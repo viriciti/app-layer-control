@@ -34,15 +34,21 @@ class Watcher extends EventEmitter
 
 	watchState: (observable$) ->
 		observable$
-			.filter ({ operationType, updateDescription }) ->
-				operationType isnt "delete" and updateDescription?.updatedFields?
-			.concatMap ({ documentKey, updateDescription }) =>
+			.filter (obj) ->
+				debug "INCOMING %O", obj
+				{ operationType, updateDescription, fullDocument } = obj
+				debug "operationType %s, updateDescription %o, filter %s", operationType, updateDescription, operationType isnt "delete" and updateDescription?.updatedFields?
+				operationType isnt "delete" and (updateDescription?.updatedFields?) or fullDocument
+			.concatMap ({ documentKey, updateDescription, fullDocument }) =>
+				_id = documentKey or fullDocument._id
+				debug "getting device state from DB for document key", documentKey
 				Observable
-					.from @db.DeviceState.findOne(documentKey).select "deviceId"
+					.from @db.DeviceState.findOne(_id).select "deviceId"
 					.map ({ deviceId }) ->
 						deviceId:      deviceId
-						updatedFields: updateDescription.updatedFields
+						updatedFields: updateDescription?.updatedFields or fullDocument
 			.concatMap ({ deviceId, updatedFields  }) =>
+				debug "UDATED FIELDS %s, %O", deviceId, updatedFields
 				value =
 					deviceId: deviceId
 					data:     updatedFields
