@@ -1,5 +1,5 @@
 # STAGE 1: build
-FROM docker.viriciti.com/viriciti/infra/builder-image:node-14-buster as builder
+FROM docker.viriciti.com/viriciti/datahub/amd64-alpine-node:build as builder
 
 # Create app directory
 RUN mkdir -p /app

@@ -30,43 +30,29 @@ class Watcher extends EventEmitter
 		Observable
 			.merge observables$...
 			.subscribe =>
-				debug "[admin] Populating all groups due to changes in administation"
 				populateMqttWithGroups @db, @mqtt
 
 	watchState: (observable$) ->
 		observable$
-			# filter out delete operations and get update or full doc info
-			# fullDocument comes from inseart operation
-			# updateDescription.updatedFields comes from an update operation
-			.filter (obj) ->
-				debug "[device state] Incoming %O", obj
-				{ operationType, updateDescription, fullDocument } = obj
-				operationType isnt "delete" and (updateDescription?.updatedFields?) or fullDocument
-			.concatMap ({ documentKey, updateDescription, fullDocument }) =>
-				# documentKey comes from update operation
-				# fullDocument._id comes from insert operation
-				_id = documentKey or fullDocument._id
-				debug "[device state] Getting device id from DeviceState DB for document key", _id
+			.filter ({ operationType, updateDescription }) ->
+				operationType isnt "delete" and updateDescription?.updatedFields?
+			.concatMap ({ documentKey, updateDescription }) =>
 				Observable
-					.from @db.DeviceState.findOne(_id).select "deviceId"
+					.from @db.DeviceState.findOne(documentKey).select "deviceId"
 					.map ({ deviceId }) ->
 						deviceId:      deviceId
-						updatedFields: updateDescription?.updatedFields or fullDocument
+						updatedFields: updateDescription.updatedFields
 			.concatMap ({ deviceId, updatedFields  }) =>
 				value =
 					deviceId: deviceId
 					data:     updatedFields
 
 				# We only want to publish the updated groups on MQTT
-				unless updatedFields.groups
-					debug "[device state] No groups in updated fields for device %s", deviceId
-					return Observable.of value
+				return Observable.of value unless updatedFields.groups
 
 				topic   = "devices/#{deviceId}/groups"
 				groups  = JSON.stringify updatedFields.groups
 				options = retain: true
-
-				debug "[device state] Publishing updated groups %s for device %s", groups, deviceId
 
 				Observable
 					.from @mqtt.publish topic, groups, options
@@ -79,7 +65,6 @@ class Watcher extends EventEmitter
 					updates
 				, {}
 
-				debug "[device state] Broadcasting device state %O", updates
 				@broadcaster.broadcast Broadcaster.STATE, updates
 
 module.exports = Watcher
